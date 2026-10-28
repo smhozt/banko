@@ -398,6 +398,16 @@
   .sh-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 18px 10px; touch-action:none; }
   .sh-head h2 { margin:0; font:700 28px/1 var(--fc); }
   .sh-body { overflow:auto; overscroll-behavior:contain; padding:0 18px 22px; }
+  /* masaüstü: alttan panel yerine ortada açılan pencere */
+  @media (min-width:721px) {
+    .bsheet { top:50%; bottom:auto; margin-left:0; max-height:86vh; border:1px solid var(--line); border-radius:22px; padding-bottom:4px;
+      box-shadow:0 30px 90px -20px rgba(0,0,0,.55); opacity:0; transform:translate(-50%,-47%) scale(.97);
+      transition:transform .22s cubic-bezier(.2,.7,.2,1), opacity .18s, visibility 0s .22s; }
+    body.sopen .bsheet { opacity:1; transform:translate(-50%,-50%); transition:transform .22s cubic-bezier(.2,.7,.2,1), opacity .18s; }
+    .sh-grip { display:none; }
+    .sh-head { padding:18px 22px 12px; touch-action:auto; }
+    .sh-body { padding:0 22px 22px; }
+  }
   .sgrp { padding:6px 0 14px; }
   .sgrp + .sgrp { border-top:1px solid var(--line); padding-top:14px; }
   .sgrp h3 { margin:0 0 6px; font:600 19px var(--fc); display:flex; align-items:baseline; gap:8px; }
@@ -435,7 +445,8 @@
   .ill { display:block; width:150px; height:auto; color:var(--muted); margin:0 0 12px; }
   .hero-empty .ill { width:170px; height:auto; }
   :root[data-theme="dark"] img.ill { filter:brightness(1.25) saturate(1.05); }
-  .empty .ill, .ai-empty .ill { margin:0 auto 12px; }
+  .empty .ill { margin:0 auto 12px; }
+  .ai-empty .ill { margin:4px 0 10px; }
   .home-top { position:relative; }
   .deco { position:absolute; right:-10px; top:6px; width:210px; height:auto; color:var(--ink); opacity:.07; pointer-events:none; }
 
@@ -1699,7 +1710,7 @@ $("shBody").addEventListener("change", e => {
 // paneli tutamaçtan aşağı sürükleyerek kapat
 (function sheetDrag() {
   const sh = $("bsheet"); let y0 = null, dy = 0;
-  const start = e => { if (e.target.closest("button")) return; y0 = e.touches ? e.touches[0].clientY : e.clientY; dy = 0; sh.classList.add("dragging"); };
+  const start = e => { if (e.target.closest("button") || matchMedia("(min-width:721px)").matches) return; y0 = e.touches ? e.touches[0].clientY : e.clientY; dy = 0; sh.classList.add("dragging"); };
   const move = e => { if (y0 === null) return; dy = Math.max(0, (e.touches ? e.touches[0].clientY : e.clientY) - y0); sh.style.setProperty("--drag", dy + "px"); };
   const end = () => { if (y0 === null) return; y0 = null; sh.classList.remove("dragging"); if (dy > 90) closeSheet(); else sh.style.removeProperty("--drag"); };
   for (const el of [$("shGrip"), $("shHead")]) { el.addEventListener("touchstart", start, { passive: true }); el.addEventListener("mousedown", start); }
