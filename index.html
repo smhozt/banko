@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <title>Banko</title>
 <meta name="theme-color" content="#0D2219">
@@ -10,6 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Banko">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -342,13 +343,6 @@
   @media (max-width:640px) {
     .top-in { padding:8px 14px; gap:8px; } .wrap { padding:0 14px 48px; }
     .live, #reqs { display:none; } .brand { margin-right:auto; }
-    .cmd { position:static; backdrop-filter:none; -webkit-backdrop-filter:none; }
-    body { padding-bottom:96px; }
-    #tabs { position:fixed; left:0; right:0; bottom:0; z-index:35; max-width:none; overflow:visible; border-radius:0; padding:8px 10px calc(14px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--line); gap:6px; }
-    #tabs button { flex:1; min-height:56px; height:auto; padding:0; border-radius:12px; flex-direction:column; justify-content:center; gap:3px; font-size:13px; }
-    #tabs .c { order:-1; font:700 22px/1 var(--fc); opacity:1; }
-    .presets { display:none; }
-    #back { bottom:104px; right:14px; }
     .cmd-row { gap:10px 12px; }
     .spacer { display:none; }
     .seg.big button { padding:0 14px; }
@@ -365,6 +359,175 @@
     .card { padding:16px; }
     .ai-ask { flex-basis:100%; }
   }
+  /* ---------- üst çubuk her temada koyu (uygulama gibi, durum çubuğuyla bütün) ---------- */
+  .top { --bg:#0D2219; --surface:#132B21; --sunk:#183428; --ink:#E8F2EC; --muted:#8DAD9E; --line:#244538; --home:#4ADE9F; --focus:#7F9BFF;
+    color:var(--ink); background:color-mix(in srgb, var(--bg) 94%, transparent); padding-top:env(safe-area-inset-top); padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+  .top .brand svg { color:var(--home); }
+  .top .seg button[aria-pressed="true"] { background:var(--ink); color:var(--bg); }
+
+  /* ---------- alt sekme çubuğu (yalnızca dar ekran) ---------- */
+  .nav { display:none; }
+  .nav button { border:0; background:transparent; color:var(--muted); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:58px; padding:4px 0; font:600 12px/1 var(--f); border-radius:14px; -webkit-tap-highlight-color:transparent; }
+  .nav .ni { width:60px; height:30px; border-radius:15px; display:grid; place-items:center; transition:background .2s; }
+  .nav svg { width:23px; height:23px; }
+  .nav button[aria-current="page"] { color:var(--ink); }
+  .nav button[aria-current="page"] .ni { background:color-mix(in srgb, var(--t2) 26%, transparent); }
+
+  /* ---------- kupon şeridi (bet slip) ---------- */
+  .slip { position:fixed; z-index:34; right:24px; bottom:24px; width:380px; display:flex; align-items:center; gap:12px; min-height:58px; padding:8px 16px 8px 8px; border:0; border-radius:16px;
+    background:var(--ink); color:var(--bg); box-shadow:0 14px 34px -12px rgba(0,0,0,.55); text-align:left; animation:up .28s cubic-bezier(.2,.7,.2,1) both; -webkit-tap-highlight-color:transparent; }
+  @keyframes up { from { transform:translateY(24px); opacity:0; } }
+  .slip-n { flex:none; width:42px; height:42px; border-radius:12px; display:grid; place-items:center; background:var(--t2); color:#06140E; font:700 24px/1 var(--fc); }
+  .slip-t { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .slip-t b { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .slip-t small { font-size:12.5px; opacity:.72; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .slip-o { flex:none; display:flex; flex-direction:column; align-items:flex-end; line-height:1; }
+  .slip-o b { font:700 26px/1 var(--fc); }
+  .slip-o small { font-size:11px; opacity:.7; margin-top:3px; }
+  .slip svg { flex:none; width:18px; height:18px; opacity:.7; }
+
+  /* ---------- alt panel (bottom sheet) ---------- */
+  .bsheet { position:fixed; z-index:50; left:50%; bottom:0; width:min(560px,100vw); margin-left:max(-280px,-50vw); max-height:88vh; max-height:88dvh; display:flex; flex-direction:column;
+    background:var(--surface); border:1px solid var(--line); border-bottom:0; border-radius:22px 22px 0 0; box-shadow:0 -18px 50px -20px rgba(0,0,0,.6);
+    transform:translateY(105%); transition:transform .28s cubic-bezier(.2,.7,.2,1); padding-bottom:env(safe-area-inset-bottom); visibility:hidden; }
+  body.sopen .bsheet { transform:translateY(var(--drag, 0px)); visibility:visible; }
+  body.sopen .scrim { opacity:1; pointer-events:auto; }
+  .bsheet.dragging { transition:none; }
+  .sh-grip { padding:8px 0 0; touch-action:none; cursor:grab; }
+  .sh-grip i { display:block; width:40px; height:5px; border-radius:3px; background:var(--line); margin:0 auto; }
+  .sh-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 18px 10px; touch-action:none; }
+  .sh-head h2 { margin:0; font:700 28px/1 var(--fc); }
+  .sh-body { overflow:auto; overscroll-behavior:contain; padding:0 18px 22px; }
+  .sgrp { padding:6px 0 14px; }
+  .sgrp + .sgrp { border-top:1px solid var(--line); padding-top:14px; }
+  .sgrp h3 { margin:0 0 6px; font:600 19px var(--fc); display:flex; align-items:baseline; gap:8px; }
+  .thr-s { display:flex; align-items:baseline; justify-content:space-between; color:var(--muted); font-size:14px; }
+  .thr-s output { font:700 30px/1 var(--fc); color:var(--ink); }
+  .sgrp input[type=range] { width:100%; height:44px; }
+  .presets.s { display:flex; gap:8px; margin:2px 0 12px; }
+  .presets.s button { flex:1; height:44px; }
+  .seg.full { display:flex; width:100%; }
+  .seg.full button { flex:1; justify-content:center; height:44px; }
+  .opt { display:flex; align-items:center; justify-content:space-between; gap:14px; min-height:60px; padding:8px 0; cursor:pointer; }
+  .opt + .opt, .seg.full + .opt { border-top:1px solid var(--line); }
+  .opt > span { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .opt b { font-weight:600; }
+  .opt small { color:var(--muted); font-size:13px; line-height:1.35; }
+  .sw { -webkit-appearance:none; appearance:none; flex:none; width:52px; height:32px; margin:0; border-radius:16px; background:var(--line); position:relative; cursor:pointer; transition:background .2s; }
+  .sw::after { content:""; position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.35); transition:transform .2s; }
+  .sw:checked { background:var(--t2); }
+  .sw:checked::after { transform:translateX(20px); }
+  .sh-btns { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+  .sh-btns .ghost { min-height:46px; flex:1 1 150px; }
+  .sh-note { color:var(--muted); font-size:13px; margin:6px 0 0; }
+
+  /* ---------- lig başlıkları (Lig sıralaması) ---------- */
+  .lgh { display:flex; align-items:center; gap:10px; width:100%; min-height:48px; padding:8px 18px; border:0; border-bottom:1px solid var(--line); background:color-mix(in srgb, var(--sunk) 70%, transparent); color:var(--ink); text-align:left; font:600 15px var(--f); cursor:pointer; }
+  .lgh .ln { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lgh .ln small { color:var(--muted); font-weight:500; margin-left:6px; }
+  .lgh .k { color:var(--muted); font:600 15px var(--fc); }
+  .lgh svg { width:18px; height:18px; color:var(--muted); transition:transform .2s; flex:none; }
+  .lgh[aria-expanded="false"] svg { transform:rotate(-90deg); }
+  .lgli:last-child .lgh[aria-expanded="false"] { border-bottom:0; }
+  .grp .row .where { display:none; }
+
+  /* ---------- çizimler ---------- */
+  .ill { display:block; width:150px; height:auto; color:var(--muted); margin:0 0 12px; }
+  .ill .acc { color:var(--t2); }
+  .empty .ill, .ai-empty .ill { margin:0 auto 12px; }
+  .home-top { position:relative; }
+  .deco { position:absolute; right:-10px; top:6px; width:210px; height:auto; color:var(--ink); opacity:.07; pointer-events:none; }
+
+  /* ---------- aşağı çekip yenile ---------- */
+  html.ptr-on, html.ptr-on body { overscroll-behavior-y:contain; }
+  .ptr { position:fixed; z-index:31; left:50%; top:calc(var(--hh, 60px) - 44px); width:40px; height:40px; margin-left:-20px; border-radius:50%; display:grid; place-items:center;
+    background:var(--surface); color:var(--ink); box-shadow:var(--shadow); border:1px solid var(--line); opacity:0; transform:translateY(calc(var(--d, 0px) * .6)) rotate(calc(var(--d, 0px) * 2.4deg)); pointer-events:none; }
+  .ptr.on { opacity:1; }
+  .ptr.ready { color:var(--t1); }
+  .ptr.busy { opacity:1; transform:translateY(64px); transition:transform .2s; }
+  .ptr.busy svg { animation:rot .8s linear infinite; }
+  .ptr svg { width:20px; height:20px; }
+
+  .fbtn { display:none; align-items:center; gap:7px; }
+  .fbtn svg { width:18px; height:18px; }
+  .fbtn b { font:600 17px var(--fc); }
+  .rng-row { display:flex; align-items:center; gap:10px; }
+  .hdr-set { display:inline-flex; }
+  body.has-slip { padding-bottom:96px; }
+  body.has-slip #back { bottom:96px; }
+
+  /* ---------- dar ekran (telefon) ---------- */
+  @media (max-width:720px) {
+    :root { --navh:70px; }
+    body { padding-bottom:calc(var(--navh) + env(safe-area-inset-bottom) + 18px); }
+    body.has-slip { padding-bottom:calc(var(--navh) + env(safe-area-inset-bottom) + 92px); }
+    .wrap { padding-left:max(14px, env(safe-area-inset-left)); padding-right:max(14px, env(safe-area-inset-right)); }
+    .views-row { display:none; }
+    .nav { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; position:fixed; left:0; right:0; bottom:0; z-index:35; padding:5px 10px calc(5px + env(safe-area-inset-bottom));
+      background:color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-top:1px solid var(--line); }
+    .slip { left:12px; right:12px; width:auto; bottom:calc(var(--navh) + env(safe-area-inset-bottom) + 8px); }
+    #back { right:14px; bottom:calc(var(--navh) + env(safe-area-inset-bottom) + 16px); }
+    body.has-slip #back { bottom:calc(var(--navh) + env(safe-area-inset-bottom) + 84px); }
+    .bsheet { left:0; right:0; width:auto; margin-left:0; }
+    .drawer { top:auto; left:0; right:0; width:auto; height:92vh; height:92dvh; border-left:0; border-top:1px solid var(--line); border-radius:22px 22px 0 0; transform:translateY(102%); padding-bottom:env(safe-area-inset-bottom); }
+
+    /* dokunma alanları: en az 44 piksel */
+    .pill { height:44px; } .icon-btn { width:44px; }
+    .ghost { min-height:44px; }
+    .seg button, .seg.big button { height:44px; }
+    .step button { width:44px; height:44px; }
+    .check { min-height:44px; }
+    .chips { gap:8px; } .chips button { min-height:38px; padding:6px 12px; font-size:14px; }
+    .quick button { height:42px; padding:0 14px; }
+    .ctry-h { min-height:44px; } .lg-list { gap:2px 16px; } .lg-list label { min-height:40px; }
+    .search { height:46px; }
+    .sett { display:none; }
+    .cp-ctl { gap:10px; }
+    .cp-ctl .seg { order:2; flex:1 1 100%; display:flex; }
+    .cp-ctl .seg button { flex:1; justify-content:center; padding:0 8px; }
+    #cpNew { order:1; margin-left:auto; }
+    .top-in { gap:6px; }
+
+    /* Maçlar: pazarlar yatay kaydırılır, gün şeridi + filtre düğmesi, eşik ayarları panelde */
+    .cmd { position:sticky; top:var(--hh, 60px); margin:0 -14px; padding:8px 14px 10px; }
+    .cmd-row:first-child { flex-direction:column; align-items:stretch; gap:8px; }
+    .cmd-more { display:none !important; }
+    #tabs { background:transparent; padding:0 14px; margin:0 -14px; gap:8px; border-radius:0; }
+    #tabs button { height:40px; padding:0 8px 0 14px; border:1px solid var(--line); border-radius:999px; color:var(--ink); font-size:15px; }
+    #tabs button[aria-pressed="true"] { background:var(--ink); border-color:var(--ink); color:var(--bg); }
+    #tabs .c { font:600 13px/1 var(--f); min-width:26px; padding:5px 7px; border-radius:999px; background:var(--sunk); color:var(--muted); opacity:1; }
+    #tabs button[aria-pressed="true"] .c { background:color-mix(in srgb, var(--bg) 22%, transparent); color:var(--bg); }
+    #ranges { flex:1; }
+    #ranges button { flex:1; justify-content:center; padding:0 6px; }
+    .fbtn { display:inline-flex; height:50px; padding:0 14px; border-radius:12px; }
+
+    /* öne çıkan maç: ekranın üçte biri */
+    .hero { grid-template-columns:minmax(0,1fr) 128px; gap:10px 14px; padding:16px 0 14px; align-items:end; }
+    .hero-when { font-size:13px; margin-bottom:4px; }
+    .hero-pick { font-size:clamp(30px,9vw,40px); }
+    .hero-cr { margin-top:10px; gap:10px; } .hero-cr .crest { --s:36px !important; } .hero-cr .hv { font-size:20px; }
+    .hero-vs { font-size:14px; margin-top:6px; }
+    .hero-num { margin-top:10px; gap:8px; } .hero-num .n { font-size:64px; letter-spacing:-1px; } .hero-num .u { font-size:24px; } .hero-num .kind { font-size:13px; max-width:110px; padding-bottom:4px; }
+    .pitch-box { max-width:none !important; }
+    .pitch-key { flex-direction:column; gap:3px; font-size:12px; }
+    .pitch-key b { font-size:15px; margin-left:auto; }
+    .pitch-key span { gap:6px; }
+    .unpin { margin-top:10px; min-height:40px; }
+
+    /* satırlar: daha sıkı */
+    .day { padding:16px 2px 8px; } .day .dn { font-size:28px; }
+    .row { gap:6px 10px; padding:12px 14px; }
+    .row .time { font-size:19px; }
+    .tm { font-size:15px; }
+    .prob .num { font-size:34px; }
+    .stat b { font-size:17px; } .stat span { font-size:11px; }
+    .lgh { padding:8px 14px; }
+    .home-top { padding-top:18px; }
+    .home-top h1 { font-size:clamp(34px,10vw,46px); }
+    .deco { width:150px; right:-8px; top:4px; }
+    .card h2 { font-size:26px; }
+  }
+  @media (max-width:360px) { .hero { grid-template-columns:1fr; } .pitch-box { max-width:200px !important; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
 </style>
 </head>
@@ -383,6 +546,9 @@
     <div class="live" id="live" aria-live="polite">Yükleniyor</div>
     <button class="pill icon-btn" id="theme" aria-label="Temayı değiştir" title="Temayı değiştir">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <button class="pill icon-btn hdr-set" id="openSet" aria-haspopup="dialog" aria-label="Ayarlar" title="Ayarlar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
     </button>
     <button class="pill" id="openDrawer" aria-haspopup="dialog">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
@@ -403,9 +569,10 @@
   <div class="cmd">
     <div class="cmd-row">
       <div class="seg big" id="tabs" role="group" aria-label="Pazar"></div>
-      <div class="seg" id="ranges" role="group" aria-label="Zaman aralığı"></div>
+      <div class="rng-row"><div class="seg" id="ranges" role="group" aria-label="Zaman aralığı"></div>
+        <button type="button" class="ghost fbtn" id="openFilt" aria-haspopup="dialog" aria-label="Eşik ve sıralama ayarları"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><b id="filtLbl"></b></button></div>
     </div>
-    <div class="cmd-row" style="margin-top:10px">
+    <div class="cmd-row cmd-more" style="margin-top:10px">
       <div class="thr">
         <label for="thr">Olasılık eşiği</label>
         <input type="range" id="thr" min="40" max="95" step="1">
@@ -433,6 +600,18 @@
 </div>
 
 <button class="pill" id="back" hidden>Listeye dön</button>
+<div class="ptr" id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></div>
+<button type="button" class="slip" id="slip" hidden aria-haspopup="dialog"></button>
+<nav class="nav" id="nav" aria-label="Sayfalar">
+  <button type="button" data-v="home"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></svg></span>Anasayfa</button>
+  <button type="button" data-v="matches"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.45 4.45h-4.7L8.2 10.3z"/><path d="M12 3v4.5M15.8 10.3l4.4-1.4M14.35 14.75l2.7 3.75M9.65 14.75l-2.7 3.75M8.2 10.3 3.8 8.9"/></svg></span>Maçlar</button>
+  <button type="button" data-v="track"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M6 20v-6M11 20V9M16 20v-9M20.5 4.5 16 8l-3-2.5L8.5 9"/></svg></span>Takip</button>
+</nav>
+<section class="bsheet" id="bsheet" role="dialog" aria-modal="true" aria-labelledby="shT" aria-hidden="true">
+  <div class="sh-grip" id="shGrip" aria-hidden="true"><i></i></div>
+  <div class="sh-head" id="shHead"><h2 id="shT"></h2><button class="pill icon-btn" id="shClose" aria-label="Kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="sh-body" id="shBody"></div>
+</section>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Ligler ve ayarlar" aria-hidden="true">
   <div class="dr-head"><h2>Ligler ve ayarlar</h2><button class="pill icon-btn" id="closeDrawer" aria-label="Kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -484,6 +663,19 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const pn = x => (typeof x === "number" ? Math.round(x * 100) : null);
 const pct = x => (typeof x === "number" ? Math.round(x * 100) + "%" : "-");
 
+// Boş durum çizimleri (tema renklerini kullanır)
+const ILL = {
+  goal: `<svg class="ill" viewBox="0 0 160 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 88h144"/><path d="M22 88V20h116v68"/><path d="M22 20l14 13h88l14-13M36 33v55M124 33v55" opacity=".55"/>
+    <path d="M50 33v55M64 33v55M78 33v55M92 33v55M106 33v55M36 46h88M36 60h88M36 74h88" opacity=".22"/></g>
+    <g class="acc"><circle cx="112" cy="79" r="9" fill="var(--surface)" stroke="currentColor" stroke-width="2.5"/><path d="M112 74.5l4 2.9-1.5 4.6h-5l-1.5-4.6z" fill="currentColor"/></g></svg>`,
+  ticket: `<svg class="ill" viewBox="0 0 160 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 16h100a6 6 0 0 1 6 6v16a10 10 0 0 0 0 20v16a6 6 0 0 1-6 6H30a6 6 0 0 1-6-6V58a10 10 0 0 0 0-20V22a6 6 0 0 1 6-6z"/>
+    <path d="M102 20v60" stroke-dasharray="3 6"/><path d="M38 34h46M38 48h36M38 62h42" opacity=".45"/></g>
+    <g class="acc" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="119" cy="48" r="10"/><path d="M114.5 48.5l3.2 3.2 6-6.4"/></g></svg>`,
+  deco: `<svg class="deco" viewBox="0 0 200 128" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="196" height="124" rx="6"/><path d="M100 2v124"/><circle cx="100" cy="64" r="19"/><rect x="164" y="30" width="34" height="68"/><rect x="185" y="48" width="13" height="32"/><rect x="2" y="30" width="34" height="68"/></g></svg>`
+};
+const CHEV = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>`;
 const TABS = [
   { id: "win", label: "Maç sonucu", thr: 62, kind: "kazanma olasılığı" },
   { id: "o15", label: "1,5 üst",    thr: 76, kind: "2 veya daha fazla gol olasılığı" },
@@ -492,11 +684,11 @@ const TABS = [
   { id: "bt",  label: "KG var",     thr: 58, kind: "iki takımın da gol atma olasılığı" }
 ];
 const RANGES = [["today","Bugün"],["tomorrow","Yarın"],["7","7 gün"],["all","Hepsi"]];
-const SORTS = [["prob","Olasılık"],["time","Saat"]];
+const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -593,9 +785,9 @@ function applyTheme(t) { document.documentElement.dataset.theme = t; }
 // ---------- veri (sunucudan)
 let renderTimer = null;
 function scheduleRender() { if (renderTimer) return; renderTimer = setTimeout(() => { renderTimer = null; render(); }, 150); }
-async function loadSelected(force) {
+async function loadSelected(force, again) {
   if (state.running) return;
-  const keys = [...state.sel].filter(k => force || !state.data[k]);
+  const keys = [...state.sel].filter(k => force || again || !state.data[k]);
   if (!keys.length) { render(); return; }
   state.running = true; state.limitHit = false;
   state.progress = { done: 0, total: keys.length };
@@ -708,7 +900,7 @@ function renderHero(top, tabDef, pinned) {
       return;
     }
     const wide = state.range === "today" || state.range === "tomorrow";
-    el.innerHTML = `<div class="hero-empty"><h2>Bu eşikte maç yok</h2>
+    el.innerHTML = `<div class="hero-empty">${ILL.goal}<h2>Bu eşikte maç yok</h2>
       <p>${esc(tabDef.label)} için %${thr} eşiğinde aday kalmadı. Eşiği düşür, zaman aralığını genişlet ya da daha fazla lig seç.</p>
       <button class="ghost solid" id="lowerThr">Eşiği 5 puan düşür</button>${wide ? '<button class="ghost" id="show7">Önümüzdeki 7 günü göster</button>' : ""}<button class="ghost" id="openFromHero">Ligleri seç</button></div>`;
     return;
@@ -767,15 +959,18 @@ function renderMatches() {
   $("thrOut").textContent = thr + "%";
   $("presets").innerHTML = [60, 65, 70, 75, 80].map(v => `<button type="button" data-p="${v}" aria-pressed="${v === thr}">${v}</button>`).join("");
   $("trusted").checked = state.trusted;
+  $("filtLbl").textContent = "%" + thr;
 
   const byProb = base.filter(m => primary(m, tab) * 100 >= thr).sort((a, b) => primary(b, tab) - primary(a, tab));
   const pinnedM = state.pinned ? base.find(m => m.id === state.pinned) : null;
   renderHero(pinnedM || byProb[0], tabDef, !!pinnedM);
 
   const picked = byProb.slice(0, state.limit);
+  const lgName = m => trc(m.country) + " " + m.league;
   picked.sort((a, b) => {
     const da = dayKey(a.kick), db = dayKey(b.kick);
     if (da !== db) return da < db ? -1 : 1;
+    if (state.sort === "league") { const la = lgName(a), lb = lgName(b); if (la !== lb) return la.localeCompare(lb, "tr"); return a.kick - b.kick; }
     return state.sort === "time" ? a.kick - b.kick : primary(b, tab) - primary(a, tab);
   });
   lastShown = picked.map(m => ({ m, tab }));
@@ -785,14 +980,22 @@ function renderMatches() {
     const loading = state.running && !base.length;
     list.innerHTML = loading ? `<ul class="sheet" style="margin-top:20px">${'<li class="skel"></li>'.repeat(6)}</ul>` : "";
   } else {
-    let html = "", cur = null;
+    const grp = state.sort === "league", cnt = {};
+    if (grp) for (const m of picked) { const g = dayKey(m.kick) + "|" + m.lk; cnt[g] = (cnt[g] || 0) + 1; }
+    let html = "", cur = null, curL = null;
     for (const m of picked) {
       const di = dayInfo(m.kick);
       if (di.key !== cur) {
         if (cur !== null) html += "</ul>";
-        cur = di.key;
-        html += `<h2 class="day"><span class="dn">${esc(di.num)}</span><span class="dm">${esc(di.month)}, ${esc(di.wd)}</span>${di.tag ? `<span class="dt">${di.tag}</span>` : ""}</h2><ul class="sheet">`;
+        cur = di.key; curL = null;
+        html += `<h2 class="day"><span class="dn">${esc(di.num)}</span><span class="dm">${esc(di.month)}, ${esc(di.wd)}</span>${di.tag ? `<span class="dt">${di.tag}</span>` : ""}</h2><ul class="sheet${grp ? " grp" : ""}">`;
       }
+      if (grp && m.lk !== curL) {
+        curL = m.lk;
+        const open = !state.collapsed.has(m.lk);
+        html += `<li class="lgli"><button type="button" class="lgh" data-lg="${esc(m.lk)}" aria-expanded="${open}"><span class="cc">${esc(CC[m.country] || m.country.slice(0, 3).toUpperCase())}</span><span class="ln">${esc(m.league)}<small>${esc(trc(m.country))}</small></span><span class="k">${cnt[di.key + "|" + m.lk]}</span>${CHEV}</button></li>`;
+      }
+      if (grp && state.collapsed.has(m.lk)) continue;
       html += rowHTML(m, tab);
     }
     list.innerHTML = html + "</ul>";
@@ -819,6 +1022,7 @@ function chromeTop() {
   const pr = state.progress;
   $("prog").style.width = pr.total ? (pr.done / pr.total * 100) + "%" : "0";
   $("views").innerHTML = [["home", "Anasayfa"], ["matches", "Maçlar"], ["track", "Takip"]].map(v => `<button type="button" data-v="${v[0]}" aria-pressed="${state.view === v[0]}">${v[1]}</button>`).join("");
+  document.querySelectorAll("#nav button").forEach(b => { if (b.dataset.v === state.view) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
 }
 function chromeBottom(liveText) {
   $("live").textContent = liveText;
@@ -832,9 +1036,96 @@ function chromeBottom(liveText) {
 }
 function render() {
   applyView(); chromeTop();
+  if (state.view !== "home") { const { base } = homePool(); state.lastCoupon = buildCoupon(base, state.home.style, state.home.n, state.home.seed); ensureMkt(base); }
   const live = state.view === "home" ? renderHome() : state.view === "track" ? renderTrack() : renderMatches();
   chromeBottom(live);
+  updateSlip(); syncSheet();
   saveUI();
+}
+
+// ---------- kupon şeridi: kupon her sayfada bir dokunuş uzakta
+function updateSlip() {
+  const el = $("slip"), cp = state.lastCoupon, open = document.body.classList.contains("sopen") || document.body.classList.contains("open");
+  const show = !!(cp && cp.picks.length) && !(state.view === "home" && state.cpVis) && !open;
+  el.hidden = !show;
+  document.body.classList.toggle("has-slip", show);
+  if (!show) return;
+  const co = combOdds(cp.picks), H = state.home;
+  const html = `<span class="slip-n">${cp.picks.length}</span><span class="slip-t"><b>Günün kuponu · ${esc(STYLES[H.style].label)}</b><small>${cp.picks.length} seçim, birlikte %${pn(cp.comb)}</small></span>${co ? `<span class="slip-o"><b>${fo(co)}</b><small>oran</small></span>` : `<span class="slip-o"><b>%${pn(cp.comb)}</b><small>olasılık</small></span>`}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>`;
+  if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }
+  el.setAttribute("aria-label", `Günün kuponu, ${cp.picks.length} seçim. Ayrıntıyı aç`);
+}
+
+// ---------- alt panel (kupon ve ayarlar)
+let sheetOpener = null;
+function couponCtlHTML() {
+  const H = state.home;
+  return `<div class="step" role="group" aria-label="Maç sayısı"><button type="button" data-n="-1" aria-label="Bir maç azalt">−</button><output>${H.n} maç</output><button type="button" data-n="1" aria-label="Bir maç artır">+</button></div>
+    <div class="seg" role="group" aria-label="Kupon tarzı">${Object.keys(STYLES).map(k => `<button type="button" data-style="${k}" aria-pressed="${H.style === k}">${STYLES[k].label}</button>`).join("")}</div>
+    <div class="seg" role="group" aria-label="Süre">${HOURS.map(h => `<button type="button" data-hours="${h}" aria-pressed="${H.hours === h}">${h} saat</button>`).join("")}</div>`;
+}
+function slipBody() {
+  const cp = state.lastCoupon;
+  const ctl = `<div class="cp-ctl">${couponCtlHTML()}</div>`;
+  if (!cp || !cp.picks.length) return ctl + `<div class="ai-empty">${ILL.ticket}<p>Bu ayarlarda kupona girecek maç yok. Dengeli tarzı ya da daha uzun süreyi dene.</p></div>`;
+  return ctl + `${cp.short ? `<p class="muted">İstenen ${state.home.n} yerine ${cp.picks.length} seçim bulundu.</p>` : ""}<ol class="picks">${cp.picks.map(c => pickRow(c.m, c.pk)).join("")}</ol>${combHTML(cp.picks, cp.comb)}
+    <div class="sh-btns"><button type="button" class="ghost solid" data-act="save">Takibe al</button><button type="button" class="ghost" data-act="new">Farklı kupon</button><button type="button" class="ghost" data-act="copy">Kuponu kopyala</button></div>`;
+}
+function setBody() {
+  const t = TABS.find(x => x.id === state.tab), thr = state.thr[state.tab];
+  return `<div class="sgrp"><h3>Maç listesi <span class="muted">${esc(t.label)} pazarı</span></h3>
+      <div class="thr-s"><label for="thrS">Olasılık eşiği</label><output id="thrSOut">%${thr}</output></div>
+      <input type="range" id="thrS" min="40" max="95" step="1" value="${thr}" aria-label="Olasılık eşiği" style="--fill:${(thr - 40) / 55 * 100}%">
+      <div class="presets s" id="presetsS" role="group" aria-label="Hazır eşikler">${[55, 60, 65, 70, 75, 80].map(v => `<button type="button" data-p="${v}" aria-pressed="${v === thr}">${v}</button>`).join("")}</div>
+      <div class="seg full" id="sortsS" role="group" aria-label="Sıralama">${SORTS.map(x => `<button type="button" data-s="${x[0]}" aria-pressed="${x[0] === state.sort}">${x[1]}</button>`).join("")}</div>
+      <label class="opt"><span><b>Düşük güvenli maçları gizle</b><small>Takım verisi az olan maçlar listeye girmez.</small></span><input type="checkbox" class="sw" id="trustedS"></label></div>
+    <div class="sgrp"><h3>Olasılıklar</h3>
+      <label class="opt"><span><b>Gerçek isabete göre düzelt</b><small>13 bin maçlık geriye dönük teste göre pazar bazında düzeltme.</small></span><input type="checkbox" class="sw" id="calibS"></label>
+      <label class="opt"><span><b>Piyasa onayı iste</b><small>Kupondaki maç sonucu ve 2,5 üst seçiminde bahisçi oranları ters yöndeyse seçim elenir.</small></span><input type="checkbox" class="sw" id="mktS"></label></div>
+    <div class="sgrp"><h3>Diğer</h3>
+      <label class="opt"><span><b>Koyu tema</b></span><input type="checkbox" class="sw" id="darkS"></label>
+      <div class="sh-btns"><button type="button" class="ghost" data-act="leagues">Ligleri seç (${state.sel.size})</button>${state.view === "matches" ? '<button type="button" class="ghost" data-act="copyList">Listeyi kopyala</button>' : ""}</div>
+      <p class="sh-note">Telefonda listeyi yenilemek için sayfanın en üstündeyken aşağı çek.</p></div>`;
+}
+function syncSheet() {
+  const k = state.sheet;
+  if (!k) return;
+  if (k === "slip") {
+    const cp = state.lastCoupon, H = state.home;
+    const sig = [H.n, H.style, H.hours, state.mkt.status, state.elo.status, cp ? cp.picks.map(c => c.m.id + c.pk.market + pn(c.pk.p)).join(",") : ""].join("|");
+    if (sig !== state.slipSig) { state.slipSig = sig; $("shBody").innerHTML = slipBody(); }
+    return;
+  }
+  const thr = state.thr[state.tab], sl = $("thrS");
+  if (!sl) return;
+  if (document.activeElement !== sl) sl.value = thr;
+  sl.style.setProperty("--fill", ((thr - 40) / 55 * 100) + "%");
+  $("thrSOut").textContent = "%" + thr;
+  document.querySelectorAll("#presetsS button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.p === thr)));
+  document.querySelectorAll("#sortsS button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === state.sort)));
+  $("trustedS").checked = state.trusted; $("calibS").checked = state.calib; $("mktS").checked = state.mktOn;
+  $("darkS").checked = document.documentElement.dataset.theme === "dark";
+}
+function openSheet(kind) {
+  if (document.body.classList.contains("open")) setDrawer(false);
+  sheetOpener = document.activeElement;
+  state.sheet = kind; state.slipSig = "";
+  $("shT").textContent = kind === "slip" ? "Günün kuponu" : "Ayarlar";
+  $("shBody").innerHTML = kind === "slip" ? "" : setBody();
+  $("shBody").scrollTop = 0;
+  document.body.classList.add("sopen");
+  $("bsheet").setAttribute("aria-hidden", "false");
+  syncSheet(); updateSlip();
+  setTimeout(() => $("shClose").focus({ preventScroll: true }), 30);
+}
+function closeSheet(silent) {
+  if (!state.sheet) return;
+  state.sheet = null;
+  document.body.classList.remove("sopen");
+  $("bsheet").setAttribute("aria-hidden", "true");
+  $("bsheet").style.removeProperty("--drag");
+  updateSlip();
+  if (!silent && sheetOpener && sheetOpener.isConnected && !sheetOpener.hidden) sheetOpener.focus({ preventScroll: true });
 }
 
 // ---------- anasayfa: günün kuponu, öneriler, yapay zeka
@@ -934,7 +1225,7 @@ function buildHome() {
   if (state.homeBuilt) return;
   state.homeBuilt = true;
   $("vHome").innerHTML = `<div class="home">
-    <div class="home-top"><h1 id="hTitle"></h1><p id="hSub"></p><div class="sett"><label class="check" title="football-charts sicil tablosunda yüksek olasılıklar gerçekte daha az tutuyor"><input type="checkbox" id="calibH"> Olasılıkları gerçek isabete göre düzelt</label><label class="check" title="Bahisçi oranları yaklaşık 12.995 maçlık testte modelden daha iyi çıktı. Kupona giren maç sonucu ve 2,5 üst seçimlerinde piyasa da aynı yönde değilse seçim elenir. Piyasa verisi olmayan maçlar elenmez."><input type="checkbox" id="mktH"> Piyasa onayı iste (veri varsa)</label></div></div>
+    <div class="home-top">${ILL.deco}<h1 id="hTitle"></h1><p id="hSub"></p><div class="sett"><label class="check" title="football-charts sicil tablosunda yüksek olasılıklar gerçekte daha az tutuyor"><input type="checkbox" id="calibH"> Olasılıkları gerçek isabete göre düzelt</label><label class="check" title="Bahisçi oranları yaklaşık 12.995 maçlık testte modelden daha iyi çıktı. Kupona giren maç sonucu ve 2,5 üst seçimlerinde piyasa da aynı yönde değilse seçim elenir. Piyasa verisi olmayan maçlar elenmez."><input type="checkbox" id="mktH"> Piyasa onayı iste (veri varsa)</label></div></div>
     <div class="home-grid">
       <section class="card" aria-labelledby="cpT"><div class="card-h"><h2 id="cpT">Günün kuponu</h2></div><div class="cp-ctl" id="cpCtl"></div><div id="cpBody"></div></section>
       <section class="card" aria-labelledby="sgT"><h2 id="sgT">Günün önerileri</h2><div class="sg" id="sgBody"></div></section>
@@ -965,6 +1256,7 @@ function buildHome() {
   $("aiForm").addEventListener("submit", e => { e.preventDefault(); const q = $("aiQ").value.trim(); if (q) runAI("ask", q); });
   $("vHome").addEventListener("click", homeClick);
   $("calibH").addEventListener("change", onCalib);
+  if ("IntersectionObserver" in window) new IntersectionObserver(es => { const v = es[es.length - 1].isIntersecting; if (v !== state.cpVis) { state.cpVis = v; updateSlip(); } }, { threshold: 0.12 }).observe($("cpT").closest(".card"));
   $("mktH").addEventListener("change", e => { state.mktOn = e.target.checked; state.home.seed = 0; render(); });
 }
 
@@ -976,10 +1268,7 @@ function renderHome() {
   $("hTitle").textContent = `${di.wd}, ${di.num} ${di.month}`;
   $("hSub").textContent = pr.total ? `Maçlar yükleniyor, ${pr.done} / ${pr.total} lig.` : `Önümüzdeki ${H.hours} saatte ${base.length + lowConf} maç var, ${base.length} tanesi güvenilir veriyle. Saatler Sofia saatiyle.`;
 
-  $("cpCtl").innerHTML = `<div class="step" role="group" aria-label="Maç sayısı"><button type="button" data-n="-1" aria-label="Bir maç azalt">−</button><output>${H.n} maç</output><button type="button" data-n="1" aria-label="Bir maç artır">+</button></div>
-    <div class="seg" role="group" aria-label="Kupon tarzı">${Object.keys(STYLES).map(k => `<button type="button" data-style="${k}" aria-pressed="${H.style === k}">${STYLES[k].label}</button>`).join("")}</div>
-    <div class="seg" role="group" aria-label="Süre">${HOURS.map(h => `<button type="button" data-hours="${h}" aria-pressed="${H.hours === h}">${h} saat</button>`).join("")}</div>
-    <button type="button" class="ghost" id="cpNew">Farklı kupon</button>`;
+  $("cpCtl").innerHTML = couponCtlHTML() + `<button type="button" class="ghost" id="cpNew">Farklı kupon</button>`;
 
   const cp = buildCoupon(base, H.style, H.n, H.seed);
   state.lastCoupon = cp;
@@ -1008,7 +1297,7 @@ function ensureMkt(base) {
   gs("getMarket", pool.map(m => ({ id: m.id, lk: m.lk, h: m.hraw, a: m.araw, d: m.kick.toISOString() })))
     .then(r => { E.res = (r && r.res) || {}; E.status = "done"; })
     .catch(() => { E.status = "error"; })
-    .finally(() => { if (state.view === "home") render(); });
+    .finally(() => { scheduleRender(); });
 }
 function mktProb(m, k, side) {
   const r = state.mkt.res[m.id];
@@ -1196,7 +1485,7 @@ function renderTrack() {
   if (T.status === "error") { sum.innerHTML = `<p class="ai-empty">Kayıtlar okunamadı: ${esc(T.error)}</p>`; list.innerHTML = ""; return "Takip yüklenemedi."; }
   if (!T.data) { sum.innerHTML = `<p class="ai-empty">Yükleniyor.</p>`; list.innerHTML = ""; return "Takip yükleniyor."; }
   const D = T.data, st = D.stats, rate = st.n ? Math.round(st.hit / st.n * 100) : null, avg = st.n ? Math.round(st.sumP / st.n * 100) : null;
-  if (!D.coupons.length) { sum.innerHTML = `<p class="ai-empty">Henüz takipte kupon yok. Anasayfada ya da yapay zeka köşesinde "Takibe al" düğmesine bas.</p>`; list.innerHTML = ""; return "Takipte kupon yok."; }
+  if (!D.coupons.length) { sum.innerHTML = `<div class="ai-empty">${ILL.ticket}</div><p class="ai-empty">Henüz takipte kupon yok. Anasayfada ya da yapay zeka köşesinde "Takibe al" düğmesine bas.</p>`; list.innerHTML = ""; return "Takipte kupon yok."; }
   const mk = Object.keys(MK).filter(k => st.byMk[k] && st.byMk[k].n).map(k => `<span><b>${MK[k]}</b> ${st.byMk[k].hit}/${st.byMk[k].n} (%${Math.round(st.byMk[k].hit / st.byMk[k].n * 100)}, tahmin %${Math.round(st.byMk[k].sumP / st.byMk[k].n * 100)})</span>`).join("");
   sum.innerHTML = `<div class="tk-sum">
       <div class="tk-s"><b>${st.n ? st.hit + " / " + st.n : "-"}</b><span>Tutan seçim${rate !== null ? ", %" + rate : ""}</span></div>
@@ -1333,26 +1622,29 @@ function applySel(keys) { state.sel = new Set(keys); state.limit = 30; saveSel()
 
 // ---------- panel
 function setDrawer(open) {
+  if (open && state.sheet) closeSheet(true);
   document.body.classList.toggle("open", open);
+  updateSlip();
   $("drawer").setAttribute("aria-hidden", String(!open));
   if (open) $("closeDrawer").focus(); else $("openDrawer").focus();
 }
 
 // ---------- kopyala
-async function copyList() {
+async function copyList(ev) {
+  const b = (ev && ev.currentTarget && ev.currentTarget.id === "copy") ? $("copy") : (ev && ev.target && ev.target.closest && ev.target.closest("button")) || $("copy");
+  const label = b.textContent;
   const lines = lastShown.map(({ m, tab }) => {
     const di = dayInfo(m.kick), p = primary(m, tab);
     const what = tab === "win" ? (m.pH >= m.pA ? m.home : m.away) + " kazanır" : TABS.find(t => t.id === tab).label;
     return `${di.num} ${di.month} ${fmtTime(m.kick)} | ${m.home} - ${m.away} | ${what} %${pn(p)}`;
   });
   const text = lines.join("\n");
-  const b = $("copy");
   try { await navigator.clipboard.writeText(text); b.textContent = "Kopyalandı"; }
   catch (e) {
     try { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); b.textContent = "Kopyalandı"; }
     catch (e2) { b.textContent = "Kopyalanamadı"; }
   }
-  setTimeout(() => { b.textContent = "Listeyi kopyala"; }, 1800);
+  setTimeout(() => { b.textContent = label; }, 1800);
 }
 
 // ---------- olaylar
@@ -1364,15 +1656,67 @@ function updateBack() {
   $("back").hidden = !show;
 }
 window.addEventListener("scroll", updateBack, { passive: true });
-$("views").addEventListener("click", e => {
+function onViewClick(e) {
   const b = e.target.closest("button[data-v]");
-  if (b && b.dataset.v !== state.view) { state.view = b.dataset.v; window.scrollTo({ top: 0, behavior: "auto" }); render(); updateBack(); }
+  if (!b) return;
+  if (b.dataset.v === state.view) { window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); return; }
+  state.view = b.dataset.v; window.scrollTo({ top: 0, behavior: "auto" }); render(); updateBack();
+}
+$("views").addEventListener("click", onViewClick);
+$("nav").addEventListener("click", onViewClick);
+$("slip").addEventListener("click", () => openSheet("slip"));
+$("openSet").addEventListener("click", () => openSheet("set"));
+$("openFilt").addEventListener("click", () => openSheet("set"));
+$("shClose").addEventListener("click", () => closeSheet());
+$("shBody").addEventListener("click", e => {
+  if (state.sheet === "slip") {
+    const op = e.target.closest("[data-open]");
+    if (op) { closeSheet(true); openMatch(op.dataset.open, op.dataset.tab); return; }
+    const a = e.target.closest("[data-act]");
+    if (a && state.lastCoupon) {
+      if (a.dataset.act === "save") trackSave(a, "main", "Günün kuponu", state.lastCoupon);
+      else if (a.dataset.act === "copy") copyText(couponText(state.lastCoupon.picks, state.lastCoupon.comb, "Günün kuponu"), a, "Kuponu kopyala");
+      else if (a.dataset.act === "new") { state.home.seed = (state.home.seed || 0) + 1; render(); }
+      return;
+    }
+    homeClick(e);
+    return;
+  }
+  const p = e.target.closest("[data-p]");
+  if (p) { state.thr[state.tab] = +p.dataset.p; state.limit = 30; render(); return; }
+  const so = e.target.closest("[data-s]");
+  if (so) { state.sort = so.dataset.s; render(); return; }
+  const a = e.target.closest("[data-act]");
+  if (a && a.dataset.act === "leagues") { closeSheet(true); setDrawer(true); return; }
+  if (a && a.dataset.act === "copyList") copyList(e);
 });
+$("shBody").addEventListener("input", e => {
+  if (e.target.id === "thrS") { state.thr[state.tab] = +e.target.value; state.limit = 30; render(); }
+});
+$("shBody").addEventListener("change", e => {
+  const id = e.target.id, v = e.target.checked;
+  if (id === "trustedS") { state.trusted = v; state.limit = 30; render(); }
+  else if (id === "calibS") onCalib(e);
+  else if (id === "mktS") { state.mktOn = v; state.home.seed = 0; render(); }
+  else if (id === "darkS") { const t = v ? "dark" : "light"; applyTheme(t); lsSet("banko2:theme", t); }
+});
+// paneli tutamaçtan aşağı sürükleyerek kapat
+(function sheetDrag() {
+  const sh = $("bsheet"); let y0 = null, dy = 0;
+  const start = e => { if (e.target.closest("button")) return; y0 = e.touches ? e.touches[0].clientY : e.clientY; dy = 0; sh.classList.add("dragging"); };
+  const move = e => { if (y0 === null) return; dy = Math.max(0, (e.touches ? e.touches[0].clientY : e.clientY) - y0); sh.style.setProperty("--drag", dy + "px"); };
+  const end = () => { if (y0 === null) return; y0 = null; sh.classList.remove("dragging"); if (dy > 90) closeSheet(); else sh.style.removeProperty("--drag"); };
+  for (const el of [$("shGrip"), $("shHead")]) { el.addEventListener("touchstart", start, { passive: true }); el.addEventListener("mousedown", start); }
+  window.addEventListener("touchmove", move, { passive: true }); window.addEventListener("mousemove", move);
+  window.addEventListener("touchend", end); window.addEventListener("mouseup", end);
+})();
 $("back").addEventListener("click", () => {
   const y = state.backY; state.backY = null; $("back").hidden = true;
   window.scrollTo({ top: y, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 });
 $("list").addEventListener("click", e => {
+  const lg = e.target.closest(".lgh");
+  if (lg) { const k = lg.dataset.lg; state.collapsed.has(k) ? state.collapsed.delete(k) : state.collapsed.add(k); render(); return; }
   const li = e.target.closest("li.row"); if (!li) return;
   const id = li.dataset.id;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1394,11 +1738,11 @@ const onCalib = e => { state.calib = e.target.checked; state.home.seed = 0; stat
 $("calib").addEventListener("change", onCalib);
 $("more").addEventListener("click", () => { state.limit += 30; render(); });
 $("copy").addEventListener("click", copyList);
-$("theme").addEventListener("click", () => { const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; applyTheme(t); lsSet("banko2:theme", t); });
+$("theme").addEventListener("click", () => { const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; applyTheme(t); lsSet("banko2:theme", t); syncSheet(); });
 $("openDrawer").addEventListener("click", () => setDrawer(true));
 $("closeDrawer").addEventListener("click", () => setDrawer(false));
-$("scrim").addEventListener("click", () => setDrawer(false));
-document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("open")) setDrawer(false); });
+$("scrim").addEventListener("click", () => { setDrawer(false); closeSheet(); });
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (state.sheet) closeSheet(); else if (document.body.classList.contains("open")) setDrawer(false); });
 $("hero").addEventListener("click", e => {
   if (e.target.id === "lowerThr") { state.thr[state.tab] = Math.max(40, state.thr[state.tab] - 5); render(); }
   if (e.target.id === "openFromHero") setDrawer(true);
@@ -1431,8 +1775,37 @@ $("leagues").addEventListener("change", e => {
   state.limit = 30; saveSel(); renderLeaguePicker(); render(); loadSelected(false);
 });
 
+// ---------- aşağı çekip yenile (yalnızca ana ekrana eklenmiş uygulamada; tarayıcının kendi yenilemesi varken çakışmasın)
+async function softRefresh() {
+  state.mkt.sig = state.elo.sig = state.corners.sig = ""; state.track.status = "idle";
+  try { const r = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (r) r.update(); } catch (e) {}
+  await loadSelected(false, true);
+}
+(function pullToRefresh() {
+  const standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true || /[?&]ptr=1\b/.test(location.search);
+  if (!standalone) return;
+  document.documentElement.classList.add("ptr-on");
+  const el = $("ptr"); let y0 = null, dy = 0, busy = false;
+  const reset = () => { el.classList.remove("on", "ready", "busy"); el.style.setProperty("--d", "0px"); };
+  window.addEventListener("touchstart", e => { const lg = $("login"); y0 = (busy || window.scrollY > 0 || state.sheet || document.body.classList.contains("open") || (lg && !lg.hidden)) ? null : e.touches[0].clientY; dy = 0; }, { passive: true });
+  window.addEventListener("touchmove", e => {
+    if (y0 === null) return;
+    if (window.scrollY > 0) { y0 = null; reset(); return; }
+    dy = Math.max(0, e.touches[0].clientY - y0);
+    el.style.setProperty("--d", Math.min(dy, 140) + "px"); el.classList.toggle("on", dy > 10); el.classList.toggle("ready", dy > 90);
+  }, { passive: true });
+  window.addEventListener("touchend", async () => {
+    if (y0 === null) return;
+    y0 = null;
+    if (dy <= 90) { reset(); return; }
+    busy = true; el.classList.add("busy"); if (navigator.vibrate) navigator.vibrate(12);
+    try { await softRefresh(); } finally { busy = false; reset(); }
+  });
+})();
+
 function setHH() { document.documentElement.style.setProperty("--hh", document.querySelector(".top").offsetHeight + "px"); }
 window.addEventListener("resize", setHH); setHH();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) setHH(); });
 (async function init() {
   render();
   let boot;
