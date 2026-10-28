@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Banko</title>
+<meta name="theme-color" content="#0D2219">
+<meta name="robots" content="noindex,nofollow">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Banko">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --f: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --fc: "Barlow Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+    --bg:#EEF2EC; --surface:#FAFCF9; --sunk:#E4EAE2; --ink:#0D2219; --muted:#4F6458; --line:#D3DDD1;
+    --home:#0F7A52; --away:#3159E6; --draw:#A6B3A9;
+    --t1:#0B6B47; --t2:#1E8A5F; --t3:#4FA97F; --t4:#9CCBB1;
+    --warn-fg:#7A4A05; --warn-bg:#FBEFD2; --err:#B3361B; --focus:#3159E6;
+    --shadow: 0 1px 0 rgba(13,34,25,.04), 0 12px 32px -18px rgba(13,34,25,.25);
+  }
+  :root[data-theme="dark"] {
+    --bg:#09130F; --surface:#0F1D17; --sunk:#0C1813; --ink:#E8F2EC; --muted:#86A093; --line:#1E3329;
+    --home:#4ADE9F; --away:#7F9BFF; --draw:#4C5F55;
+    --t1:#6BF0B2; --t2:#46CF92; --t3:#2FA374; --t4:#1F7656;
+    --warn-fg:#F2C25B; --warn-bg:#2B2410; --err:#FF8A7A; --focus:#7F9BFF;
+    --shadow: 0 1px 0 rgba(255,255,255,.03), 0 16px 40px -20px rgba(0,0,0,.7);
+  }
+  #login { position:fixed; inset:0; z-index:100; background:var(--bg); display:grid; place-items:center; padding:20px; }
+  #loginForm { width:min(360px,100%); display:flex; flex-direction:column; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px; box-shadow:var(--shadow); }
+  #loginForm h2 { margin:0; font:700 44px/1 var(--fc); }
+  #loginForm p { margin:0; color:var(--muted); }
+  #pin { height:50px; border:1px solid var(--line); border-radius:12px; padding:0 14px; font-size:22px; letter-spacing:5px; background:var(--bg); color:var(--ink); width:100%; }
+  #loginForm .ghost { height:48px; }
+  #loginErr { color:var(--err) !important; min-height:1.3em; font-weight:500; }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:400 15px/1.45 var(--f); font-variant-numeric:tabular-nums; }
+  button, input, select { font:inherit; color:inherit; }
+  button { cursor:pointer; }
+  :focus-visible { outline:2px solid var(--focus); outline-offset:2px; border-radius:6px; }
+  [hidden] { display:none !important; }
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+  /* ---------- üst çubuk ---------- */
+  .top { position:sticky; top:0; z-index:30; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-bottom:1px solid var(--line); }
+  .top-in { max-width:1180px; margin:0 auto; padding:10px 20px; display:flex; align-items:center; gap:14px; }
+  .brand { display:flex; align-items:center; gap:10px; font:700 26px/1 var(--fc); letter-spacing:.2px; }
+  .brand svg { width:26px; height:26px; flex:none; }
+  .live { color:var(--muted); font-size:13px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+  .pill { display:inline-flex; align-items:center; gap:8px; height:36px; padding:0 14px; border:1px solid var(--line); border-radius:999px; background:var(--surface); font-weight:500; font-size:14px; white-space:nowrap; }
+  .pill:hover { border-color:var(--muted); }
+  .pill b { font-family:var(--fc); font-size:17px; font-weight:600; }
+  .icon-btn { width:36px; height:36px; padding:0; justify-content:center; }
+  .icon-btn svg { width:18px; height:18px; }
+  .bar { height:2px; background:transparent; }
+  .bar i { display:block; height:100%; width:0; background:var(--home); transition:width .25s ease; }
+
+  .wrap { max-width:1180px; margin:0 auto; padding:0 20px 56px; }
+
+  /* ---------- öne çıkan maç ---------- */
+  .hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,380px); gap:36px; align-items:center; padding:34px 0 26px; }
+  .hero-when { color:var(--muted); font-size:15px; margin:0 0 6px; }
+  .hero-pick { font:700 clamp(40px,7vw,84px)/.95 var(--fc); letter-spacing:-.5px; margin:0; overflow-wrap:anywhere; }
+  .hero-vs { margin:10px 0 0; font-size:17px; color:var(--muted); }
+  .hero-vs b { color:var(--ink); font-weight:600; }
+  .hero-num { display:flex; align-items:flex-end; gap:14px; margin-top:22px; }
+  .hero-num .n { font:700 clamp(72px,12vw,148px)/.8 var(--fc); letter-spacing:-2px; }
+  .hero-num .u { font:600 clamp(26px,4vw,44px)/1 var(--fc); color:var(--muted); padding-bottom:4px; }
+  .hero-num .kind { margin-left:6px; padding-bottom:6px; color:var(--muted); font-size:15px; max-width:140px; line-height:1.25; }
+  .pitch { width:100%; height:auto; display:block; }
+  .pitch .ln { fill:none; stroke:var(--ink); stroke-opacity:.55; stroke-width:1.4; }
+  .pitch .hf { fill:var(--home); } .pitch .af { fill:var(--away); } .pitch .df { fill:var(--draw); }
+  .pitch-key { display:flex; justify-content:space-between; margin-top:10px; font-size:13px; color:var(--muted); }
+  .pitch-key span { display:inline-flex; align-items:center; gap:6px; }
+  .pitch-key i { width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .pitch-key b { color:var(--ink); font-family:var(--fc); font-size:17px; font-weight:600; }
+  .intro .hf, .intro .af, .intro .df { animation:fill .9s cubic-bezier(.2,.7,.2,1) both; }
+  .intro .af { animation-delay:.12s; } .intro .df { animation-delay:.24s; }
+  @keyframes fill { from { opacity:0; } }
+  .hero-empty { padding:34px 0 18px; }
+  .hero-empty h2 { font:700 clamp(34px,6vw,60px)/1 var(--fc); margin:0 0 8px; }
+  .hero-empty p { color:var(--muted); margin:0 0 16px; max-width:52ch; }
+  .hero-empty .ghost { height:44px; padding:0 20px; margin:0 8px 8px 0; }
+  .hp { height:6px; border-radius:3px; background:var(--line); overflow:hidden; max-width:420px; margin:0 0 16px; }
+  .hp i { display:block; height:100%; background:var(--home); transition:width .25s; }
+  .hp-t { display:flex; justify-content:space-between; max-width:420px; font-size:14px; color:var(--muted); margin-bottom:8px; }
+  .hp-t b { font:600 17px var(--fc); color:var(--ink); }
+
+  /* ---------- komut çubuğu ---------- */
+  .cmd { position:sticky; top:var(--hh, 59px); z-index:20; background:color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding:10px 0 12px; border-bottom:1px solid var(--line); }
+  .cmd-row { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; }
+  .seg { display:inline-flex; background:var(--sunk); border-radius:12px; padding:3px; gap:2px; max-width:100%; overflow-x:auto; scrollbar-width:none; }
+  .seg::-webkit-scrollbar { display:none; }
+  .seg button { border:0; background:transparent; height:34px; padding:0 14px; border-radius:9px; font-weight:500; white-space:nowrap; display:inline-flex; align-items:center; gap:8px; color:var(--muted); }
+  .seg button:hover { color:var(--ink); }
+  .seg button[aria-pressed="true"] { background:var(--ink); color:var(--bg); }
+  .seg .c { font:600 15px var(--fc); opacity:.85; min-width:14px; text-align:center; }
+  .seg.big button { height:40px; font-size:16px; padding:0 18px; }
+  .thr { display:flex; align-items:center; gap:12px; }
+  .thr label { color:var(--muted); font-size:14px; }
+  .thr output { font:600 22px var(--fc); min-width:48px; }
+  input[type=range] { -webkit-appearance:none; appearance:none; width:min(240px,42vw); height:28px; background:transparent; --fill:50%; }
+  input[type=range]::-webkit-slider-runnable-track { height:6px; border-radius:3px; background:linear-gradient(90deg,var(--ink) var(--fill),var(--line) var(--fill)); }
+  input[type=range]::-moz-range-track { height:6px; border-radius:3px; background:var(--line); }
+  input[type=range]::-moz-range-progress { height:6px; border-radius:3px; background:var(--ink); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:22px; height:22px; margin-top:-8px; border-radius:50%; background:var(--bg); border:3px solid var(--ink); }
+  input[type=range]::-moz-range-thumb { width:16px; height:16px; border-radius:50%; background:var(--bg); border:3px solid var(--ink); }
+  .presets { display:flex; gap:6px; }
+  .presets button { height:30px; min-width:44px; padding:0 10px; border:1px solid var(--line); border-radius:999px; background:transparent; color:var(--ink); font:600 16px var(--fc); }
+  .presets button:hover { border-color:var(--muted); }
+  .presets button[aria-pressed="true"] { background:var(--ink); border-color:var(--ink); color:var(--bg); }
+  .check { display:inline-flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; cursor:pointer; }
+  .check input { width:18px; height:18px; accent-color:var(--ink); }
+  .spacer { flex:1; }
+  .ghost { border:1px solid var(--line); background:transparent; height:34px; padding:0 14px; border-radius:10px; font-weight:500; }
+  .ghost:hover { border-color:var(--muted); }
+  .ghost.solid { background:var(--ink); border-color:var(--ink); color:var(--bg); font-weight:600; }
+
+  /* ---------- fikstür satırları ---------- */
+  .day { display:flex; align-items:baseline; gap:12px; padding:18px 0 8px; margin:0; }
+  .day .dn { font:700 34px/1 var(--fc); }
+  .day .dm { font:500 16px var(--f); color:var(--muted); }
+  .day .dt { margin-left:auto; font-weight:600; font-size:13px; padding:3px 10px; border-radius:999px; background:var(--ink); color:var(--bg); }
+  .sheet { background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; list-style:none; margin:0; padding:0; }
+  .row { display:grid; grid-template-columns:62px minmax(150px,1.5fr) minmax(130px,1fr) 150px repeat(4,60px) 124px; grid-template-areas:"time match where split s15 s25 s35 sbt prob"; gap:0 14px; align-items:stretch; padding:0 0 0 18px; border-bottom:1px solid var(--line); }
+  .row > * { align-self:center; padding:13px 0; }
+  .row:last-child { border-bottom:0; }
+  .row:hover { background:color-mix(in srgb, var(--sunk) 55%, transparent); }
+  .time { grid-area:time; font:600 22px var(--fc); }
+  .match { grid-area:match; display:flex; flex-direction:column; gap:1px; min-width:0; }
+  button.match { background:none; border:0; margin:0; font:inherit; color:inherit; text-align:left; align-items:stretch; cursor:pointer; }
+  button.match:hover .tm { text-decoration:underline; text-decoration-color:var(--muted); text-underline-offset:3px; }
+  .row.sel { background:color-mix(in srgb, var(--sunk) 80%, transparent); box-shadow:inset 4px 0 0 var(--ink); }
+  .row { cursor:pointer; }
+  .tm { font-weight:500; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:7px; }
+  .tm.dim { color:var(--muted); }
+  .tm.fav { font-weight:600; }
+  .tm.fav::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--pick, var(--home)); flex:none; }
+  .flags { display:flex; gap:6px; margin-top:3px; flex-wrap:wrap; }
+  .flag { font-size:12px; padding:1px 8px; border-radius:999px; background:var(--warn-bg); color:var(--warn-fg); cursor:help; }
+  .where { grid-area:where; display:flex; align-items:center; gap:8px; min-width:0; color:var(--muted); font-size:14px; }
+  .where .ln { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cc { flex:none; font:600 13px var(--fc); letter-spacing:.5px; min-width:30px; text-align:center; padding:2px 5px; border:1px solid var(--line); border-radius:6px; color:var(--ink); }
+  .split { grid-area:split; }
+  .split .sb { display:flex; height:8px; border-radius:4px; overflow:hidden; gap:2px; }
+  .split .sb i { display:block; height:100%; min-width:2px; }
+  .split .sb .h { background:var(--home); } .split .sb .d { background:var(--draw); } .split .sb .a { background:var(--away); }
+  .split .sn { display:flex; justify-content:space-between; margin-top:5px; font:600 14px var(--fc); color:var(--muted); }
+  .stat { text-align:right; color:var(--muted); line-height:1.1; }
+  .stat span { display:block; font-size:12px; }
+  .stat b { font:600 20px var(--fc); }
+  .stat.on { color:var(--ink); } .stat.on b { text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:4px; text-decoration-color:var(--tier); }
+  .s15 { grid-area:s15; } .s25 { grid-area:s25; } .s35 { grid-area:s35; } .sbt { grid-area:sbt; }
+  .row > .prob { grid-area:prob; align-self:stretch; text-align:right; background:color-mix(in srgb, var(--tier) 16%, transparent); padding:12px 18px; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; }
+  .prob .pv { white-space:nowrap; }
+  .prob .num { font:700 40px/.9 var(--fc); letter-spacing:-.5px; }
+  .prob .pc { font:600 18px var(--fc); color:var(--muted); margin-left:2px; }
+  .meter { width:80px; height:5px; background:var(--line); border-radius:3px; margin-top:7px; overflow:hidden; }
+  .meter i { display:block; height:100%; background:var(--tier); border-radius:3px; }
+  .tier1 { --tier:var(--t1); } .tier2 { --tier:var(--t2); } .tier3 { --tier:var(--t3); } .tier4 { --tier:var(--t4); }
+
+  #back { position:fixed; right:20px; bottom:20px; z-index:36; box-shadow:var(--shadow); height:44px; padding:0 18px; }
+  .unpin { margin-top:14px; }
+  .more-wrap { display:flex; justify-content:center; padding:22px 0 0; }
+  .more-wrap .ghost { height:42px; padding:0 22px; }
+  .empty { background:var(--surface); border:1px dashed var(--line); border-radius:16px; padding:34px 22px; text-align:center; color:var(--muted); margin-top:20px; }
+  .empty b { display:block; color:var(--ink); font:700 28px var(--fc); margin-bottom:4px; }
+  .skel { height:70px; border-bottom:1px solid var(--line); background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--sunk) 80%,transparent),transparent); background-size:220% 100%; animation:sh 1.3s linear infinite; }
+  @keyframes sh { from { background-position:120% 0; } to { background-position:-120% 0; } }
+  .err { color:var(--err); font-size:13px; margin:12px 0 0; }
+  .notice { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px; margin-top:18px; display:flex; flex-direction:column; gap:12px; }
+  .notice h2 { margin:0; font:700 clamp(30px,5vw,40px)/1 var(--fc); color:var(--err); }
+  .notice p { margin:0; color:var(--muted); max-width:62ch; }
+  .notice .nt-list { color:var(--ink); background:var(--sunk); border-radius:10px; padding:10px 12px; font-size:14px; max-width:none; }
+  .nt-actions { display:flex; flex-wrap:wrap; gap:10px; }
+  .nt-actions .ghost { height:44px; padding:0 20px; }
+  .cost { background:var(--sunk); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+  .cost-top { display:flex; align-items:baseline; gap:8px; }
+  .cost-n { font:700 44px/.9 var(--fc); }
+  .cost-l { font-weight:500; }
+  .cost-r { margin-left:auto; color:var(--muted); font-size:14px; }
+  .cost-bar { display:flex; height:8px; border-radius:4px; overflow:hidden; background:var(--line); gap:2px; }
+  .cost-bar i { display:block; height:100%; }
+  .cost-bar .u { background:var(--ink); } .cost-bar .n { background:var(--home); }
+  .cost-m { display:flex; justify-content:space-between; color:var(--muted); font-size:13px; }
+  .cost-note { margin:0; color:var(--muted); font-size:13px; }
+  footer { margin-top:38px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; max-width:90ch; }
+  footer p { margin:0 0 6px; }
+
+  /* ---------- yan panel ---------- */
+  .scrim { position:fixed; inset:0; background:rgba(5,12,9,.5); opacity:0; pointer-events:none; transition:opacity .2s; z-index:40; }
+  .drawer { position:fixed; top:0; right:0; bottom:0; width:min(440px,100vw); background:var(--surface); border-left:1px solid var(--line); z-index:50; transform:translateX(102%); transition:transform .25s cubic-bezier(.2,.7,.2,1); display:flex; flex-direction:column; box-shadow:var(--shadow); }
+  body.open .scrim { opacity:1; pointer-events:auto; }
+  body.open .drawer { transform:none; }
+  .dr-head { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--line); }
+  .dr-head h2 { margin:0; font:700 26px var(--fc); }
+  .dr-body { overflow:auto; padding:16px 18px 28px; flex:1; }
+  .dr-body h3 { font:600 18px var(--fc); margin:20px 0 8px; }
+  .dr-body h3:first-child { margin-top:0; }
+  .search { width:100%; height:40px; border:1px solid var(--line); background:var(--bg); border-radius:10px; padding:0 12px; }
+  .quick { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+  .quick button { height:32px; padding:0 12px; border-radius:999px; border:1px solid var(--line); background:transparent; font-size:14px; font-weight:500; }
+  .quick button:hover { border-color:var(--muted); }
+  .ctry { padding:9px 0; border-top:1px solid var(--line); }
+  .ctry-h { display:flex; align-items:center; gap:9px; font-weight:600; }
+  .ctry-h input, .lg-list input { width:17px; height:17px; accent-color:var(--ink); }
+  .lg-list { display:flex; flex-wrap:wrap; gap:6px 16px; margin:6px 0 0 26px; color:var(--muted); font-size:14px; }
+  .lg-list label { display:inline-flex; align-items:center; gap:7px; cursor:pointer; }
+  .hint { color:var(--muted); font-size:14px; margin:0 0 10px; }
+  .keyrow { display:flex; gap:8px; }
+  .keyrow input { flex:1; height:40px; border:1px solid var(--line); background:var(--bg); border-radius:10px; padding:0 12px; min-width:0; }
+
+  /* ---------- armalar ---------- */
+  .crest { --s:24px; flex:none; width:var(--s); height:var(--s); border-radius:7px; position:relative; display:inline-flex; align-items:center; justify-content:center; font:700 calc(var(--s) * .42)/1 var(--fc); color:var(--muted); background:var(--sunk); overflow:hidden; }
+  .crest img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:2px; box-sizing:border-box; }
+  .crest.ok { background:transparent; } .crest.ok .ini { display:none; }
+  :root[data-theme="dark"] .crest.ok { background:rgba(255,255,255,.92); }
+  .hero-cr { display:flex; align-items:center; gap:14px; margin:16px 0 0; }
+  .hero-cr .hv { color:var(--muted); font:600 28px var(--fc); }
+  .pk-m b { display:flex; align-items:center; gap:5px; min-width:0; }
+  .pk-m b .nm { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:2px; }
+  /* ---------- anasayfa ---------- */
+  .views-row { max-width:1180px; margin:0 auto; padding:0 20px 10px; }
+  .views-row .seg button { height:36px; padding:0 18px; font-size:15px; }
+  .meter { display:block; }
+  .home-top { padding:26px 0 6px; }
+  .home-top h1 { margin:0; font:700 clamp(40px,6vw,64px)/.95 var(--fc); letter-spacing:-.4px; }
+  .home-top p { margin:8px 0 0; color:var(--muted); }
+  .home-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:20px; margin-top:20px; align-items:start; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:var(--shadow); min-width:0; }
+  .card h2 { margin:0; font:700 30px/1 var(--fc); }
+  .card-h { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .muted { color:var(--muted); font-size:13px; }
+  .cp-ctl { display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; margin:14px 0 6px; }
+  .step { display:inline-flex; align-items:center; gap:2px; background:var(--sunk); border-radius:12px; padding:3px; }
+  .step button { width:34px; height:34px; border:0; border-radius:9px; background:transparent; font:600 20px var(--fc); }
+  .step button:hover { background:var(--line); }
+  .step output { min-width:64px; text-align:center; font-weight:500; font-size:15px; }
+  .picks { list-style:none; margin:10px 0 0; padding:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .pk { border-bottom:1px solid var(--line); }
+  .pk:last-child { border-bottom:0; }
+  .pk-b { width:100%; display:grid; grid-template-columns:62px minmax(0,1fr) 96px; gap:12px; align-items:center; padding:12px 14px; background:transparent; border:0; text-align:left; color:inherit; font:inherit; cursor:pointer; }
+  .pk-b:hover { background:color-mix(in srgb, var(--sunk) 60%, transparent); }
+  .pk-t { font:600 22px var(--fc); display:flex; flex-direction:column; line-height:1; }
+  .pk-t small { font:500 12px var(--f); color:var(--muted); margin-top:3px; }
+  .pk-m { display:flex; flex-direction:column; min-width:0; }
+  .pk-m b { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pk-l { color:var(--ink); font-size:15px; font-weight:600; margin-top:1px; }
+  .chips2 { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .chip2 { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; line-height:1; padding:4px 9px 4px 8px; border-radius:999px; background:var(--sunk); color:var(--ink); white-space:nowrap; }
+  .chip2::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--muted); flex:none; }
+  .chip2 small { font-size:11px; font-weight:500; color:var(--muted); }
+  .chip2.ok::before { background:var(--t1); }
+  .chip2.warn { background:var(--warn-bg); color:var(--warn-fg); } .chip2.warn::before { background:var(--warn-fg); } .chip2.warn small { color:var(--warn-fg); opacity:.85; }
+  .chip2.bad { box-shadow:inset 0 0 0 1px var(--err); color:var(--err); background:transparent; } .chip2.bad::before { background:var(--err); } .chip2.bad small { color:var(--err); opacity:.85; }
+  .chip2.na { background:transparent; box-shadow:inset 0 0 0 1px var(--line); color:var(--muted); font-weight:500; }
+  .sett { display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:12px; }
+  .pk-n { color:var(--muted); font-size:13px; margin-top:6px; font-style:normal; }
+  .pk-p { text-align:right; }
+  .pk-p .pv { font:700 32px/.9 var(--fc); white-space:nowrap; } .pk-p .pv b { font:inherit; } .pk-p .pv { color:var(--ink); }
+  .pk-p .meter { width:70px; margin-left:auto; }
+  .pk-o { display:block; margin-top:5px; font-size:12px; font-weight:600; color:var(--muted); white-space:nowrap; }
+  .comb { display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+  .comb-n { font:700 clamp(40px,5vw,56px)/.8 var(--fc); letter-spacing:-1px; }
+  .comb-n small { font:600 24px var(--fc); color:var(--muted); letter-spacing:0; margin-left:2px; }
+  .comb p { margin:0; color:var(--muted); font-size:14px; max-width:46ch; flex:1 1 240px; }
+  .comb p b { color:var(--ink); font-weight:600; }
+  .cp-act { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .cp-act .ghost, .ai-actions .ghost { height:42px; padding:0 18px; }
+  .tk-sum { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px; }
+  .tk-s { background:var(--sunk); border-radius:12px; padding:12px 14px; }
+  .tk-s b { display:block; font:700 38px/1 var(--fc); }
+  .tk-s span { color:var(--muted); font-size:13px; }
+  .tk-note { margin:14px 0 0; color:var(--muted); font-size:14px; max-width:75ch; }
+  .tk-list { display:flex; flex-direction:column; gap:16px; margin-top:20px; }
+  .tk-h { display:flex; align-items:baseline; gap:10px 14px; flex-wrap:wrap; }
+  .tk-h h3 { margin:0; font:700 24px/1 var(--fc); }
+  .tk-h .muted { flex:1 1 auto; }
+  .st { display:inline-block; font-weight:700; font-size:13px; letter-spacing:.2px; padding:2px 10px; border-radius:999px; border:1px solid var(--line); white-space:nowrap; }
+  .st.won { background:var(--t1); border-color:var(--t1); color:var(--bg); }
+  .st.lost { border-color:var(--err); color:var(--err); }
+  .st.pending, .st.void { color:var(--muted); }
+  .tk-pk { display:grid; grid-template-columns:62px minmax(0,1fr) auto; gap:12px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--line); }
+  .tk-pk:last-child { border-bottom:0; }
+  .tk-pk .pk-m b { white-space:normal; }
+  .tk-r { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px; font-size:13px; color:var(--muted); }
+  .tk-r .sc { font:700 22px/1 var(--fc); color:var(--ink); }
+  .tk-del { height:34px !important; }
+  .tk-mk { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:12px; color:var(--muted); font-size:14px; }
+  .tk-mk b { color:var(--ink); font-weight:600; }
+  .sg { display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+  .sg-c { display:flex; flex-direction:column; gap:3px; text-align:left; width:100%; background:var(--sunk); border:1px solid transparent; border-radius:12px; padding:12px 14px; color:inherit; font:inherit; cursor:pointer; }
+  button.sg-c:hover { border-color:var(--muted); }
+  div.sg-c { cursor:default; }
+  .sg-c .sg-t { font:700 22px/1 var(--fc); }
+  .sg-c .sg-m { font-weight:600; }
+  .sg-c .sg-d { color:var(--muted); font-size:14px; }
+  .ai { margin-top:20px; }
+  .ai-sum { margin:14px 0 0; max-width:75ch; }
+  .ai-cols { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; margin-top:16px; align-items:start; }
+  .ai h3 { margin:0 0 6px; font:600 20px var(--fc); }
+  .ai-s { background:var(--sunk); border-radius:12px; padding:12px 14px; margin-bottom:10px; }
+  .ai-s b { display:block; font-weight:600; }
+  .ai-s p { margin:2px 0 6px; color:var(--muted); font-size:14px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chips button { border:1px solid var(--line); background:transparent; color:var(--ink); border-radius:999px; padding:3px 10px; font:500 13px var(--f); cursor:pointer; }
+  .chips button:hover { border-color:var(--muted); }
+  .ai-ans { background:var(--sunk); border-radius:12px; padding:12px 14px; margin-top:14px; max-width:75ch; white-space:pre-wrap; }
+  .ai-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:16px; }
+  .ai-ask { display:flex; gap:8px; flex:1 1 320px; }
+  .ai-ask input { flex:1; min-width:0; height:42px; border:1px solid var(--line); background:var(--bg); border-radius:10px; padding:0 12px; }
+  .ai-err { color:var(--err); font-size:14px; margin:12px 0 0; }
+  .ai-empty { color:var(--muted); margin:12px 0 0; max-width:62ch; }
+  .ai-set { margin-top:16px; border-top:1px solid var(--line); padding-top:12px; }
+  .ai-set summary { cursor:pointer; font-weight:600; }
+  .ai-set .row2 { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; align-items:center; }
+  .ai-set select, .ai-set input { height:40px; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; padding:0 12px; }
+  .ai-set input { flex:1 1 200px; min-width:0; }
+  .ai-set .hint { margin:10px 0 0; }
+  .spin { display:inline-block; width:14px; height:14px; border:2px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:rot .8s linear infinite; vertical-align:-2px; margin-right:8px; }
+  @keyframes rot { to { transform:rotate(360deg); } }
+
+  /* ---------- dar ekran ---------- */
+  .stat span, .stat b { white-space:nowrap; }
+  @media (max-width:980px) {
+    .hero { grid-template-columns:1fr; gap:22px; padding-top:24px; }
+    .pitch-box { max-width:340px; }
+    .row { grid-template-columns:1fr 1fr 1fr 92px; grid-template-areas:"time where where prob" "match match match prob" "split split split split" "s15 s25 s35 sbt"; gap:8px 12px; padding:14px 16px; }
+    .stat { text-align:left; }
+    .row > * { padding:0; }
+    .row > .prob { align-self:start; background:transparent; padding:0; }
+  }
+  @media (max-width:640px) {
+    .top-in { padding:8px 14px; gap:8px; } .wrap { padding:0 14px 48px; }
+    .live, #reqs { display:none; } .brand { margin-right:auto; }
+    .cmd { position:static; backdrop-filter:none; -webkit-backdrop-filter:none; }
+    body { padding-bottom:96px; }
+    #tabs { position:fixed; left:0; right:0; bottom:0; z-index:35; max-width:none; overflow:visible; border-radius:0; padding:8px 10px calc(14px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--line); gap:6px; }
+    #tabs button { flex:1; min-height:56px; height:auto; padding:0; border-radius:12px; flex-direction:column; justify-content:center; gap:3px; font-size:13px; }
+    #tabs .c { order:-1; font:700 22px/1 var(--fc); opacity:1; }
+    .presets { display:none; }
+    #back { bottom:104px; right:14px; }
+    .cmd-row { gap:10px 12px; }
+    .spacer { display:none; }
+    .seg.big button { padding:0 14px; }
+    .pitch-box { max-width:260px; }
+    .hero { padding-bottom:12px; }
+  }
+  @media (max-width:980px) {
+    .home-grid, .ai-cols { grid-template-columns:1fr; }
+  }
+  @media (max-width:640px) {
+    .views-row { padding:0 14px 8px; }
+    .pk-b { grid-template-columns:auto minmax(0,1fr) 78px; gap:10px; padding:12px; }
+    .pk-m b .nm { white-space:normal; }
+    .card { padding:16px; }
+    .ai-ask { flex-basis:100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<div id="login" hidden role="dialog" aria-modal="true" aria-labelledby="loginT">
+  <form id="loginForm" autocomplete="on"><h2 id="loginT">Banko</h2><p>Devam etmek için PIN gir.</p>
+    <label class="sr" for="pin">PIN</label><input id="pin" name="password" type="password" inputmode="numeric" autocomplete="current-password" required placeholder="PIN">
+    <button class="ghost solid" type="submit">Giriş</button><p id="loginErr" role="alert"></p></form>
+</div>
+<header class="top">
+  <div class="top-in">
+    <div class="brand" aria-label="Banko">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="24" height="20" rx="3"/><path d="M14 4v20"/><circle cx="14" cy="14" r="4.5"/></svg>
+      Banko
+    </div>
+    <div class="live" id="live" aria-live="polite">Yükleniyor</div>
+    <button class="pill icon-btn" id="theme" aria-label="Temayı değiştir" title="Temayı değiştir">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <button class="pill" id="openDrawer" aria-haspopup="dialog">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      Ligler <b id="selN">0</b>
+    </button>
+  </div>
+  <div class="views-row"><div class="seg" id="views" role="group" aria-label="Sayfa"></div></div>
+  <div class="bar"><i id="prog"></i></div>
+</header>
+
+<div class="wrap">
+  <section id="notice" aria-live="polite"></section>
+  <div id="vHome" hidden></div>
+  <div id="vTrack" hidden></div>
+  <div id="vMatches">
+  <section class="hero-wrap" id="hero"></section>
+
+  <div class="cmd">
+    <div class="cmd-row">
+      <div class="seg big" id="tabs" role="group" aria-label="Pazar"></div>
+      <div class="seg" id="ranges" role="group" aria-label="Zaman aralığı"></div>
+    </div>
+    <div class="cmd-row" style="margin-top:10px">
+      <div class="thr">
+        <label for="thr">Olasılık eşiği</label>
+        <input type="range" id="thr" min="40" max="95" step="1">
+        <output id="thrOut" for="thr"></output>
+      </div>
+      <div class="presets" id="presets" role="group" aria-label="Hazır eşikler"></div>
+      <label class="check"><input type="checkbox" id="trusted"> Düşük güvenli maçları gizle</label>
+      <label class="check" title="football-charts sicil tablosunda yüksek olasılıklar gerçekte daha az tutuyor"><input type="checkbox" id="calib"> Olasılıkları gerçek isabete göre düzelt</label>
+      <span class="spacer"></span>
+      <div class="seg" id="sorts" role="group" aria-label="Sıralama"></div>
+      <button class="ghost" id="copy">Listeyi kopyala</button>
+    </div>
+  </div>
+
+  <main id="list"></main>
+  <div class="more-wrap"><button class="ghost" id="more" hidden></button></div>
+  </div>
+  <p class="err" id="errors" role="status"></p>
+
+  <footer>
+    <p>Data by football-charts.com</p>
+    <p>Olasılıklar geçmiş sonuçlara dayanan basit bir istatistik modelinden gelir. Bahis şirketi oranı değildir, sakatlık, form, motivasyon ve hava durumunu içermez. Banko burada yalnızca modelin yüksek olasılık verdiği anlamına gelir, garanti değildir. İstatistiktir, bahis tavsiyesi değildir. 18+</p>
+    <p>Veri günde bir kez güncellenir (yaklaşık 06:00 UTC). Saatler Sofia saatine göre gösterilir. Maç olasılıkları football-charts.com'dan, korner sayıları football-data.co.uk geçmiş sonuçlarından, bahisçi oranları football-data.co.uk ve Bzzoiro Sports Data'dan gelir. Olasılıklar geçmiş sonuçlarla yapılan ileri teste göre pazar bazında düzeltilir (özellikle KG var abartılı çıktığı için aşağı çekilir) ve kupona seçilen en yüksek olasılıklardan ayrıca 3 puan düşülür. Ayarlardan kapatılabilir.</p>
+  </footer>
+</div>
+
+<button class="pill" id="back" hidden>Listeye dön</button>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Ligler ve ayarlar" aria-hidden="true">
+  <div class="dr-head"><h2>Ligler ve ayarlar</h2><button class="pill icon-btn" id="closeDrawer" aria-label="Kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="dr-body">
+    <h3>Ligler</h3>
+    <input class="search" id="search" type="search" placeholder="Lig veya ülke ara" aria-label="Lig veya ülke ara">
+    <div class="quick">
+      <button data-q="all">Tümü</button><button data-q="none">Hiçbiri</button>
+      <button data-q="top1">Sadece 1. ligler</button><button data-q="big5">Büyük 5</button><button data-q="tr">Türkiye</button>
+    </div>
+    <div id="leagues"></div>
+    <h3>Veriyi yenile</h3>
+    <p class="hint" id="dataInfo">Maç verisi sunucuda saklanır ve günde iki kez kendiliğinden yenilenir. Gerekirse seçili ligleri kaynaktan şimdi çekebilirsin.</p>
+    <button class="ghost" id="refresh">Zorla yenile</button>
+    <button class="ghost" id="logout">Oturumu kapat</button>
+  </div>
+</aside>
+
+<script>
+"use strict";
+const API = "https://footballcharts-backend.onrender.com/api/v1";
+const TZ = "Europe/Sofia";
+const CACHE_MS = 6 * 60 * 60 * 1000;
+const EU = new Set(["Albania","Andorra","Armenia","Austria","Azerbaijan","Belarus","Belgium","Bosnia and Herzegovina","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark",
+  "England","Estonia","Faroe Islands","Finland","France","Georgia","Germany","Gibraltar","Greece","Hungary","Iceland","Ireland","Israel","Italy","Kazakhstan","Kosovo","Latvia",
+  "Liechtenstein","Lithuania","Luxembourg","Malta","Moldova","Montenegro","Netherlands","North Macedonia","Northern Ireland","Norway","Poland","Portugal","Romania","Russia",
+  "San Marino","Scotland","Serbia","Slovakia","Slovenia","Spain","Sweden","Switzerland","Turkey","Ukraine","Wales"]);
+const TR_COUNTRY = {"Austria":"Avusturya","Azerbaijan":"Azerbaycan","Belgium":"Belçika","Bulgaria":"Bulgaristan","Czech Republic":"Çekya","Denmark":"Danimarka","England":"İngiltere",
+  "Estonia":"Estonya","Finland":"Finlandiya","France":"Fransa","Germany":"Almanya","Greece":"Yunanistan","Netherlands":"Hollanda","Hungary":"Macaristan","Ireland":"İrlanda",
+  "Italy":"İtalya","Latvia":"Letonya","Lithuania":"Litvanya","Norway":"Norveç","Poland":"Polonya","Portugal":"Portekiz","Romania":"Romanya","Russia":"Rusya","Scotland":"İskoçya",
+  "Serbia":"Sırbistan","Slovakia":"Slovakya","Slovenia":"Slovenya","Spain":"İspanya","Sweden":"İsveç","Switzerland":"İsviçre","Turkey":"Türkiye","Ukraine":"Ukrayna","Wales":"Galler",
+  "Croatia":"Hırvatistan","Cyprus":"Kıbrıs","Iceland":"İzlanda","Israel":"İsrail","Northern Ireland":"Kuzey İrlanda","Georgia":"Gürcistan"};
+const CC = {"Austria":"AT","Azerbaijan":"AZ","Belgium":"BE","Bulgaria":"BG","Czech Republic":"CZ","Denmark":"DK","England":"ENG","Estonia":"EE","Finland":"FI","France":"FR","Germany":"DE",
+  "Greece":"GR","Netherlands":"NL","Hungary":"HU","Ireland":"IE","Italy":"IT","Latvia":"LV","Lithuania":"LT","Norway":"NO","Poland":"PL","Portugal":"PT","Romania":"RO","Russia":"RU",
+  "Scotland":"SCO","Serbia":"RS","Slovakia":"SK","Slovenia":"SI","Spain":"ES","Sweden":"SE","Switzerland":"CH","Turkey":"TR","Ukraine":"UA","Wales":"WAL","Croatia":"HR","Cyprus":"CY",
+  "Iceland":"IS","Israel":"IL","Northern Ireland":"NIR","Belarus":"BY","Georgia":"GE"};
+const BIG5 = ["premier","spain1","italy1","germany1","france1"];
+const TOP1 = ["austria1","azer","belgium1","bulgaria1","czech1","denmark1","premier","estonia","finland1","france1","germany1","greece1","holland1","hungary1","ireland1","italy1",
+  "latvia","lithuania","norway","poland1","portugal1","romania1","russia","scot-premier","serbia1","slovakia1","slovenia1","spain1","sweden1","swiss1","turkey1"];
+const EXCLUDE_KEYS = new Set(["italy19","wbelgium1","wengland1","wfrance1","wgermany1","wsweden"]);
+const EXCLUDE_NAME = /women|wsl|primavera|youth|u-?2[013]\b/i;
+const isExcluded = l => EXCLUDE_KEYS.has(l.key) || EXCLUDE_NAME.test(l.name);
+const TR_NAMES = {"Fenerbahce":"Fenerbahçe","Besiktas":"Beşiktaş","Basaksehir":"Başakşehir","Kasimpasa":"Kasımpaşa","Goztepe":"Göztepe","Eyupspor":"Eyüpspor","Corum":"Çorum","Genclerbirligi":"Gençlerbirliği"};
+const tn = s => TR_NAMES[s] || s;
+const trc = c => TR_COUNTRY[c] || c;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const pn = x => (typeof x === "number" ? Math.round(x * 100) : null);
+const pct = x => (typeof x === "number" ? Math.round(x * 100) + "%" : "-");
+
+const TABS = [
+  { id: "win", label: "Maç sonucu", thr: 62, kind: "kazanma olasılığı" },
+  { id: "o15", label: "1,5 üst",    thr: 76, kind: "2 veya daha fazla gol olasılığı" },
+  { id: "o25", label: "2,5 üst",    thr: 62, kind: "3 veya daha fazla gol olasılığı" },
+  { id: "o35", label: "3,5 üst",    thr: 40, kind: "4 veya daha fazla gol olasılığı" },
+  { id: "bt",  label: "KG var",     thr: 58, kind: "iki takımın da gol atma olasılığı" }
+];
+const RANGES = [["today","Bugün"],["tomorrow","Yarın"],["7","7 gün"],["all","Hepsi"]];
+const SORTS = [["prob","Olasılık"],["time","Saat"]];
+
+const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
+  progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, pinned: null, backY: null, keys: {},
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
+TABS.forEach(t => state.thr[t.id] = t.thr);
+
+// ---------- sunucu bağlantısı ve tercihler (Apps Script)
+// ---------- sunucu bağlantısı: PIN korumalı Apps Script API (arayüz ayrı bir yerde barınır)
+const BCFG = window.BANKO_CONFIG || {};
+const TOKEN_KEY = "banko:token";
+const tkGet = () => { try { return localStorage.getItem(TOKEN_KEY) || ""; } catch (e) { return ""; } };
+const tkSet = v => { try { v ? localStorage.setItem(TOKEN_KEY, v) : localStorage.removeItem(TOKEN_KEY); } catch (e) {} };
+async function rawCall(fn, args, token) {
+  if (!BCFG.api) throw new Error("config.js içinde api adresi yok.");
+  let r;
+  try { r = await fetch(BCFG.api, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ fn, args, token }), redirect: "follow" }); }
+  catch (e) { throw new Error("Sunucuya ulaşılamadı. İnternet bağlantını ya da config.js adresini kontrol et."); }
+  try { return await r.json(); }
+  catch (e) { throw new Error("Sunucu yanıtı okunamadı (HTTP " + r.status + "). Apps Script dağıtımı 'Herkes' erişiminde ve yeni sürüm yayınlanmış olmalı."); }
+}
+let pinPromise = null;
+function askPin() {
+  if (pinPromise) return pinPromise;
+  pinPromise = new Promise(ok => {
+    const box = document.getElementById("login"), inp = document.getElementById("pin"), err = document.getElementById("loginErr"), form = document.getElementById("loginForm");
+    box.hidden = false; err.textContent = ""; inp.value = ""; setTimeout(() => inp.focus(), 60);
+    form.onsubmit = async ev => {
+      ev.preventDefault();
+      const btn = form.querySelector("button"); btn.disabled = true; err.textContent = "";
+      try {
+        const r = await rawCall("login", [inp.value.trim()], "");
+        if (r.error) { err.textContent = r.error; inp.select(); }
+        else { tkSet(r.value.token); box.hidden = true; pinPromise = null; ok(); }
+      } catch (e) { err.textContent = e.message; }
+      btn.disabled = false;
+    };
+  });
+  return pinPromise;
+}
+async function gs(fn, ...args) {
+  for (let i = 0; i < 2; i++) {
+    const token = tkGet();
+    const j = token ? await rawCall(fn, args, token) : { error: "auth" };
+    if (j.error === "auth") { tkSet(""); await askPin(); continue; }
+    if (j.error) { const e = new Error(j.error); e.rate = !!j.rate; throw e; }
+    return j.value;
+  }
+  throw new Error("Giriş yapılamadı.");
+}
+const MEM = {};
+const PERSIST = ["banko2:ui", "banko2:sel", "banko2:theme", "banko2:ai"];
+let prefTimer = null;
+function schedulePrefs() {
+  clearTimeout(prefTimer);
+  prefTimer = setTimeout(() => {
+    const o = {}; PERSIST.forEach(k => { if (k in MEM) o[k] = MEM[k]; });
+    let t = JSON.stringify(o);
+    if (t.length > 8400) { delete o["banko2:ai"]; t = JSON.stringify(o); }
+    gs("savePrefs", t).catch(() => {});
+  }, 900);
+}
+function lsGet(k) { return k in MEM ? MEM[k] : null; }
+function lsSet(k, v) { MEM[k] = String(v); if (PERSIST.includes(k)) schedulePrefs(); }
+function lsDel(k) { delete MEM[k]; if (PERSIST.includes(k)) schedulePrefs(); }
+function saveUI() { lsSet("banko2:ui", JSON.stringify({ tab: state.tab, range: state.range, sort: state.sort, trusted: state.trusted, calib: state.calib, mktOn: state.mktOn, thr: state.thr, view: state.view, home: { n: state.home.n, style: state.home.style, hours: state.home.hours }, ai: { provider: state.ai.provider, models: state.ai.models } })); }
+function loadUI() {
+  try {
+    const u = JSON.parse(lsGet("banko2:ui") || "null");
+    if (!u) return;
+    if (TABS.some(t => t.id === u.tab)) state.tab = u.tab;
+    if (RANGES.some(r => r[0] === u.range)) state.range = u.range;
+    if (SORTS.some(s => s[0] === u.sort)) state.sort = u.sort;
+    if (typeof u.trusted === "boolean") state.trusted = u.trusted;
+    if (typeof u.calib === "boolean") state.calib = u.calib;
+    if (typeof u.mktOn === "boolean") state.mktOn = u.mktOn;
+    if (u.thr) TABS.forEach(t => { const v = +u.thr[t.id]; if (v >= 40 && v <= 95) state.thr[t.id] = v; });
+    if (u.view === "home" || u.view === "matches" || u.view === "track") state.view = u.view;
+    if (u.home) {
+      if (u.home.n >= 2 && u.home.n <= 6) state.home.n = u.home.n | 0;
+      if (["safe", "balanced", "goals"].includes(u.home.style)) state.home.style = u.home.style;
+      if ([24, 48, 72].includes(u.home.hours)) state.home.hours = u.home.hours;
+    }
+    if (u.ai) {
+      if (["gemini", "groq", "claude"].includes(u.ai.provider)) state.ai.provider = u.ai.provider;
+      if (u.ai.models) for (const k of ["gemini", "groq", "claude"]) if (typeof u.ai.models[k] === "string" && u.ai.models[k].trim()) state.ai.models[k] = u.ai.models[k].trim().slice(0, 80);
+    }
+  } catch (e) {}
+}
+
+// ---------- tema
+function applyTheme(t) { document.documentElement.dataset.theme = t; }
+(function initTheme() {
+  const saved = lsGet("banko2:theme");
+  applyTheme(saved || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+})();
+
+// ---------- veri (sunucudan)
+let renderTimer = null;
+function scheduleRender() { if (renderTimer) return; renderTimer = setTimeout(() => { renderTimer = null; render(); }, 150); }
+async function loadSelected(force) {
+  if (state.running) return;
+  const keys = [...state.sel].filter(k => force || !state.data[k]);
+  if (!keys.length) { render(); return; }
+  state.running = true; state.limitHit = false;
+  state.progress = { done: 0, total: keys.length };
+  render();
+  try {
+    for (let i = 0; i < keys.length; i += 25) {
+      const part = keys.slice(i, i + 25);
+      const res = await gs("getFixtures", part, !!force);
+      for (const k of part) {
+        if (res.data && res.data[k]) { state.data[k] = res.data[k]; delete state.errors[k]; }
+        else state.errors[k] = (res.errors && res.errors[k]) || "Veri alınamadı";
+      }
+      if (res.rate) state.limitHit = true;
+      state.progress.done += part.length; scheduleRender();
+    }
+  } catch (e) { for (const k of keys) if (!state.data[k]) state.errors[k] = e.message || String(e); }
+  state.running = false; state.progress = { done: 0, total: 0 };
+  render();
+}
+
+// ---------- takım armaları (football-charts API'sinin verdiği logolar)
+const LOGOS = {"austria1":{"SK Rapid":781,"Salzburg":571,"LASK":1026,"Sturm Graz":637,"Ried":1028,"Hartberg":1072,"Tirol":1398,"Grazer AK":4256,"Altach":618,"Austria Vienna":601,"Wolfsberger AC":1025},"austria2":{"First Vienna":4990,"Austria Vienna (Am)":2860,"Admira":1023,"Amstetten":1404,"A. Salzburg":5000,"Liefering":1400,"Floridsdorfer AC":1395,"Bregenz":8259,"St. Polten":1027,"Sturm Graz II":8251,"Hertha Wels":22213,"Kapfenberg":1401,"SK Rapid II":8247},"azer":{"Sabah Baku":13976,"Neftci Baku":2270,"Qarabag":556,"Turan Tovuz":5499,"Zira":648,"Kapaz":5490,"Shamakhi":666,"Imisli FK":5570,"Sumqayit":5503,"Gabala":627,"Araz":11238},"belgium1":{"Gent":631,"Club Brugge KV":569,"Royale Union SG":1393,"Charleroi":736,"Anderlecht":554,"Genk":742,"Westerlo":261,"St. Liege":733,"Waregem":600,"Antwerp":740,"St. Truiden":735,"RAAL La Louviere":5902,"KV Mechelen":266,"Leuven":260,"Cercle Brugge KSV":741},"bulgaria1":{"Levski Sofia":"bulgaria/bulgaria1/levski-sofia.png","CSKA Sofia":"bulgaria/bulgaria1/cska-sofia.png","Ludogorets":"bulgaria/bulgaria1/ludogorets.png","CSKA 1948 Sofia":"bulgaria/bulgaria1/cska-1948-sofia.png","Botev Plovdiv":"bulgaria/bulgaria1/botev-plovdiv.png","Arda":"bulgaria/bulgaria1/arda.png","Spartak Varna":"bulgaria/bulgaria1/spartak-varna.png","Slavia Sofia":"bulgaria/bulgaria1/slavia-sofia.png","Botev Vratsa":"bulgaria/bulgaria1/botev-vratsa.png","Lok. Sofia":"bulgaria/bulgaria1/lok-sofia.png","Lok. Plovdiv":"bulgaria/bulgaria1/lok-plovdiv.png","Septemvri Sofia":"bulgaria/bulgaria1/septemvri-sofia.png","Cherno More":"bulgaria/bulgaria1/cherno-more.png"},"cha":{"Middlesbrough":70,"Southampton":41,"Swansea":76,"West Brom":60,"Birmingham":54,"QPR":72,"Stoke":75,"Blackburn":67,"Portsmouth":1355,"Sheffield Utd":62,"Millwall":58,"Bristol City":56,"Wrexham":1837,"Charlton":1335,"Norwich":71,"Watford":38,"Derby":69,"Preston":59},"czech1":{"Slavia Prague":560,"Sparta Prague":628,"Mlada Boleslav":640,"Sigma Olomouc":2250,"Liberec":782,"Jablonec":1122,"Teplice":3720,"Plzen":567,"Bohemians":3714,"Hradec Kralove":3723,"FK Pardubice":3724,"Ostrava":3713,"Artis Brno":4257,"Slovacko":3719,"Zlin":603},"czech2":{"Jihlava":3731,"Usti nad Labem":3735,"Vlasim":3730,"Pribram":3718,"Slavia Prague B":8619,"Ostrava B":8621,"Taborsko":3726,"Opava":3717,"Zizkov":3729,"Prostejov":3725,"Kromeriz":7291},"czech3a":{"Kraluv Dvur":7312,"Motorlet Prague":7319,"Plzen B":8620,"Domazlice":7304,"Loko Praha":7315,"Slavia Prague U20":26232,"Admira Prague":7268,"Pisek":7334,"Pribram B":8617,"Bohemians 1905 B":14473,"Dukla Prague B":15132,"Aritma Prague":7269},"czech3b":{"Jablonec B":12797,"Mlada Boleslav B":12816,"Zapy":7356,"Pardubice B":14747,"Benatky n. Jiz.":7274,"Varnsdorf":3728,"Banik Most-Sous":7271,"Neratovice":7320,"Hradec Kralove B":14495,"Teplice B":12877,"Liberec B":12855,"Brozany":7349,"Velke Hamry":7372},"denmark1":{"Midtjylland":397,"FC Copenhagen":400,"Viborg":2070,"Nordsjaelland":398,"Brondby":407,"Aarhus":406,"Silkeborg":2073,"Odense":405,"Randers FC":401,"Sonderjyske":396},"denmark2":{"Hvidovre IF":2072,"Aarhus Fremad":6004,"Hobro":408,"Aalborg":402,"Kolding IF":4676,"Hillerod":6026,"Koge":2063,"Esbjerg":403},"develop21":{"Fleetwood U21":22173,"Coventry U21":20092,"Sheffield Utd U21":20086,"Cardiff U21":20016,"Bristol City U21":20080,"Swansea U21":11912,"Wigan U21":20097,"Huddersfield U21":20017,"Charlton U21":20082,"Barnsley U21":20091,"QPR U21":20085,"Peterborough U21":20018,"Sheffield Wed U21":20096,"Colchester U21":20083,"Hull U21":20084,"Millwall U21":20095},"eng1":{"Huddersfield":37,"Stockport County":4686,"Bradford City":1343,"Plymouth":1357,"Reading":53,"Mansfield":1374,"Luton":1359,"Burton":748,"Stevenage":1368,"Wycombe":1358,"Leyton Orient":1373,"AFC Wimbledon":1333,"Doncaster":1354,"Blackpool":1356,"Peterborough":1350,"Barnsley":747,"Wigan":61},"eng2":{"Salford":1844,"Barnet":1369,"Cheltenham":1372,"Crewe":1363,"Walsall":1342,"Chesterfield":1345,"Accrington":1360,"Shrewsbury":1352,"Grimsby":1365,"Gillingham":1347,"Tranmere":1381,"Swindon":1353,"Bristol Rovers":1334,"Newport":1367,"Fleetwood":1336,"Oldham":1349,"Colchester":1361,"Crawley":1362},"estonia":{"Levadia":2273,"Paide":"estonia/estonia/paide.png","Flora":687,"Kalju":"estonia/estonia/kalju.png","Tammeka":"estonia/estonia/tammeka.png","Harju JK Laagri":"estonia/estonia/harju-jk-laagri.png","Parnu JK Vaprus":"estonia/estonia/parnu-jk-vaprus.png","Kuressaare":"estonia/estonia/kuressaare.png","Narva":"estonia/estonia/narva.png"},"finland1":{"Inter Turku":1164,"HJK":649,"KuPS":1165,"AC Oulu":2077,"Gnistan":2082,"VPS":650,"Lahti":1166,"Ilves":1163,"SJK":689,"Jaro":2075,"Mariehamn":587},"france1":{"Rennes":94,"Lille":79,"Monaco":91,"Lyon":80,"PSG":85,"Paris FC":114,"Lens":116,"Marseille":81,"Lorient":97,"Nice":84,"Toulouse":96,"Auxerre":108,"Brest":106,"Angers":77,"Strasbourg":95,"Le Havre":111},"france2":{"St Etienne":1063,"Nancy":102,"Montpellier":82,"Reims":93,"Pau FC":1297,"Red Star":104,"Annecy":3012,"Dunkerque":1304,"Guingamp":90,"Rodez":1301,"Boulogne":1299,"Grenoble":101,"Clermont":99,"Laval":433},"france3":{"Rouen":3221,"Versailles":3131,"Caen":88,"Concarneau":1300,"Le Puy-en-Velay":3069,"Paris 13 Atl.":9238,"Quevilly Rouen":431,"Orleans":103,"Fleury-Merogis":3179,"Aubagne":9930,"Valenciennes":105,"Villefranche":1302,"Bourg en Bresse":430},"germany-north":{"Hannover II":9341,"Drochtersen/Assel":1623,"VfB Oldenburg":9347,"Phonix Lubeck":12831,"Schoningen":19475,"Emden":12804,"Hannoverscher SC":9339,"Werder Bremen II":1330,"Jeddeloh":1655,"St. Pauli II":9346,"Norderstedt":1631,"Hamburger SV II":9340,"Bremer":1630,"Lubeck":1625},"germany1":{"Bayern Munich":"germany/germany1/bayern-munich.png","Dortmund":"germany/germany1/dortmund.png","Freiburg":"germany/germany1/freiburg.png","Bayer Leverkusen":"germany/germany1/bayer-leverkusen.png","RB Leipzig":"germany/germany1/rb-leipzig.png","Werder Bremen":"germany/germany1/werder-bremen.png","Mainz":"germany/germany1/mainz.png","Augsburg":"germany/germany1/augsburg.png","Hoffenheim":"germany/germany1/hoffenheim.png","Hamburger SV":175,"FC Koln":"germany/germany1/fc-koln.png","Paderborn":185,"Eintracht Frankfurt":"germany/germany1/eintracht-frankfurt.png","Stuttgart":"germany/germany1/stuttgart.png","Schalke":"germany/germany1/schalke.png","Union Berlin":"germany/germany1/union-berlin.png"},"germany2":{"Hertha Berlin":159,"Nurnberg":171,"Kaiserslautern":745,"Wolfsburg":161,"Magdeburg":179,"Arminia Bielefeld":188,"Braunschweig":744,"Greuther Furth":178,"Holstein Kiel":191,"Bochum":176,"SG Dynamo Dresden":183,"Hannover":166,"Karlsruher SC":785,"Darmstadt":181},"germany3":{"Duisburg":187,"Viktoria Koln":1620,"RW Essen":1621,"Saarbrucken":1639,"Alemannia Aachen":4259,"Ingolstadt":184,"Mannheim":4268,"Hoffenheim II":9364,"Hansa Rostock":1321,"Wehen":1319,"Stuttgart II":12867,"Verl":4265,"Regensburg":177,"TSV Havelse":9342},"greece1":{"Panathinaikos":617,"Olympiacos Piraeus":553,"Aris":1123,"PAOK":619,"OFI Crete":1124,"Kifisia":5050,"Panetolikos":949,"Asteras Tripolis":955,"Volos":2110,"Levadiakos":957,"Atromitos":12260},"greece2":{"Marko":12403,"Athens Kallithea":2095,"Panionios":622,"Niki Volos":5056,"Karditsa":2094,"Ellas Syrou":22244,"Asteras Tripolis B":25017,"Chrisoupolis":12367,"PAOK B":18018,"Olympiacos Piraeus B":18017},"holland1":{"Feyenoord":209,"Ajax":194,"PSV":197,"Twente":415,"AZ Alkmaar":201,"Sittard":205,"Heerenveen":210,"Groningen":202,"G.A. Eagles":410,"Utrecht":207,"Nijmegen":413,"Excelsior":196,"Sparta Rotterdam":426,"Zwolle":193,"Telstar":427,"Willem II":195},"holland2":{"Venlo":204,"FC Emmen":208,"Almere City":419,"Roda":414,"FC Volendam":416,"Jong AZ":418,"Vitesse":200,"Maastricht":412,"Waalwijk":417,"Jong PSV":411,"Den Bosch":421,"Oss":423,"Jong Ajax":425,"De Graafschap":199,"Eindhoven FC":422,"Dordrecht":409,"Helmond":424,"Jong Utrecht":428},"holland3":{"Quick Boys":1272,"De Treffers":1277,"IJsselmeervogels":1280,"Kozakken Boys":1242,"GVVV":1261,"Hardenberg":1278,"Barendrecht":1271,"RKAV Volendam":1238,"Spakenburg":1249,"Katwijk":1237,"Jong Sparta Rotterdam":10320,"Jong Almere City":9130,"AFC":1252,"Rijnsburgse Boys":1248,"Hoek":1276,"HFC":1246},"hungary1":{"Gyor":2402,"Puskas Academy":2391,"Ferencvaros":651,"Paks":2390,"Debrecen":2392,"Ujpest":2255,"Kisvarda":2394,"MTK Budapest":2396,"Nyiregyhaza":2403,"Zalaegerszegi":2414},"hungary2":{"Soroksar":2404,"Kecskemeti TE":5111,"Ajka":4714,"Szentlorinc":5139,"Karcagi":17289,"Szeged":2418,"Kozarmisleny SE":2420,"Csakvari":2409},"ireland1":{"Bohemians":3714,"St. Patricks":3843,"Galway":3851,"Dundalk":584,"Waterford":3845,"Drogheda":3850,"Sligo Rovers":3842},"ireland2":{"Cork City":653,"UC Dublin":3844,"Bray":3847,"Kerry":11328,"Longford":3853,"Cobh Ramblers":3849,"Athlone":3846,"Wexford":3855,"Treaty United":16498,"Finn Harps":3841},"italy1":{"Inter":505,"Lazio":487,"AS Roma":497,"AC Milan":489,"Como":895,"Juventus":496,"Torino":503,"Cagliari":490,"Napoli":492,"Atalanta":499,"Lecce":867,"Bologna":500,"Sassuolo":488,"Genoa":495,"Udinese":494,"Fiorentina":502,"Parma":523},"italy2":{"Palermo":522,"Mantova":1693,"Modena":899,"Sudtirol":1578,"Juve Stabia":863,"Avellino":528,"Padova":870,"Entella":527,"Cesena":509,"Carrarese":1581,"Empoli":511,"Sampdoria":498,"Catanzaro":1687},"italy3a":{"Cittadella":510,"Trento":17147,"Brescia":26356,"Arzignano":6378,"Ospitaletto":24696,"Pergolettese":6380,"Alcione Milano":17824,"Lecco":6379,"AlbinoLeffe":879,"Lumezzane":1689,"Pro Vercelli":526,"Giana Erminio":865,"Novara":513,"Dolomiti Bellunesi":17820,"Renate":875},"italy3b":{"Ravenna":1705,"Torres":9534,"Pineto":9514,"Guidonia":882,"Livorno":868,"Perugia":524,"Campobasso":9510,"Forli":1688,"Sambenedettese":871,"Pianese":6381,"Gubbio":866,"Vis Pesaro":1708},"lithuania":{"Kauno Zalgiris":3872,"Suduva":612,"Zalgiris":586,"Banga":3858,"Dziugas Telsiai":3860,"FK Panevezys":3874,"Hegelmann":3861},"national":{"Boreham Wood":1830,"Southend":1341,"Altrincham":4700,"Yeovil":1377,"FC Halifax":1841,"Carlisle":1371,"Woking":1836,"Aldershot":1818,"Eastleigh":1822,"Sutton":1835,"Forest Green":1378,"Wealdstone":8663,"Hartlepool":1366,"Tamworth":7752,"Boston Utd":8146,"Scunthorpe":1340,"Solihull Moors":1834,"Gateshead":1823},"north":{"Hereford":4692,"Oxford City":4684,"Macclesfield":1380,"South Shields":7746,"King’s Lynn":8655,"Chester":1820,"Buxton":7706,"Bedford":7616,"Chorley":4679,"Worksop":7266,"Marine":7656,"Scarborough":7745,"Merthyr Town":7732,"Radcliffe":7740,"AFC Telford":4688,"Darlington":10157,"Southport":1826,"Spennymoor":4707},"norway":{"Viking":759,"Bodo/Glimt":327,"Molde":329,"Rosenborg":331,"Tromso":325,"Lillestrom":321,"Sarpsborg 08":333,"KFUM Oslo":2143,"Brann":319,"Valerenga":326,"Fredrikstad":2149,"HamKam":2159,"Sandefjord":332,"Aalesund":757,"Kristiansund":320,"Start":334},"poland1":{"Lech Poznan":347,"Gornik Zabrze":340,"Pogon Szczecin":348,"Legia":339,"Piast Gliwice":349,"Zaglebie":345,"GKS Katowice":3484,"Korona Kielce":346,"Jagiellonia":336,"Wisla Plock":341,"Motor Lublin":14562,"Cracovia":350,"Widzew Lodz":6962,"Radomiak Radom":4248,"Rakow":3491},"poland2":{"Grodzisk M.":14750,"Polonia Warszawa":16239,"Ruch Chorzow":6953,"Legnica":335,"LKS Lodz":3498,"Polonia Bytom":12835,"S. Rzeszow":6957,"Pogon Siedlce":6947,"Chrobry Glogow":3483,"Stal Mielec":3493,"Puszcza":3490,"Odra Opole":3488},"portugal1":{"FC Porto":212,"Sporting CP":228,"Santa Clara":227,"Arouca":240,"Gil Vicente":762,"Alverca":4724,"Braga":217,"Moreirense":215,"Famalicao":242,"Estrela":15130,"Vitoria Guimaraes":224,"Nacional":225,"Casa Pia":4716,"Estoril":230},"portugal2":{"Lusitania FC":6358,"Sporting CP B":761,"Penafiel":235,"SC Farense":231,"Benfica B":229,"Leiria":4662,"Vizela":810,"Leixoes":244,"Portimonense":216,"Chaves":223,"FC Porto B":243,"Felgueiras":4744,"Torreense":4799,"Feirense":213},"premier":{"Manchester City":"england/premier/manchester-city.png","Arsenal":"england/premier/arsenal.png","Brighton":"england/premier/brighton.png","Liverpool":"england/premier/liverpool.png","Chelsea":"england/premier/chelsea.png","Brentford":"england/premier/brentford.png","Leeds":"england/premier/leeds.png","Newcastle":"england/premier/newcastle.png","Aston Villa":"england/premier/aston-villa.png","Everton":"england/premier/everton.png","Ipswich":"england/premier/ipswich.png","Bournemouth":"england/premier/bournemouth.png","Tottenham":"england/premier/tottenham.png","Fulham":"england/premier/fulham.png","Manchester Utd":"england/premier/manchester-utd.png","Crystal Palace":"england/premier/crystal-palace.png","Nottingham":"england/premier/nottingham.png","Sunderland":"england/premier/sunderland.png"},"primera1":{"Lugo":716,"Racing Club Ferrol":9409,"Cacereno":9384,"Pontevedra":9407,"Ponferradina":4907,"Ath Bilbao B":9579,"Zamora":9418,"Real Aviles":9632,"Barakaldo":5251,"Unionistas":5281,"Arenas Getxo":9578},"primera2":{"Villarreal B":9595,"Murcia":5275,"FC Cartagena SAD":5262,"Alcorcon":711,"Gimnastic":714,"UD Ibiza":9390,"Algeciras":9597,"Hercules":4666,"Antequera":9742,"Atl. Madrid B":9570,"CE Europa":593,"Torremolinos":15359,"Teruel":5278},"romania1":{"FC Rapid Bucuresti":6231,"Univ. Craiova":632,"Petrolul":2598,"U. Cluj":2599,"FCSB":559,"Farul Constanta":2596,"UTA Arad":2589,"CFR Cluj":2246,"FC Botosani":2581,"FC Arges":2592,"Otelul":6886,"Csikszereda M. Ciuc":6230},"russia":{"CSKA Moscow":555,"Zenit":596,"Dynamo Moscow":1088,"Krasnodar":621,"Spartak Moscow":558,"FK Rostov":779,"Orenburg":1080,"Krylya Sovetov":1079,"Baltika":2006,"Akron Togliatti":6786,"Dynamo Makhachkala":6813,"Rubin Kazan":1083,"Lokomotiv Moscow":597,"Akhmat Grozny":1085},"scot-champ":{"Partick Thistle":901,"Stenhousemuir":6784,"Raith":1385,"Dunfermline":1388,"Ayr":1387,"Arbroath":4249,"Queen's Park":6778,"Morton":1383},"scot-premier":{"Celtic":247,"Rangers":257,"Hearts":254,"Dundee Utd":1386,"Dundee FC":253,"St. Mirren":251,"Falkirk":1389,"Aberdeen":252,"Motherwell":256,"Kilmarnock":250,"Hibernian":249},"scot1":{"Hamilton":248,"Montrose":4251,"Airdrieonians":4668,"Queen of South":1384,"Alloa":1391,"Peterhead":6777,"East Fife":6764,"Cove Rangers":6763},"scot2":{"Stranraer":6785,"Clyde":6762,"Elgin City":6767,"Edinburgh City":6766,"Spartans":6781,"Dumbarton":1382,"Stirling":4669,"Forfar Athletic":4250,"Annan":6757},"segunda1":{"Bergantinos":9383,"Oviedo B":9576,"Coruxo FC":9385,"Atl. Astorga":9723,"Marino de Luanco":9401,"Rayo Cantabria":9643},"segunda2":{"Ebro":5261,"Tudelano":5279,"Utebo FC":9891,"Naxara":9868,"SD Logrones":9411},"segunda3":{"Castellon B":17588,"Alcoyano":9686,"Baleares":9381,"Poblense":5273,"Valencia B":9594},"segunda4":{"Recreativo Huelva":9410,"CD Estepona":15358,"Linares":9398,"Puente Genil":9764,"Xerez CD":9770,"Antoniano":7522},"segunda5":{"San Sebastian Reyes":9412,"Conquense":5257,"Navalcarnero":5271,"RSD Alcala":9714,"Real Madrid C":22142,"Getafe B":9572},"serbia1":{"Crvena zvezda":"serbia/serbia1/crvena-zvezda.png","Vojvodina":"serbia/serbia1/vojvodina.png","IMT Novi Beograd":12316,"Radnicki 1923":"serbia/serbia1/radnicki-1923.png","Cukaricki":"serbia/serbia1/cukaricki.png","Mladost":699,"Radnik":"serbia/serbia1/radnik.png","Novi Pazar":"serbia/serbia1/novi-pazar.png","Partizan":"serbia/serbia1/partizan.png","OFK Beograd Mozzart Bet":2633,"Radnicki Nis":"serbia/serbia1/radnicki-nis.png"},"slovenia1":{"Maribor":552,"Koper":4374,"O. Ljubljana":677,"Bravo":4359,"Celje":4360,"Aluminij":4358,"Mura":4197,"Radomlje":4378},"south":{"Ebbsfleet":1840,"Salisbury":7744,"Dorking":8659,"Torquay":1827,"Dover":1829,"Chelmsford":4689,"Maidenhead":1838,"AFC Totton":7612,"Hemel Hempstead":8660,"Farnborough":7715,"Chesham":4702,"Hampton & Richmond":4680},"spain1":{"Barcelona":"spain/spain1/barcelona.png","Atl. Madrid":530,"Real Madrid":"spain/spain1/real-madrid.png","Betis":"spain/spain1/betis.png","Real Sociedad":"spain/spain1/real-sociedad.png","Sevilla":"spain/spain1/sevilla.png","Ath Bilbao":13975,"Alaves":"spain/spain1/alaves.png","Celta Vigo":"spain/spain1/celta-vigo.png","Villarreal":"spain/spain1/villarreal.png","Osasuna":"spain/spain1/osasuna.png","Levante":539,"Elche":797,"Rayo Vallecano":"spain/spain1/rayo-vallecano.png","Getafe":"spain/spain1/getafe.png","Espanyol":"spain/spain1/espanyol.png","Valencia":"spain/spain1/valencia.png"},"spain2":{"Castellon":5254,"Almeria":723,"Eibar":545,"Granada CF":715,"Gijon":731,"Burgos CF":9580,"Cordoba":713,"Las Palmas":534,"Valladolid":720,"Leganes":537,"Cadiz CF":724,"Andorra":8157,"Real Sociedad B":9585,"Ceuta":10139,"Albacete":722},"sweden1":{"Sirius":"sweden/sweden1/sirius.png","Hammarby":"sweden/sweden1/hammarby.png","Djurgarden":"sweden/sweden1/djurgarden.png","Hacken":"sweden/sweden1/hacken.png","Elfsborg":"sweden/sweden1/elfsborg.png","Malmo FF":"sweden/sweden1/malmo-ff.png","AIK":"sweden/sweden1/aik.png","Goteborg":"sweden/sweden1/goteborg.png","Brommapojkarna":"sweden/sweden1/brommapojkarna.png","GAIS":"sweden/sweden1/gais.png","Mjallby":"sweden/sweden1/mjallby.png","Degerfors":"sweden/sweden1/degerfors.png","Halmstad":"sweden/sweden1/halmstad.png"},"sweden2":{"Norrkoping":378,"Falkenberg":812,"Ostersund":376,"Varberg":2171,"Landskrona":2176,"Oddevold":11674,"Oster":2174,"Sandviken":6697,"Helsingborg":811,"Varnamo":2163,"Brage":2175,"Orebro":365,"Sundsvall":373},"swiss1":{"Lugano":606,"Young Boys":565,"Sion":630,"Zurich":783,"Servette":2184,"St. Gallen":1011,"Basel":551,"Luzern":644,"Thun":1012,"Grasshoppers":1013,"Lausanne":1014},"swiss2":{"Aarau":2177,"Etoile-Carouge":6654,"Stade Nyonnais":6646},"turkey1":{"Galatasaray":645,"Fenerbahce":611,"Trabzonspor":998,"Kasimpasa":1004,"Besiktas":549,"Kocaelispor":7411,"Goztepe":994,"Alanyaspor":996,"Basaksehir":564,"Rizespor":1007,"Konyaspor":607,"Gaziantep":3573,"Genclerbirligi":997,"Samsunspor":3603,"Eyupspor":3588},"turkey2":{"Igdir FK":17259,"Keciorengucu":3595,"Bodrumspor":3583,"Sariyer":3605,"Bandirmaspor":3584,"Umraniyespor":3577,"Sivasspor":1002,"Erokspor":7402,"Vanspor FK":6342,"Pendikspor":3601,"Manisa FK":3597,"Istanbulspor AS":3578,"Boluspor":3569}};
+const LOGO_API = "https://media.api-sports.io/football/teams/", LOGO_BE = "https://footballcharts-backend.onrender.com/static/team-logos-organized/";
+function crestUrl(lk, raw) { const v = LOGOS[lk] && LOGOS[lk][raw]; if (v === undefined) return null; return typeof v === "number" ? LOGO_API + v + ".png" : LOGO_BE + v; }
+function initials(name) { const w = String(name).replace(/[^\p{L}\p{N} ]/gu, "").split(/\s+/).filter(Boolean); return ((w[0] || "?")[0] + (w.length > 1 ? w[1][0] : "")).toUpperCase(); }
+function crest(lk, raw, shown, size) {
+  const u = crestUrl(lk, raw);
+  return `<span class="crest" style="--s:${size}px"><span class="ini">${esc(initials(shown))}</span>${u ? `<img src="${u}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="this.parentNode.classList.add('ok')" onerror="this.remove()">` : ""}</span>`;
+}
+
+// ---------- veri
+const dayKey = d => d.toLocaleDateString("sv-SE", { timeZone: TZ });
+const fmtTime = d => d.toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
+function dayInfo(d) {
+  const now = new Date(), key = dayKey(d);
+  const L = o => d.toLocaleDateString("tr-TR", Object.assign({ timeZone: TZ }, o));
+  return { key, num: L({ day: "numeric" }), month: L({ month: "long" }), wd: L({ weekday: "long" }),
+    tag: key === dayKey(now) ? "Bugün" : key === dayKey(new Date(now.getTime() + 864e5)) ? "Yarın" : "" };
+}
+function inRange(d, range) {
+  const now = new Date();
+  if (range === "all") return true;
+  if (range === "today") return dayKey(d) === dayKey(now);
+  if (range === "tomorrow") return dayKey(d) === dayKey(new Date(now.getTime() + 864e5));
+  return d.getTime() >= now.getTime() - 3 * 36e5 && d.getTime() <= now.getTime() + 7 * 864e5;
+}
+// Pazar bazında düzeltme. Kaynak: 12.995 maçlık ileri test (Dixon-Coles tipi gol modeli, 10 lig, 2022-2026), tahmin aralığı -> gerçekleşen oran.
+//  Maç sonucu: %84'e kadar gerçekle uyumlu, %92 verilen yerler %85 tuttu. 1,5 üst: düşükte az, yüksekte hafif abartılı (%92 -> %89).
+//  2,5 üst: eğri yatık (%83 verilen %76, %27 verilen %40). KG var: %72 verilen %59 tuttu (en abartılı), düşükte tersi.
+const CAL = {
+  win: [[0, 0], [0.84, 0.833], [0.919, 0.846], [1, 0.86]],
+  o15: [[0, 0.45], [0.564, 0.651], [0.659, 0.72], [0.753, 0.772], [0.842, 0.821], [0.922, 0.89], [1, 0.93]],
+  o25: [[0, 0.295], [0.267, 0.404], [0.359, 0.442], [0.453, 0.493], [0.548, 0.561], [0.643, 0.616], [0.737, 0.701], [0.83, 0.762], [1, 0.86]],
+  o35: [[0, 0.13], [0.157, 0.221], [0.251, 0.274], [0.347, 0.336], [0.443, 0.407], [0.565, 0.508], [1, 0.60]],   // 13.072 maçlık test: yüksek olasılıklar abartılı (%64 verilen %48 tuttu), düşükler az tahmin
+  bt:  [[0, 0.33], [0.275, 0.426], [0.365, 0.454], [0.455, 0.509], [0.547, 0.563], [0.643, 0.599], [1, 0.62]]
+};
+const SEL_PEN = 0.03;   // kupona seçilen en yüksek olasılıklar ileri testte seçim başına yaklaşık 3 puan abartılı çıktı
+function calP(p, mk) {
+  if (typeof p !== "number" || !state.calib) return p;
+  const pts = CAL[mk];
+  for (let i = 1; i < pts.length; i++) {
+    if (p <= pts[i][0]) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; return y0 + (y1 - y0) * (p - x0) / (x1 - x0); }
+  }
+  return pts[pts.length - 1][1];
+}
+const selP = p => (state.calib ? Math.max(0, p - SEL_PEN) : p);
+function flatten() {
+  const out = [];
+  for (const L of state.leagues) {
+    if (!state.sel.has(L.key)) continue;
+    for (const m of (state.data[L.key] || [])) {
+      let pH = m.ch, pA = m.ca, clipped = false;
+      if (typeof pH !== "number" || typeof pA !== "number") continue;
+      if ((pH <= 0.02 || pH >= 0.98 || pA <= 0.02 || pA >= 0.98) && typeof m.rh === "number" && typeof m.ra === "number") { pH = m.rh; pA = m.ra; clipped = true; }
+      const kick = new Date(m.d);
+      if (isNaN(kick)) continue;
+      const fix = (c, r) => (typeof c === "number" && (c >= 0.98 || c <= 0.02) && typeof r === "number") ? (clipped = true, r) : c;
+      const o15 = fix(m.o15, m.r15), o25 = fix(m.o25, m.r25), o35 = fix(m.o35, m.r35), bt = fix(m.bt, m.rb);
+      out.push({ id: L.key + "|" + m.h + "|" + m.a + "|" + m.d, lk: L.key, hraw: m.h, araw: m.a, league: L.name, country: L.country, home: tn(m.h), away: tn(m.a), pH: calP(pH, "win"), pA: calP(pA, "win"), pD: Math.max(0, 1 - calP(pH, "win") - calP(pA, "win")), o15: calP(o15, "o15"), o25: calP(o25, "o25"), o35: calP(o35, "o35"), bt: calP(bt, "bt"), raw: { pH, pA, o15, o25, bt }, trusted: m.tr, clipped, kick });
+    }
+  }
+  return out;
+}
+const primary = (m, tab) => tab === "win" ? Math.max(m.pH, m.pA) : tab === "o15" ? m.o15 : tab === "o25" ? m.o25 : tab === "o35" ? m.o35 : m.bt;
+const tierOf = p => p >= 0.85 ? 1 : p >= 0.75 ? 2 : p >= 0.65 ? 3 : 4;
+
+// ---------- çizim parçaları
+function pitchSVG(m) {
+  const o = p => (0.1 + 0.9 * Math.min(1, Math.max(0, p))).toFixed(2);
+  return `<svg class="pitch" viewBox="0 0 200 128" role="img" aria-label="Ev sahibi ${pct(m.pH)}, beraberlik ${pct(m.pD)}, deplasman ${pct(m.pA)}">
+    <rect class="hf" x="2" y="2" width="98" height="124" rx="6" opacity="${o(m.pH)}"/>
+    <rect class="af" x="100" y="2" width="98" height="124" rx="6" opacity="${o(m.pA)}"/>
+    <circle class="df" cx="100" cy="64" r="19" opacity="${o(m.pD)}"/>
+    <g class="ln"><rect x="2" y="2" width="196" height="124" rx="6"/><path d="M100 2v124"/><circle cx="100" cy="64" r="19"/>
+      <rect x="2" y="30" width="34" height="68"/><rect x="2" y="48" width="13" height="32"/><rect x="164" y="30" width="34" height="68"/><rect x="185" y="48" width="13" height="32"/></g>
+  </svg>
+  <div class="pitch-key"><span><i style="background:var(--home)"></i>Ev <b>${pn(m.pH)}</b></span><span><i style="background:var(--draw)"></i>Beraberlik <b>${pn(m.pD)}</b></span><span><i style="background:var(--away)"></i>Deplasman <b>${pn(m.pA)}</b></span></div>`;
+}
+
+function renderHero(top, tabDef, pinned) {
+  const el = $("hero");
+  if (!top) {
+    const pr = state.progress, thr = state.thr[state.tab];
+    const loading = state.running || !state.leagues.length;
+    if (loading) {
+      const w = pr.total ? (pr.done / pr.total * 100) : 0;
+      el.innerHTML = `<div class="hero-empty"><h2>Maçlar yükleniyor</h2>
+        ${pr.total ? `<div class="hp-t"><span>Seçili ligler çekiliyor</span><b>${pr.done} / ${pr.total}</b></div><div class="hp" role="progressbar" aria-valuemin="0" aria-valuemax="${pr.total}" aria-valuenow="${pr.done}" aria-label="Lig yükleme ilerlemesi"><i style="width:${w}%"></i></div>` : ""}
+        <p>Önceden yüklenen ligler hemen listelenir, kalanlar geldikçe eklenir.</p></div>`;
+      return;
+    }
+    const wide = state.range === "today" || state.range === "tomorrow";
+    el.innerHTML = `<div class="hero-empty"><h2>Bu eşikte maç yok</h2>
+      <p>${esc(tabDef.label)} için %${thr} eşiğinde aday kalmadı. Eşiği düşür, zaman aralığını genişlet ya da daha fazla lig seç.</p>
+      <button class="ghost solid" id="lowerThr">Eşiği 5 puan düşür</button>${wide ? '<button class="ghost" id="show7">Önümüzdeki 7 günü göster</button>' : ""}<button class="ghost" id="openFromHero">Ligleri seç</button></div>`;
+    return;
+  }
+  const t = state.tab, p = primary(top, t), fav = top.pH >= top.pA;
+  const d = dayInfo(top.kick);
+  const headline = t === "win" ? `${fav ? top.home : top.away} kazanır` : `${top.home} - ${top.away}`;
+  const sub = t === "win" ? `<b>${esc(top.home)}</b> ile <b>${esc(top.away)}</b>` : `${esc(tabDef.label)} için en yüksek olasılık`;
+  el.innerHTML = `<div class="hero ${state.introDone ? "" : "intro"}">
+    <div>
+      <p class="hero-when">${esc(d.tag ? d.tag + ", " : "")}${esc(d.wd)} ${esc(fmtTime(top.kick))}, ${esc(trc(top.country))} ${esc(top.league)}</p>
+      <h1 class="hero-pick">${esc(headline)}</h1>
+      <div class="hero-cr">${crest(top.lk, top.hraw, top.home, 52)}<span class="hv">-</span>${crest(top.lk, top.araw, top.away, 52)}</div>
+      <p class="hero-vs">${sub}</p>
+      ${pinned ? '<button class="ghost unpin" id="unpin">En yüksek olasılığa dön</button>' : ""}
+      <div class="hero-num tier${tierOf(p)}"><span class="n">${pn(p)}</span><span class="u">%</span><span class="kind">${esc(tabDef.kind)}</span></div>
+    </div>
+    <div class="pitch-box">${pitchSVG(top)}</div></div>`;
+  state.introDone = true;
+}
+
+function rowHTML(m, tab) {
+  const p = primary(m, tab), fav = m.pH >= m.pA, tier = tierOf(p);
+  const win = tab === "win";
+  const flags = [];
+  if (!m.trusted) flags.push('<span class="flag" title="Takım verisi az, model düşük güvenli">Düşük güven</span>');
+  if (m.clipped) flags.push('<span class="flag" title="Kalibre değer uç noktada kırpılmıştı, ham model olasılığı gösteriliyor">Ham değer</span>');
+  const st = (cls, id, label, v) => `<div class="stat ${cls} ${tab === id ? "on" : ""}"><span>${label}</span><b>${typeof v === "number" ? pn(v) : "-"}</b></div>`;
+  const pick = win ? (fav ? "var(--home)" : "var(--away)") : "var(--home)";
+  const isSel = state.pinned === m.id;
+  return `<li class="row tier${tier}${isSel ? " sel" : ""}" data-id="${esc(m.id)}" style="--pick:${pick}">
+    <div class="time">${esc(fmtTime(m.kick))}</div>
+    <button type="button" class="match" aria-pressed="${isSel}" aria-label="${esc(m.home)} ile ${esc(m.away)} maçını üstte göster"><span class="tm ${win ? (fav ? "fav" : "dim") : ""}">${crest(m.lk, m.hraw, m.home, 24)}${esc(m.home)}</span><span class="tm ${win ? (!fav ? "fav" : "dim") : ""}">${crest(m.lk, m.araw, m.away, 24)}${esc(m.away)}</span>${flags.length ? `<div class="flags">${flags.join("")}</div>` : ""}</button>
+    <div class="where"><span class="cc" title="${esc(trc(m.country))}">${esc(CC[m.country] || m.country.slice(0, 3).toUpperCase())}</span><span class="ln">${esc(m.league)}</span></div>
+    <div class="split" role="img" aria-label="Ev ${pct(m.pH)}, beraberlik ${pct(m.pD)}, deplasman ${pct(m.pA)}">
+      <div class="sb"><i class="h" style="flex:${m.pH}"></i><i class="d" style="flex:${m.pD}"></i><i class="a" style="flex:${m.pA}"></i></div>
+      <div class="sn"><span>${pn(m.pH)}</span><span>${pn(m.pD)}</span><span>${pn(m.pA)}</span></div></div>
+    ${st("s15", "o15", "1,5 üst", m.o15)}${st("s25", "o25", "2,5 üst", m.o25)}${st("s35", "o35", "3,5 üst", m.o35)}${st("sbt", "bt", "KG var", m.bt)}
+    <div class="prob"><div class="pv"><span class="num">${pn(p)}</span><span class="pc">%</span></div><div class="meter"><i style="width:${pn(p)}%"></i></div></div>
+  </li>`;
+}
+
+let lastShown = [];
+function renderMatches() {
+  const tab = state.tab, tabDef = TABS.find(t => t.id === tab), thr = state.thr[tab];
+  const pr = state.progress;
+
+  // filtreler
+  let base = flatten().filter(m => inRange(m.kick, state.range));
+  if (state.trusted) base = base.filter(m => m.trusted);
+  const countFor = t => base.filter(m => primary(m, t.id) * 100 >= state.thr[t.id]).length;
+  $("tabs").innerHTML = TABS.map(t => `<button type="button" data-t="${t.id}" aria-pressed="${t.id === tab}">${esc(t.label)}<span class="c">${countFor(t)}</span></button>`).join("");
+  $("ranges").innerHTML = RANGES.map(r => `<button type="button" data-r="${r[0]}" aria-pressed="${r[0] === state.range}">${r[1]}</button>`).join("");
+  $("sorts").innerHTML = SORTS.map(s => `<button type="button" data-s="${s[0]}" aria-pressed="${s[0] === state.sort}">${s[1]}</button>`).join("");
+  const thrEl = $("thr"); thrEl.value = thr; thrEl.style.setProperty("--fill", ((thr - 40) / 55 * 100) + "%");
+  $("thrOut").textContent = thr + "%";
+  $("presets").innerHTML = [60, 65, 70, 75, 80].map(v => `<button type="button" data-p="${v}" aria-pressed="${v === thr}">${v}</button>`).join("");
+  $("trusted").checked = state.trusted;
+
+  const byProb = base.filter(m => primary(m, tab) * 100 >= thr).sort((a, b) => primary(b, tab) - primary(a, tab));
+  const pinnedM = state.pinned ? base.find(m => m.id === state.pinned) : null;
+  renderHero(pinnedM || byProb[0], tabDef, !!pinnedM);
+
+  const picked = byProb.slice(0, state.limit);
+  picked.sort((a, b) => {
+    const da = dayKey(a.kick), db = dayKey(b.kick);
+    if (da !== db) return da < db ? -1 : 1;
+    return state.sort === "time" ? a.kick - b.kick : primary(b, tab) - primary(a, tab);
+  });
+  lastShown = picked.map(m => ({ m, tab }));
+
+  const list = $("list");
+  if (!picked.length) {
+    const loading = state.running && !base.length;
+    list.innerHTML = loading ? `<ul class="sheet" style="margin-top:20px">${'<li class="skel"></li>'.repeat(6)}</ul>` : "";
+  } else {
+    let html = "", cur = null;
+    for (const m of picked) {
+      const di = dayInfo(m.kick);
+      if (di.key !== cur) {
+        if (cur !== null) html += "</ul>";
+        cur = di.key;
+        html += `<h2 class="day"><span class="dn">${esc(di.num)}</span><span class="dm">${esc(di.month)}, ${esc(di.wd)}</span>${di.tag ? `<span class="dt">${di.tag}</span>` : ""}</h2><ul class="sheet">`;
+      }
+      html += rowHTML(m, tab);
+    }
+    list.innerHTML = html + "</ul>";
+  }
+  const more = $("more");
+  more.hidden = byProb.length <= state.limit;
+  more.textContent = "Daha fazla göster (" + (byProb.length - state.limit) + " maç)";
+
+  const loaded = Object.keys(state.data).filter(k => state.sel.has(k)).length;
+  return pr.total ? `Yükleniyor ${pr.done} / ${pr.total}` : `${loaded} lig, ${base.length} maç, ${byProb.length} aday. Saatler Sofia saatiyle.`;
+}
+
+function applyView() {
+  $("vHome").hidden = state.view !== "home";
+  $("vTrack").hidden = state.view !== "track";
+  $("vMatches").hidden = state.view !== "matches";
+  document.body.dataset.view = state.view;
+}
+function chromeTop() {
+  if ($("calib")) $("calib").checked = state.calib;
+  if ($("calibH")) $("calibH").checked = state.calib;
+  if ($("mktH")) $("mktH").checked = state.mktOn;
+  $("selN").textContent = state.sel.size;
+  const pr = state.progress;
+  $("prog").style.width = pr.total ? (pr.done / pr.total * 100) + "%" : "0";
+  $("views").innerHTML = [["home", "Anasayfa"], ["matches", "Maçlar"], ["track", "Takip"]].map(v => `<button type="button" data-v="${v[0]}" aria-pressed="${state.view === v[0]}">${v[1]}</button>`).join("");
+}
+function chromeBottom(liveText) {
+  $("live").textContent = liveText;
+  const errs = Object.entries(state.errors).filter(([k]) => state.sel.has(k)).map(([k, e]) => { const L = state.leagues.find(l => l.key === k); return (L ? L.name : k) + " (" + e + ")"; });
+  const nt = $("notice");
+  if (state.limitHit) {
+    const failed = Object.keys(state.errors).filter(k => state.sel.has(k)).map(k => (state.leagues.find(l => l.key === k) || { name: k }).name);
+    nt.innerHTML = `<div class="notice"><h2>İstek limiti doldu</h2><p>Veri kaynağı bu sunucudan gelen istekleri şu an kabul etmiyor. Script özelliklerine ücretsiz FC_API_KEY anahtarını eklersen limit sana özel olur (günlük 200 istek). Anahtarsız istekler ortak bir sınırı paylaşır. Önbellekteki ligler listelenmeye devam eder.</p>${failed.length ? `<p class="nt-list">${failed.length} lig yüklenemedi: ${esc(failed.slice(0, 3).join(", "))}${failed.length > 3 ? " ve diğerleri" : ""}.</p>` : ""}<div class="nt-actions"><button class="ghost" id="dismissNotice">Yüklenen ligleri göster</button></div></div>`;
+  } else nt.innerHTML = "";
+  $("errors").textContent = state.limitHit ? "" : errs.length ? errs.length + " lig yüklenemedi: " + errs.slice(0, 5).join(", ") + (errs.length > 5 ? " ve diğerleri" : "") + ". Zorla yenile ile tekrar deneyebilirsin." : "";
+}
+function render() {
+  applyView(); chromeTop();
+  const live = state.view === "home" ? renderHome() : state.view === "track" ? renderTrack() : renderMatches();
+  chromeBottom(live);
+  saveUI();
+}
+
+// ---------- anasayfa: günün kuponu, öneriler, yapay zeka
+const STYLES = {
+  safe:     { label: "Güvenli", markets: ["win", "o15"], min: 0.70 },
+  balanced: { label: "Dengeli", markets: ["win", "o15", "o25", "bt"], min: 0.62 },
+  goals:    { label: "Gollü",   markets: ["o25", "bt"], min: 0.58 }
+};
+const MK = { win: "Maç sonucu", o15: "1,5 üst", o25: "2,5 üst", o35: "3,5 üst", bt: "KG var" };
+const HOURS = [24, 48, 72];
+const AI_DEFAULT_MODEL = { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" };
+const AI_NAMES = { gemini: "Gemini", groq: "Groq", claude: "Claude" };
+
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function homePool() {
+  const now = Date.now(), end = now + state.home.hours * 36e5;
+  const all = flatten().filter(m => m.kick.getTime() >= now && m.kick.getTime() <= end);
+  const base = all.filter(m => m.trusted);
+  return { base, lowConf: all.length - base.length };
+}
+const maxP = m => Math.max(primary(m, "win"), m.o15 || 0, m.o25 || 0, m.bt || 0);
+function bestPick(m, markets) {
+  let best = null;
+  for (const k of markets) { const p = primary(m, k); if (typeof p !== "number") continue; if (!best || p > best.p + 1e-9) best = { market: k, p }; }
+  if (best && best.market === "win") best.side = m.pH >= m.pA ? "home" : "away";
+  return best;
+}
+const pickLabel = (m, pk) => pk.market === "win" ? (pk.side === "away" ? m.away : m.home) + " kazanır" : MK[pk.market];
+function buildCoupon(pool, style, n, seed) {
+  const S = STYLES[style];
+  // her maç için izinli pazarlardaki seçenekler (eşiğin üstünde), en yüksek olasılık önde
+  let cands = pool.map(m => ({
+    m, opts: S.markets.map(k => { const p = primary(m, k); if (typeof p !== "number" || p < S.min) return null; const o = { market: k, p }; if (k === "win") o.side = m.pH >= m.pA ? "home" : "away"; return mktOK(m, k, o.side, S.min) ? o : null; }).filter(Boolean).sort((a, b) => b.p - a.p)
+  })).filter(x => x.opts.length).sort((a, b) => b.opts[0].p - a.opts[0].p);
+  if (seed > 0) {
+    const rnd = mulberry32(seed), k = Math.max(n * 3, n + 3);
+    const head = cands.slice(0, k).map(x => ({ x, w: x.opts[0].p * (0.8 + 0.4 * rnd()) })).sort((a, b) => b.w - a.w).map(o => o.x);
+    cands = head.concat(cands.slice(k));
+  }
+  const out = [], perLeague = {}, perMarket = {}, cap = Math.ceil(n / 2);
+  for (const c of cands) {
+    if (out.length >= n) break;
+    const key = c.m.country + "|" + c.m.league;
+    if ((perLeague[key] || 0) >= 2) continue;
+    const pk = c.opts.find(o => (perMarket[o.market] || 0) < cap);
+    if (!pk) continue;
+    perLeague[key] = (perLeague[key] || 0) + 1; perMarket[pk.market] = (perMarket[pk.market] || 0) + 1;
+    out.push({ m: c.m, pk: { ...pk, p: selP(pk.p) } });
+  }
+  // yeterli çeşit yoksa kalan yerleri pazar sınırı olmadan en yüksek olasılıkla doldur
+  if (out.length < n) {
+    for (const c of cands) {
+      if (out.length >= n) break;
+      if (out.some(o => o.m.id === c.m.id)) continue;
+      const key = c.m.country + "|" + c.m.league;
+      if ((perLeague[key] || 0) >= 2) continue;
+      perLeague[key] = (perLeague[key] || 0) + 1;
+      out.push({ m: c.m, pk: { ...c.opts[0], p: selP(c.opts[0].p) } });
+    }
+  }
+  out.sort((a, b) => a.m.kick - b.m.kick);
+  return { picks: out, comb: out.reduce((a, c) => a * c.pk.p, 1), short: out.length < n };
+}
+function pickRow(m, pk, note) {
+  const di = dayInfo(m.kick), tier = tierOf(pk.p);
+  return `<li class="pk tier${tier}"><button type="button" class="pk-b" data-open="${esc(m.id)}" data-tab="${pk.market}" aria-label="${esc(m.home)} ile ${esc(m.away)} maçını aç">
+    <span class="pk-t">${esc(fmtTime(m.kick))}<small>${esc(di.tag || di.num + " " + di.month.slice(0, 3))}</small></span>
+    <span class="pk-m"><b>${crest(m.lk, m.hraw, m.home, 22)}${crest(m.lk, m.araw, m.away, 22)}<span class="nm">${esc(m.home)} - ${esc(m.away)}</span></b><span class="pk-l">${esc(pickLabel(m, pk))}</span>${pickChips(m, pk)}${note ? `<span class="pk-n">${esc(note)}</span>` : ""}</span>
+    <span class="pk-p"><span class="pv"><b>${pn(pk.p)}</b>%</span><span class="meter"><i style="width:${pn(pk.p)}%"></i></span>${(() => { const od = pickOdds(m, pk); return od ? `<span class="pk-o">${od.src} ${fo(od.v)}</span>` : ""; })()}</span></button></li>`;
+}
+function combOdds(picks) {
+  if (!picks.length || !state.mkt.res) return null;
+  let t = 1;
+  for (const c of picks) { const o = pickOdds(c.m, c.pk); if (o === null) return null; t *= o.v; }
+  return t;
+}
+function combHTML(picks, comb, big) {
+  const co = combOdds(picks);
+  const avg = picks.length ? Math.round(picks.reduce((a, p) => a + p.pk.p, 0) / picks.length * 100) : 0;
+  const once = comb > 0 ? Math.max(1, Math.round(1 / comb)) : 0;
+  return `<div class="comb"><div class="comb-n">${pn(comb)}<small>%</small></div>
+    <p><b>${picks.length} seçimin hepsi birlikte</b> tutarsa. Her seçim bağımsız kabul edilerek çarpıldı, yaklaşık <b>${once} kuponda 1</b>. Tek tek ortalama %${avg} olsa da birlikte olasılık hızla düşer. ${co ? ` Tüm seçimlerin ortalama oranları çarpılınca kupon oranı yaklaşık <b>${fo(co)}</b> (Bet365, yoksa ortalama oranlarla, bahisçi marjı dahil).` : ""} Model bahis şirketlerini geçmez, bahis tavsiyesi değildir.</p></div>`;
+}
+function suggestions(base, lowConf) {
+  const out = [];
+  const fav = base.slice().sort((a, b) => primary(b, "win") - primary(a, "win"))[0];
+  if (fav) out.push({ id: fav.id, tab: "win", t: "En güçlü favori", m: (fav.pH >= fav.pA ? fav.home : fav.away) + " kazanır", d: `${fav.home} - ${fav.away}, %${pn(primary(fav, "win"))}.` + (pickNote(fav, { market: "win", side: fav.pH >= fav.pA ? "home" : "away" }) ? " " + pickNote(fav, { market: "win", side: fav.pH >= fav.pA ? "home" : "away" }) + "." : "") });
+  const gol = base.slice().sort((a, b) => b.o25 - a.o25)[0];
+  if (gol) out.push({ id: gol.id, tab: "o25", t: "En gollü maç", m: `${gol.home} - ${gol.away}`, d: `2,5 üst %${pn(gol.o25)}, 3,5 üst %${pn(gol.o35)}, 1,5 üst %${pn(gol.o15)}, KG var %${pn(gol.bt)}` });
+  const bal = base.filter(m => Math.max(m.pH, m.pA) >= 0.3).sort((a, b) => Math.abs(a.pH - a.pA) - Math.abs(b.pH - b.pA))[0];
+  if (bal) out.push({ id: bal.id, tab: "win", t: "En dengeli maç", m: `${bal.home} - ${bal.away}`, d: `Ev %${pn(bal.pH)}, beraberlik %${pn(bal.pD)}, deplasman %${pn(bal.pA)}. Sonucu tahmin etmek zor.` });
+  if (lowConf) out.push({ id: null, t: "Kupona alınmayanlar", m: `${lowConf} maçta model güveni düşük`, d: "Takım verisi az olduğu için bu maçlar kupona ve önerilere girmiyor." });
+  return out;
+}
+
+function buildHome() {
+  if (state.homeBuilt) return;
+  state.homeBuilt = true;
+  $("vHome").innerHTML = `<div class="home">
+    <div class="home-top"><h1 id="hTitle"></h1><p id="hSub"></p><div class="sett"><label class="check" title="football-charts sicil tablosunda yüksek olasılıklar gerçekte daha az tutuyor"><input type="checkbox" id="calibH"> Olasılıkları gerçek isabete göre düzelt</label><label class="check" title="Bahisçi oranları yaklaşık 12.995 maçlık testte modelden daha iyi çıktı. Kupona giren maç sonucu ve 2,5 üst seçimlerinde piyasa da aynı yönde değilse seçim elenir. Piyasa verisi olmayan maçlar elenmez."><input type="checkbox" id="mktH"> Piyasa onayı iste (veri varsa)</label></div></div>
+    <div class="home-grid">
+      <section class="card" aria-labelledby="cpT"><div class="card-h"><h2 id="cpT">Günün kuponu</h2></div><div class="cp-ctl" id="cpCtl"></div><div id="cpBody"></div></section>
+      <section class="card" aria-labelledby="sgT"><h2 id="sgT">Günün önerileri</h2><div class="sg" id="sgBody"></div></section>
+    </div>
+    <section class="card" style="margin-top:20px" aria-labelledby="crT">
+      <div class="card-h"><h2 id="crT">Korner köşesi</h2><span class="muted">geçmiş sayılara dayanır, model değil</span></div>
+      <div class="sg" id="crBody"></div><p class="tk-note" id="crNote"></p>
+    </section>
+    <section class="card ai" aria-labelledby="aiT">
+      <div class="card-h"><h2 id="aiT">Yapay zeka köşesi</h2><span class="muted" id="aiMeta"></span></div>
+      <div id="aiBody" aria-live="polite"></div>
+      <div class="ai-actions">
+        <button type="button" class="ghost solid" id="aiRun">Günün yorumunu hazırla</button>
+        <form class="ai-ask" id="aiForm"><label class="sr" for="aiQ">Yapay zekaya sor</label><input id="aiQ" type="text" maxlength="300" placeholder="Örnek: düşük riskli 3 maçlık kupon yap"><button class="ghost" id="aiAsk" type="submit">Sor</button></form>
+      </div>
+      <details class="ai-set" id="aiSet"><summary>Yapay zeka ayarları</summary>
+        <div class="row2"><label for="aiProv" class="muted">Sağlayıcı</label><select id="aiProv"><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="claude">Claude</option></select>
+          <label for="aiModel" class="muted">Model</label><input id="aiModel" type="text" autocomplete="off"></div>
+        <p class="hint" id="aiKeyState"></p>
+        <p class="hint">Maç listesi (takımlar ve olasılıklar) seçtiğin sağlayıcıya gönderilir. Anahtarlar Script özelliklerinde saklanır (GEMINI_API_KEY, GROQ_API_KEY, ANTHROPIC_API_KEY), bu sayfada görünmez. Seçtiğin sağlayıcı hata verirse anahtarı tanımlı diğerlerine sırayla geçilir. Model adı sağlayıcıda değiştiyse buradan güncelle.</p>
+      </details>
+    </section></div>`;
+  $("aiProv").value = state.ai.provider;
+  $("aiModel").value = state.ai.models[state.ai.provider];
+  $("aiProv").addEventListener("change", e => { state.ai.provider = e.target.value; $("aiModel").value = state.ai.models[state.ai.provider]; saveUI(); renderAI(); });
+  $("aiModel").addEventListener("change", e => { state.ai.models[state.ai.provider] = e.target.value.trim() || AI_DEFAULT_MODEL[state.ai.provider]; saveUI(); });
+  $("aiRun").addEventListener("click", () => runAI("daily"));
+  $("aiForm").addEventListener("submit", e => { e.preventDefault(); const q = $("aiQ").value.trim(); if (q) runAI("ask", q); });
+  $("vHome").addEventListener("click", homeClick);
+  $("calibH").addEventListener("change", onCalib);
+  $("mktH").addEventListener("change", e => { state.mktOn = e.target.checked; state.home.seed = 0; render(); });
+}
+
+function renderHome() {
+  buildHome();
+  const H = state.home, di = dayInfo(new Date());
+  const { base, lowConf } = homePool();
+  const pr = state.progress;
+  $("hTitle").textContent = `${di.wd}, ${di.num} ${di.month}`;
+  $("hSub").textContent = pr.total ? `Maçlar yükleniyor, ${pr.done} / ${pr.total} lig.` : `Önümüzdeki ${H.hours} saatte ${base.length + lowConf} maç var, ${base.length} tanesi güvenilir veriyle. Saatler Sofia saatiyle.`;
+
+  $("cpCtl").innerHTML = `<div class="step" role="group" aria-label="Maç sayısı"><button type="button" data-n="-1" aria-label="Bir maç azalt">−</button><output>${H.n} maç</output><button type="button" data-n="1" aria-label="Bir maç artır">+</button></div>
+    <div class="seg" role="group" aria-label="Kupon tarzı">${Object.keys(STYLES).map(k => `<button type="button" data-style="${k}" aria-pressed="${H.style === k}">${STYLES[k].label}</button>`).join("")}</div>
+    <div class="seg" role="group" aria-label="Süre">${HOURS.map(h => `<button type="button" data-hours="${h}" aria-pressed="${H.hours === h}">${h} saat</button>`).join("")}</div>
+    <button type="button" class="ghost" id="cpNew">Farklı kupon</button>`;
+
+  const cp = buildCoupon(base, H.style, H.n, H.seed);
+  state.lastCoupon = cp;
+  const loading = state.running && !base.length;
+  $("cpBody").innerHTML = cp.picks.length
+    ? `${cp.short ? `<p class="muted">İstenen ${H.n} yerine ${cp.picks.length} seçim bulundu. Dengeli tarzı ya da daha uzun süreyi deneyebilirsin.</p>` : ""}<ol class="picks">${cp.picks.map(c => pickRow(c.m, c.pk)).join("")}</ol>${combHTML(cp.picks, cp.comb)}<div class="cp-act"><button type="button" class="ghost" id="cpCopy">Kuponu kopyala</button><button type="button" class="ghost" id="cpSave">Takibe al</button></div>`
+    : `<p class="ai-empty">${loading ? "Maçlar yükleniyor, kupon hazır olunca burada görünür." : `Bu ayarlarda yeterli aday maç yok. ${H.style === "safe" ? "Dengeli tarzı" : "Daha uzun süreyi"} deneyebilirsin.`}</p>`;
+
+  $("sgBody").innerHTML = suggestions(base, lowConf).map(s => s.id
+    ? `<button type="button" class="sg-c" data-open="${esc(s.id)}" data-tab="${s.tab}"><span class="sg-t">${esc(s.t)}</span><span class="sg-m">${esc(s.m)}</span><span class="sg-d">${esc(s.d)}</span></button>`
+    : `<div class="sg-c"><span class="sg-t">${esc(s.t)}</span><span class="sg-m">${esc(s.m)}</span><span class="sg-d">${esc(s.d)}</span></div>`).join("");
+  renderAI();
+  renderCorners(base);
+  ensureElo(base);
+  ensureMkt(base);
+  const loaded = Object.keys(state.data).filter(k => state.sel.has(k)).length;
+  return pr.total ? `Yükleniyor ${pr.done} / ${pr.total}` : `${loaded} lig, ${base.length} maç, ${H.hours} saat. Saatler Sofia saatiyle.`;
+}
+
+// ---------- piyasa oranları (football-data.co.uk fixtures.csv): ileri testte modelden daha iyi çıktı
+function ensureMkt(base) {
+  const E = state.mkt, pool = base.slice().sort((a, b) => a.kick - b.kick).slice(0, 120);
+  const sig = pool.map(m => m.id).join(",");
+  if (!sig || sig === E.sig || E.status === "loading" || state.running) return;
+  E.sig = sig; E.status = "loading";
+  gs("getMarket", pool.map(m => ({ id: m.id, lk: m.lk, h: m.hraw, a: m.araw, d: m.kick.toISOString() })))
+    .then(r => { E.res = (r && r.res) || {}; E.status = "done"; })
+    .catch(() => { E.status = "error"; })
+    .finally(() => { if (state.view === "home") render(); });
+}
+function mktProb(m, k, side) {
+  const r = state.mkt.res[m.id];
+  if (!r) return null;
+  if (k === "win") return typeof r.h === "number" ? (side === "away" ? r.a : r.h) : null;
+  const v = k === "o25" ? r.o : k === "o15" ? r.p15 : k === "o35" ? r.p35 : k === "bt" ? r.pb : null;
+  return typeof v === "number" ? v : null;
+}
+function mktOK(m, k, side, thr) {
+  if (!state.mktOn) return true;
+  const p = mktProb(m, k, side);
+  if (p === null) return true;            // veri yoksa elemez, kartta not düşülür
+  if (k === "win") { const r = state.mkt.res[m.id]; if ((r.h >= r.a ? "home" : "away") !== side) return false; }
+  return p >= thr - 0.03;
+}
+const fo = x => (typeof x === "number" ? x.toFixed(2).replace(".", ",") : "");
+// Oranlar: Bet365 varsa o, yoksa bahisçi ortalaması. En yüksek oran ayrıca not edilir.
+function pickOdds(m, pk) {
+  const r = state.mkt.res[m.id];
+  if (!r) return null;
+  const ok0 = v => typeof v === "number" && v > 1;
+  if (pk.market === "o15" || pk.market === "o35" || pk.market === "bt") {
+    const v = pk.market === "o15" ? r.x15 : pk.market === "o35" ? r.x35 : r.xb;
+    return ok0(v) ? { v, src: "Kons.", max: null } : null;
+  }
+  const away = pk.side === "away", w = pk.market === "win";
+  const avg = w ? (away ? r.oa : r.oh) : r.oo, b = w ? (away ? r.ba : r.bh) : r.bo, mx = w ? (away ? r.xa : r.xh) : r.xo;
+  const ok = v => typeof v === "number" && v > 1;
+  if (ok(b)) return { v: b, src: "Bet365", max: ok(mx) ? mx : null };
+  if (ok(avg)) return { v: avg, src: "Ort.", max: ok(mx) ? mx : null };
+  return null;
+}
+function marketInfo(m, pk) {
+  const p = mktProb(m, pk.market, pk.side);
+  if (p === null) return state.mkt.status === "done" ? { tag: "Piyasa verisi yok", cls: "na", detail: "" } : null;
+  const mod = pk.market === "win" ? (pk.side === "away" ? m.pA : m.pH) : pk.market === "o15" ? m.o15 : pk.market === "o35" ? m.o35 : pk.market === "bt" ? m.bt : m.o25, d = mod - p, ad = Math.abs(d);
+  return { tag: ad <= 0.05 ? "Piyasa uyumlu" : ad > 0.15 ? "Piyasa ayrışıyor" : d > 0 ? "Model daha olumlu" : "Piyasa daha olumlu", cls: ad <= 0.05 ? "ok" : ad > 0.15 ? "bad" : "warn", detail: `model %${pn(mod)}, piyasa %${pn(p)}`, mod, p };
+}
+function marketNote(m, pk) {
+  const mi = marketInfo(m, pk);
+  if (!mi) return "";
+  if (mi.cls === "na") return mi.tag;
+  const mod = mi.mod, p = mi.p, tag = mi.tag === "Piyasa uyumlu" ? "Piyasa ile uyumlu" : mi.tag === "Model daha olumlu" ? "Model piyasadan daha olumlu" : mi.tag;
+  const od = pickOdds(m, pk);
+  return `${od ? `${od.src === "Bet365" ? "Bet365" : od.src === "Kons." ? "Ortalama (konsensüs)" : "Ortalama"} oran ${fo(od.v)}${od.max && od.max > od.v ? ", en yüksek " + fo(od.max) : ""}. ` : ""}${tag} (model %${pn(mod)}, piyasa %${pn(p)})`;
+}
+const pickNote = (m, pk) => [marketNote(m, pk), eloNote(m, pk)].filter(Boolean).join(". ");
+
+// ---------- Elo karşılaştırması (ClubElo): ikinci bir bağımsız görüş
+function ensureElo(base) {
+  const E = state.elo, pool = base.slice().sort((a, b) => a.kick - b.kick).slice(0, 80);
+  const sig = pool.map(m => m.id).join(",");
+  if (!sig || sig === E.sig || E.status === "loading" || state.running) return;
+  E.sig = sig; E.status = "loading";
+  gs("getElo", pool.map(m => ({ id: m.id, h: m.hraw, a: m.araw })))
+    .then(r => { E.res = (r && r.res) || {}; E.status = "done"; })
+    .catch(() => { E.status = "error"; })
+    .finally(() => { if (state.view === "home") render(); });
+}
+function eloInfo(m, pk) {
+  const r = state.elo.res[m.id];
+  if (pk.market !== "win" || !r || typeof r.e !== "number") return null;
+  const away = pk.side === "away";
+  const elo = away ? 1 - r.e : r.e, mod = away ? 1 - (m.pH + 0.5 * m.pD) : m.pH + 0.5 * m.pD, d = elo - mod;
+  const tag = Math.abs(d) <= 0.07 ? "Elo ile uyumlu" : d < -0.15 ? "Elo ayrışıyor" : d < 0 ? "Elo biraz temkinli" : "Elo daha olumlu";
+  return { tag, cls: Math.abs(d) <= 0.07 || d > 0 ? "ok" : d < -0.15 ? "bad" : "warn", detail: `beklenen puan: model %${pn(mod)}, Elo %${pn(elo)}`, mod, elo };
+}
+function eloNote(m, pk) {
+  const e = eloInfo(m, pk);
+  return e ? `${e.tag}. Beklenen puan: model %${pn(e.mod)}, Elo %${pn(e.elo)}` : "";
+}
+// Seçim satırındaki küçük etiketler: ayrıntı fare ile üstüne gelince görünür
+function pickChips(m, pk) {
+  const mi = marketInfo(m, pk), ei = eloInfo(m, pk), out = [];
+  if (mi) out.push(`<span class="chip2 ${mi.cls}" title="${esc(mi.detail)}">${esc(mi.tag)}${mi.cls !== "na" ? `<small>${pn(mi.mod)} / ${pn(mi.p)}</small>` : ""}</span>`);
+  if (ei) out.push(`<span class="chip2 ${ei.cls}" title="${esc(ei.detail)}">${esc(ei.tag.replace("Elo ile uyumlu", "Elo uyumlu"))}</span>`);
+  return out.length ? `<span class="chips2">${out.join("")}</span>` : "";
+}
+
+// ---------- korner köşesi (football-data.co.uk geçmiş korner sayıları)
+const CORNER_LEAGUES = new Set(["premier", "cha", "eng1", "eng2", "national", "scot-premier", "scot-champ", "scot1", "scot2", "germany1", "germany2", "italy1", "italy2", "spain1", "spain2", "france1", "france2", "holland1", "belgium1", "portugal1", "turkey1", "greece1"]);
+const dc = x => String(x).replace(".", ",");
+function renderCorners(base) {
+  const C = state.corners, body = $("crBody"), note = $("crNote");
+  if (!body) return;
+  const pool = base.filter(m => CORNER_LEAGUES.has(m.lk)).sort((a, b) => a.kick - b.kick).slice(0, 60);
+  const sig = pool.map(m => m.id).join(",");
+  if (sig && sig !== C.sig && C.status !== "loading" && !state.running) {
+    C.sig = sig; C.status = "loading";
+    gs("getCorners", pool.map(m => ({ id: m.id, lk: m.lk, h: m.hraw, a: m.araw })))
+      .then(r => { C.res = (r && r.res) || {}; C.status = "done"; })
+      .catch(e => { C.status = "error"; C.err = String(e.message || e); })
+      .finally(() => { if (state.view === "home") renderCorners(homePool().base); });
+  }
+  if (!pool.length) { body.innerHTML = `<p class="ai-empty">${state.running ? "Maçlar yükleniyor." : "Bu aralıkta korner verisi olan lig maçı yok."}</p>`; note.textContent = ""; return; }
+  if (C.status === "error") { body.innerHTML = `<p class="ai-empty">Korner verisi alınamadı: ${esc(C.err)}</p>`; note.textContent = ""; return; }
+  if (C.status !== "done") { body.innerHTML = `<p class="ai-empty">Korner verisi yükleniyor.</p>`; note.textContent = ""; return; }
+  const ok = pool.filter(m => C.res[m.id] && typeof C.res[m.id].e === "number").sort((a, b) => C.res[b.id].p95 - C.res[a.id].p95 || C.res[b.id].e - C.res[a.id].e);
+  body.innerHTML = ok.length ? ok.slice(0, 5).map(m => { const r = C.res[m.id], di = dayInfo(m.kick); return `<button type="button" class="sg-c" data-open="${esc(m.id)}" data-tab="win"><span class="sg-t">${dc(r.e)} korner</span><span class="sg-m">${esc(m.home)} - ${esc(m.away)}</span><span class="sg-d">9,5 üst %${pn(r.p95)}, 8,5 üst %${pn(r.p85)}, 10,5 üst %${pn(r.p105)}. ${esc(di.tag || di.num + " " + di.month.slice(0, 3))} ${esc(fmtTime(m.kick))}, son ${r.n[0]} ev ve ${r.n[1]} deplasman maçı.</span></button>`; }).join("") : `<p class="ai-empty">Bu maçlar için yeterli korner verisi bulunamadı.</p>`;
+  const miss = pool.length - ok.length;
+  note.textContent = `İki takımın son maçlarındaki (ev sahibi evinde, deplasman takımı dışarıda, en fazla 15 maç) korner geçmişinden hesaplanır ve ileri test sonucuna göre lig ortalamasına doğru çekilir: takımların korner geçmişi zayıf bir sinyal, ham oranlar abartılı çıkıyor. Rakip gücü, sakatlık ve hava durumu hesaba katılmaz, bu yüzden değerler birbirine yakın çıkar.${miss ? ` ${miss} maçta takım eşleşmediği ya da veri az olduğu için korner gösterilmedi.` : ""}`;
+}
+
+function openMatch(id, tab) {
+  state.view = "matches";
+  if (TABS.some(t => t.id === tab)) state.tab = tab;
+  if (state.range === "today" || state.range === "tomorrow") state.range = "7";
+  state.pinned = id; state.backY = null; state.introDone = false; state.limit = 30;
+  render();
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+function couponText(picks, comb, title) {
+  return [title, ...picks.map(c => `${dayInfo(c.m.kick).num} ${dayInfo(c.m.kick).month} ${fmtTime(c.m.kick)} | ${c.m.home} - ${c.m.away} | ${pickLabel(c.m, c.pk)} %${pn(c.pk.p)}`), `Birlikte tutma olasılığı: %${pn(comb)} (bağımsız kabul edilerek)`].join("\n");
+}
+async function copyText(text, btn, label) {
+  try { await navigator.clipboard.writeText(text); btn.textContent = "Kopyalandı"; }
+  catch (e) { try { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); btn.textContent = "Kopyalandı"; } catch (e2) { btn.textContent = "Kopyalanamadı"; } }
+  setTimeout(() => { btn.textContent = label; }, 1800);
+}
+function homeClick(e) {
+  const op = e.target.closest("[data-open]");
+  if (op) { openMatch(op.dataset.open, op.dataset.tab); return; }
+  const n = e.target.closest("[data-n]");
+  if (n) { state.home.n = Math.min(6, Math.max(2, state.home.n + (+n.dataset.n))); state.home.seed = 0; render(); return; }
+  const st = e.target.closest("[data-style]");
+  if (st) { state.home.style = st.dataset.style; state.home.seed = 0; render(); return; }
+  const hr = e.target.closest("[data-hours]");
+  if (hr) { state.home.hours = +hr.dataset.hours; state.home.seed = 0; render(); return; }
+  if (e.target.closest("#cpNew")) { state.home.seed = (state.home.seed || 0) + 1; render(); return; }
+  const cc = e.target.closest("#cpCopy");
+  if (cc && state.lastCoupon) { copyText(couponText(state.lastCoupon.picks, state.lastCoupon.comb, "Günün kuponu"), cc, "Kuponu kopyala"); return; }
+  const ac = e.target.closest("#aiCopy");
+  if (ac && state.aiCoupon) { copyText(couponText(state.aiCoupon.picks, state.aiCoupon.comb, "Yapay zeka kuponu"), ac, "Kuponu kopyala"); return; }
+  const cs = e.target.closest("#cpSave");
+  if (cs && state.lastCoupon && state.lastCoupon.picks.length) { trackSave(cs, "main", "Günün kuponu", state.lastCoupon); return; }
+  const as = e.target.closest("#aiSave");
+  if (as && state.aiCoupon && state.aiCoupon.picks.length) trackSave(as, "ai", "Yapay zeka kuponu", state.aiCoupon);
+}
+
+// ---------- kupon takibi
+async function trackSave(btn, kind, title, cp) {
+  if (btn.disabled) return;
+  btn.disabled = true; btn.textContent = "Kaydediliyor";
+  try {
+    const r = await gs("saveCoupon", { kind, title, comb: cp.comb, picks: cp.picks.map(c => ({ lk: c.m.lk, h: c.m.hraw, a: c.m.araw, d: c.m.kick.toISOString(), mk: c.pk.market, side: c.pk.side === "away" ? "away" : (c.pk.side === "home" ? "home" : ""), p: c.pk.p })) });
+    btn.textContent = r && r.dup ? "Zaten takipte" : "Takibe alındı";
+    state.track.status = "idle";
+  } catch (e) { btn.textContent = "Kaydedilemedi"; btn.title = String(e.message || e); }
+  setTimeout(() => { btn.disabled = false; btn.textContent = "Takibe al"; }, 2500);
+}
+async function loadTrack() {
+  const T = state.track;
+  if (T.status === "loading") return;
+  T.status = "loading"; T.error = "";
+  try { T.data = await gs("getCoupons"); T.status = "done"; }
+  catch (e) { T.status = "error"; T.error = String(e.message || e); }
+  if (state.view === "track") render();
+}
+const stLabel = { won: "Tuttu", lost: "Yattı", pending: "Bekliyor", void: "İptal" };
+function trackPick(p) {
+  const kick = new Date(p.d), di = dayInfo(kick);
+  const lbl = p.mk === "win" ? (p.side === "away" ? tn(p.a) : tn(p.h)) + " kazanır" : MK[p.mk];
+  const s = p.ok === true ? "won" : p.ok === false ? "lost" : p.ok === "void" ? "void" : "pending";
+  return `<li class="tk-pk"><span class="pk-t">${esc(fmtTime(kick))}<small>${esc(di.tag || di.num + " " + di.month.slice(0, 3))}</small></span>
+    <span class="pk-m"><b>${crest(p.lk, p.h, tn(p.h), 22)}${crest(p.lk, p.a, tn(p.a), 22)}<span class="nm">${esc(tn(p.h))} - ${esc(tn(p.a))}</span></b><span class="pk-l">${esc(lbl)}, tahmin %${pn(p.p)}</span></span>
+    <span class="tk-r">${p.s ? `<span class="sc">${esc(p.s.replace(":", " - "))}</span>` : ""}<span class="st ${s}">${stLabel[s]}</span></span></li>`;
+}
+function renderTrack() {
+  const T = state.track, el = $("vTrack");
+  if (T.status === "idle") loadTrack();
+  if (!el.dataset.built) {
+    el.dataset.built = "1";
+    el.innerHTML = `<div class="home"><div class="home-top"><h1>Takip</h1><p>Takibe aldığın kuponlar maçlar bitince sonuçla karşılaştırılır. Modelin gerçekte ne kadar tuttuğunu burada görürsün.</p></div><section class="card" style="margin-top:20px"><div class="card-h"><h2>Özet</h2><button type="button" class="ghost" id="tkRef">Sonuçları yenile</button></div><div id="tkSum"></div></section><div class="tk-list" id="tkList"></div></div>`;
+    el.addEventListener("click", e => {
+      if (e.target.closest("#tkRef")) { state.track.status = "idle"; renderTrack(); return; }
+      const d = e.target.closest("[data-del]");
+      if (!d) return;
+      const id = d.dataset.del, armed = state.track.armed;
+      if (!armed[id]) { armed[id] = true; d.textContent = "Emin misin? Tekrar tıkla"; setTimeout(() => { delete armed[id]; if (d.isConnected) d.textContent = "Sil"; }, 3500); return; }
+      d.disabled = true;
+      gs("deleteCoupon", id).then(() => { state.track.status = "idle"; renderTrack(); }).catch(() => { d.disabled = false; d.textContent = "Silinemedi"; });
+    });
+  }
+  const sum = $("tkSum"), list = $("tkList");
+  if (T.status === "error") { sum.innerHTML = `<p class="ai-empty">Kayıtlar okunamadı: ${esc(T.error)}</p>`; list.innerHTML = ""; return "Takip yüklenemedi."; }
+  if (!T.data) { sum.innerHTML = `<p class="ai-empty">Yükleniyor.</p>`; list.innerHTML = ""; return "Takip yükleniyor."; }
+  const D = T.data, st = D.stats, rate = st.n ? Math.round(st.hit / st.n * 100) : null, avg = st.n ? Math.round(st.sumP / st.n * 100) : null;
+  if (!D.coupons.length) { sum.innerHTML = `<p class="ai-empty">Henüz takipte kupon yok. Anasayfada ya da yapay zeka köşesinde "Takibe al" düğmesine bas.</p>`; list.innerHTML = ""; return "Takipte kupon yok."; }
+  const mk = Object.keys(MK).filter(k => st.byMk[k] && st.byMk[k].n).map(k => `<span><b>${MK[k]}</b> ${st.byMk[k].hit}/${st.byMk[k].n} (%${Math.round(st.byMk[k].hit / st.byMk[k].n * 100)}, tahmin %${Math.round(st.byMk[k].sumP / st.byMk[k].n * 100)})</span>`).join("");
+  sum.innerHTML = `<div class="tk-sum">
+      <div class="tk-s"><b>${st.n ? st.hit + " / " + st.n : "-"}</b><span>Tutan seçim${rate !== null ? ", %" + rate : ""}</span></div>
+      <div class="tk-s"><b>${avg !== null ? "%" + avg : "-"}</b><span>Modelin ortalama tahmini</span></div>
+      <div class="tk-s"><b>${st.cpDone ? st.cpWon + " / " + st.cpDone : "-"}</b><span>Tutan kupon (hepsi tuttu)</span></div></div>
+    ${mk ? `<div class="tk-mk">${mk}</div>` : ""}
+    <p class="tk-note">${st.n < 30 ? `Şimdilik ${st.n} seçim sonuçlandı. Bu sayı çok az, tek başına bir şey kanıtlamaz. En az 30 seçim biriktir.` : "Tutan oranı modelin ortalama tahminine yakınsa model tutarlı demektir."} Tek tek seçimler tutsa bile kombine kupon çok daha zor tutar.${D.rate ? " Sonuç kaynağı istek limitine takıldı, bazı maçlar sonra güncellenir." : ""}</p>`;
+  list.innerHTML = D.coupons.map(r => {
+    const ts = new Date(r.created), di = dayInfo(ts);
+    return `<section class="card"><div class="tk-h"><h3>${esc(r.title)}</h3><span class="st ${r.state}">${stLabel[r.state]}</span><span class="muted">${di.num} ${di.month}, tahmini birlikte tutma %${pn(r.comb)}</span><button type="button" class="ghost tk-del" data-del="${esc(r.id)}">Sil</button></div><ol class="picks" style="margin-top:12px">${r.picks.map(trackPick).join("")}</ol></section>`;
+  }).join("");
+  return `${D.coupons.length} kupon takipte.`;
+}
+
+// ---------- yapay zeka
+const aiKey = p => !!state.keys[p];
+const AI_SYSTEM = [
+  "Sen bir futbol istatistik asistanısın. Sana bir istatistik modelinin maç olasılıkları verilir (yüzde olarak: ev galibiyeti, beraberlik, deplasman galibiyeti, 1,5 üst, 2,5 üst, karşılıklı gol var).",
+  "Kurallar:",
+  "1) Yalnızca verilen listedeki maçları ve sayıları kullan. Sakatlık, form, haber, hava durumu, bahis oranı gibi listede olmayan bilgileri uydurma.",
+  "2) Olasılıkları kendin hesaplama veya değiştirme. Seçimleri listedeki id ile belirt.",
+  "3) Kesinlik veya garanti ifadesi kullanma. Kombine kupon olasılığının tek tek olasılıklardan çok daha düşük olduğunu hatırlat.",
+  "4) Olasılıklar football-charts sicil tablosuna göre düzeltilmiştir. Türkçe, kısa ve sade yaz. Metinlerde id (m3 gibi) yazma, maç adını yaz. Bahis oranı verilmediği için 'oran' kelimesini kullanma, 'olasılık' de. Metinlerde yüzde ya da başka sayı yazma, sayıları sistem zaten gösteriyor.",
+  "5) Yalnızca geçerli JSON döndür, başka metin ekleme. Şema:",
+  '{"ozet":"2-3 cümlelik genel bakış","kupon":{"baslik":"kısa başlık","secimler":[{"id":"m3","pazar":"win|o15|o25|o35|bt","taraf":"ev|dep (yalnızca pazar win ise)","gerekce":"tek cümle"}]},"oneriler":[{"baslik":"kısa başlık","metin":"1-2 cümle","idler":["m5"]}],"cevap":"kullanıcı soru sorduysa yanıtı, sormadıysa boş metin"}',
+  "Pazar kodları: win = maç sonucu, o15 = 1,5 üst, o25 = 2,5 üst, o35 = 3,5 üst, bt = karşılıklı gol var. Kupon istenmediyse secimler boş liste olabilir."
+].join("\n");
+
+function normalizeAI(j, idMap) {
+  // metinde kalan "m3" gibi kimlikleri maç adıyla değiştir
+  const nm = t => t.replace(/\bm(\d{1,3})\b/g, x => (idMap[x] ? idMap[x].home + " - " + idMap[x].away : x));
+  const str = (v, n) => (typeof v === "string" ? nm(v.trim()).slice(0, n) : "");
+  const sec = [], k = j && j.kupon;
+  if (k && Array.isArray(k.secimler)) for (const s of k.secimler.slice(0, 8)) {
+    const m = s && idMap[s.id];
+    if (!m || !MK[s.pazar] || sec.some(x => x.mid === m.id)) continue;
+    sec.push({ mid: m.id, pazar: s.pazar, taraf: s.taraf === "dep" ? "dep" : s.taraf === "ev" ? "ev" : null, gerekce: str(s.gerekce, 160) });
+  }
+  const onr = [];
+  if (j && Array.isArray(j.oneriler)) for (const o of j.oneriler.slice(0, 6)) {
+    const mids = (Array.isArray(o && o.idler) ? o.idler : []).map(i => idMap[i]).filter(Boolean).map(m => m.id).slice(0, 3);
+    const b = str(o && o.baslik, 80), t = str(o && o.metin, 300);
+    if (b || t) onr.push({ baslik: b, metin: t, mids });
+  }
+  return { ozet: str(j && j.ozet, 700), cevap: str(j && j.cevap, 1200), kupon: { baslik: str(k && k.baslik, 80), secimler: sec }, oneriler: onr };
+}
+// Yorum hangi veriyle hazırlandı: en yüksek olasılıklı maçlar değişirse (veri ya da model güncellenirse, düzeltme açılıp kapanırsa) eski yorum gizlenir.
+function aiSig() {
+  const { base } = homePool();
+  return (state.calib ? "c" : "r") + "|" + base.slice().sort((a, b) => maxP(b) - maxP(a)).slice(0, 12).map(m => m.id + ":" + pn(maxP(m))).join(",");
+}
+async function runAI(kind, question) {
+  const A = state.ai;
+  const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
+  if (!order.length) { A.error = "Hiçbir sağlayıcı için anahtar tanımlı değil. Script özelliklerine GEMINI_API_KEY veya GROQ_API_KEY ekle."; $("aiSet").open = true; renderAI(); return; }
+  const { base } = homePool();
+  if (!base.length) { A.error = "Seçili aralıkta güvenilir veriyle maç yok. Süreyi uzat ya da lig ekle."; renderAI(); return; }
+  const ranked = base.slice().sort((a, b) => maxP(b) - maxP(a)).slice(0, 40);
+  const idMap = {};
+  const list = ranked.map((m, i) => { const id = "m" + (i + 1); idMap[id] = m; return { id, lig: trc(m.country) + " " + m.league, mac: m.home + " - " + m.away, saat: dayInfo(m.kick).num + " " + dayInfo(m.kick).month + " " + fmtTime(m.kick), ev: pn(m.pH), ber: pn(m.pD), dep: pn(m.pA), u15: pn(m.o15), u25: pn(m.o25), u35: pn(m.o35), kg: pn(m.bt) }; });
+  const H = state.home;
+  const ask = kind === "ask" ? "Kullanıcı sorusu: " + String(question).slice(0, 300) : `Günün yorumunu hazırla. ${H.n} maçlık, "${STYLES[H.style].label}" tarzında bir kupon öner ve 3 ile 5 öneri yaz.`;
+  const prompt = `${ask}\nSaat dilimi: Sofia. Maç listesi (yüzde olarak):\n${JSON.stringify(list)}`;
+  A.status = "loading"; A.error = ""; A.note = ""; renderAI();
+  try {
+    const res = await gs("callAI", { order, models: A.models, system: AI_SYSTEM, prompt });
+    if (res && res.ok) {
+      A.result = normalizeAI(res.json, idMap);
+      A.at = Date.now(); A.usedProv = AI_NAMES[res.prov] + " / " + res.model; A.sig = aiSig();
+      const f = (res.fails || []).map(x => String(x).split(":")[0]);
+      if (f.length) A.note = f.join(", ") + " yanıt vermedi, " + AI_NAMES[res.prov] + " kullanıldı.";
+      lsSet("banko2:ai", JSON.stringify({ day: dayKey(new Date()), result: A.result, at: A.at, used: A.usedProv, note: A.note, sig: A.sig }));
+    } else A.error = ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi.";
+  } catch (e) { A.error = (e && e.message) || String(e); }
+  A.status = "idle"; renderAI();
+}
+function resolveAI() {
+  const r = state.ai.result; if (!r) return null;
+  const all = new Map(flatten().map(m => [m.id, m]));
+  const picks = [];
+  for (const s of r.kupon.secimler) {
+    const m = all.get(s.mid); if (!m) continue;
+    let side = null, p;
+    if (s.pazar === "win") { side = s.taraf === "dep" ? "away" : s.taraf === "ev" ? "home" : (m.pH >= m.pA ? "home" : "away"); p = side === "home" ? m.pH : m.pA; }
+    else p = primary(m, s.pazar);
+    if (typeof p !== "number") continue;
+    picks.push({ m, pk: { market: s.pazar, p: selP(p), side }, note: s.gerekce });
+  }
+  return { r, picks, comb: picks.reduce((a, c) => a * c.pk.p, 1), oneriler: r.oneriler.map(o => ({ ...o, matches: o.mids.map(id => all.get(id)).filter(Boolean) })) };
+}
+function renderAI() {
+  if (!state.homeBuilt) return;
+  const A = state.ai, has = ["gemini", "groq", "claude"].some(p => aiKey(p));
+  const stale = !!A.result && A.status !== "loading" && !state.running && Object.keys(state.data).length > 0 && A.sig !== aiSig();
+  const res = stale ? null : resolveAI();
+  let html = "";
+  if (stale) html += `<p class="ai-empty">Önceki yorum eski verilerle hazırlanmıştı${A.at ? " (" + new Date(A.at).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }) + ")" : ""}, bu yüzden gizlendi. "Günün yorumunu hazırla" ile yenile.</p>`;
+  if (A.status === "loading") html += `<p class="ai-empty"><span class="spin"></span>Yapay zeka yorumu hazırlanıyor…</p>`;
+  if (A.error) html += `<p class="ai-err" role="alert">${esc(A.error)}</p>`;
+  state.aiCoupon = null;
+  if (res) {
+    const { r, picks, comb, oneriler } = res;
+    if (picks.length) state.aiCoupon = { picks, comb };
+    html += `${r.ozet ? `<p class="ai-sum">${esc(r.ozet)}</p>` : ""}${r.cevap ? `<div class="ai-ans">${esc(r.cevap)}</div>` : ""}<div class="ai-cols">
+      ${picks.length ? `<div><h3>${esc(r.kupon.baslik || "Yapay zeka kuponu")}</h3><ol class="picks">${picks.map(c => pickRow(c.m, c.pk, c.note)).join("")}</ol>${combHTML(picks, comb)}<div class="cp-act"><button type="button" class="ghost" id="aiCopy">Kuponu kopyala</button><button type="button" class="ghost" id="aiSave">Takibe al</button></div></div>` : ""}
+      ${oneriler.length ? `<div><h3>Öneriler</h3>${oneriler.map(o => `<div class="ai-s"><b>${esc(o.baslik)}</b><p>${esc(o.metin)}</p>${o.matches.length ? `<div class="chips">${o.matches.map(m => `<button type="button" data-open="${esc(m.id)}" data-tab="win">${esc(m.home)} - ${esc(m.away)}</button>`).join("")}</div>` : ""}</div>`).join("")}</div>` : ""}
+    </div>`;
+  } else if (A.status !== "loading" && !A.error) {
+    html += has ? `<p class="ai-empty">Henüz yorum yok. "Günün yorumunu hazırla" ile başlat ya da bir soru sor.</p>`
+      : `<p class="ai-empty">Yapay zeka, maç listesini okuyup kupon ve öneri hazırlar. Başlamak için aşağıdaki ayarlardan bir API anahtarı ekle.</p>`;
+  }
+  $("aiBody").innerHTML = html;
+  if (A.note && res) $("aiBody").insertAdjacentHTML("afterbegin", `<p class="muted">${esc(A.note)}</p>`);
+  $("aiMeta").textContent = res && A.at ? new Date(A.at).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }) + ", " + (A.usedProv || "") : "";
+  $("aiRun").disabled = $("aiAsk").disabled = A.status === "loading";
+  $("aiKeyState").textContent = ["gemini", "groq", "claude"].map(p => AI_NAMES[p] + ": " + (aiKey(p) ? "anahtar tanımlı" : "anahtar yok")).join(". ") + ".";
+}
+
+// ---------- lig seçici
+function renderLeaguePicker() {
+  const q = state.search.trim().toLocaleLowerCase("tr");
+  const byC = {};
+  state.leagues.forEach(l => {
+    if (q && !(l.name.toLocaleLowerCase("tr").includes(q) || trc(l.country).toLocaleLowerCase("tr").includes(q) || l.country.toLowerCase().includes(q))) return;
+    (byC[l.country] = byC[l.country] || []).push(l);
+  });
+  const countries = Object.keys(byC).sort((a, b) => trc(a).localeCompare(trc(b), "tr"));
+  $("leagues").innerHTML = countries.length ? countries.map(c => `<div class="ctry"><label class="ctry-h"><input type="checkbox" data-c="${esc(c)}" ${byC[c].every(l => state.sel.has(l.key)) ? "checked" : ""}> ${esc(trc(c))}</label>
+    <div class="lg-list">${byC[c].map(l => `<label><input type="checkbox" data-k="${esc(l.key)}" ${state.sel.has(l.key) ? "checked" : ""}> ${esc(l.name)}</label>`).join("")}</div></div>`).join("")
+    : '<p class="hint">Eşleşen lig yok.</p>';
+}
+function saveSel() { lsSet("banko2:sel", JSON.stringify([...state.sel])); }
+function applySel(keys) { state.sel = new Set(keys); state.limit = 30; saveSel(); renderLeaguePicker(); render(); loadSelected(false); }
+
+// ---------- panel
+function setDrawer(open) {
+  document.body.classList.toggle("open", open);
+  $("drawer").setAttribute("aria-hidden", String(!open));
+  if (open) $("closeDrawer").focus(); else $("openDrawer").focus();
+}
+
+// ---------- kopyala
+async function copyList() {
+  const lines = lastShown.map(({ m, tab }) => {
+    const di = dayInfo(m.kick), p = primary(m, tab);
+    const what = tab === "win" ? (m.pH >= m.pA ? m.home : m.away) + " kazanır" : TABS.find(t => t.id === tab).label;
+    return `${di.num} ${di.month} ${fmtTime(m.kick)} | ${m.home} - ${m.away} | ${what} %${pn(p)}`;
+  });
+  const text = lines.join("\n");
+  const b = $("copy");
+  try { await navigator.clipboard.writeText(text); b.textContent = "Kopyalandı"; }
+  catch (e) {
+    try { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); b.textContent = "Kopyalandı"; }
+    catch (e2) { b.textContent = "Kopyalanamadı"; }
+  }
+  setTimeout(() => { b.textContent = "Listeyi kopyala"; }, 1800);
+}
+
+// ---------- olaylar
+$("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-t]"); if (b) { state.tab = b.dataset.t; state.limit = 30; render(); } });
+$("ranges").addEventListener("click", e => { const b = e.target.closest("button[data-r]"); if (b) { state.range = b.dataset.r; state.limit = 30; render(); } });
+$("sorts").addEventListener("click", e => { const b = e.target.closest("button[data-s]"); if (b) { state.sort = b.dataset.s; render(); } });
+function updateBack() {
+  const show = state.view === "matches" && state.backY !== null && window.scrollY < state.backY - 200;
+  $("back").hidden = !show;
+}
+window.addEventListener("scroll", updateBack, { passive: true });
+$("views").addEventListener("click", e => {
+  const b = e.target.closest("button[data-v]");
+  if (b && b.dataset.v !== state.view) { state.view = b.dataset.v; window.scrollTo({ top: 0, behavior: "auto" }); render(); updateBack(); }
+});
+$("back").addEventListener("click", () => {
+  const y = state.backY; state.backY = null; $("back").hidden = true;
+  window.scrollTo({ top: y, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+});
+$("list").addEventListener("click", e => {
+  const li = e.target.closest("li.row"); if (!li) return;
+  const id = li.dataset.id;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  state.introDone = false;
+  if (state.pinned === id) { state.pinned = null; render(); return; }
+  state.backY = window.scrollY;
+  state.pinned = id;
+  render();
+  if ($("hero").getBoundingClientRect().bottom < 90) window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  updateBack();
+});
+$("presets").addEventListener("click", e => { const b = e.target.closest("button[data-p]"); if (b) { state.thr[state.tab] = +b.dataset.p; state.limit = 30; render(); } });
+$("notice").addEventListener("click", e => {
+  if (e.target.id === "dismissNotice") { state.limitHit = false; render(); }
+});
+$("thr").addEventListener("input", e => { state.thr[state.tab] = +e.target.value; state.limit = 30; render(); });
+$("trusted").addEventListener("change", e => { state.trusted = e.target.checked; state.limit = 30; render(); });
+const onCalib = e => { state.calib = e.target.checked; state.home.seed = 0; state.limit = 30; render(); };
+$("calib").addEventListener("change", onCalib);
+$("more").addEventListener("click", () => { state.limit += 30; render(); });
+$("copy").addEventListener("click", copyList);
+$("theme").addEventListener("click", () => { const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark"; applyTheme(t); lsSet("banko2:theme", t); });
+$("openDrawer").addEventListener("click", () => setDrawer(true));
+$("closeDrawer").addEventListener("click", () => setDrawer(false));
+$("scrim").addEventListener("click", () => setDrawer(false));
+document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("open")) setDrawer(false); });
+$("hero").addEventListener("click", e => {
+  if (e.target.id === "lowerThr") { state.thr[state.tab] = Math.max(40, state.thr[state.tab] - 5); render(); }
+  if (e.target.id === "openFromHero") setDrawer(true);
+  if (e.target.id === "unpin") { state.pinned = null; state.introDone = false; render(); }
+  if (e.target.id === "show7") { state.range = "7"; state.limit = 30; render(); }
+});
+$("search").addEventListener("input", e => { state.search = e.target.value; renderLeaguePicker(); });
+$("logout").addEventListener("click", () => { tkSet(""); location.reload(); });
+let refreshArmed = null;
+$("refresh").addEventListener("click", () => {
+  const b = $("refresh");
+  if (refreshArmed) { clearTimeout(refreshArmed); refreshArmed = null; b.textContent = "Zorla yenile"; setDrawer(false); loadSelected(true); return; }
+  b.textContent = "Emin misin? " + state.sel.size + " lig yeniden çekilir";
+  refreshArmed = setTimeout(() => { refreshArmed = null; b.textContent = "Zorla yenile"; }, 4000);
+});
+document.querySelector(".quick").addEventListener("click", e => {
+  const q = e.target.dataset.q; if (!q) return;
+  const all = state.leagues.map(l => l.key);
+  if (q === "all") applySel(all);
+  else if (q === "none") applySel([]);
+  else if (q === "top1") applySel(TOP1.filter(k => all.includes(k)));
+  else if (q === "big5") applySel(BIG5.filter(k => all.includes(k)));
+  else if (q === "tr") applySel(state.leagues.filter(l => l.country === "Turkey").map(l => l.key));
+});
+$("leagues").addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.k) { el.checked ? state.sel.add(el.dataset.k) : state.sel.delete(el.dataset.k); }
+  else if (el.dataset.c) { state.leagues.filter(l => l.country === el.dataset.c).forEach(l => el.checked ? state.sel.add(l.key) : state.sel.delete(l.key)); }
+  else return;
+  state.limit = 30; saveSel(); renderLeaguePicker(); render(); loadSelected(false);
+});
+
+function setHH() { document.documentElement.style.setProperty("--hh", document.querySelector(".top").offsetHeight + "px"); }
+window.addEventListener("resize", setHH); setHH();
+(async function init() {
+  render();
+  let boot;
+  try { boot = await gs("getBootstrap"); }
+  catch (e) { $("errors").textContent = "Sunucuya ulaşılamadı (" + (e.message || e) + ")."; return; }
+  Object.assign(MEM, boot.prefs || {});
+  state.keys = boot.keys || {};
+  loadUI();
+  const th = lsGet("banko2:theme"); if (th) applyTheme(th);
+  try { const a = JSON.parse(lsGet("banko2:ai") || "null"); if (a && a.day === dayKey(new Date()) && a.result) { state.ai.result = a.result; state.ai.at = a.at; state.ai.usedProv = a.used || ""; state.ai.note = a.note || ""; state.ai.sig = a.sig || ""; } } catch (e) {}
+  if (boot.leagueError && !(boot.leagues || []).length) { $("errors").textContent = "Lig listesi alınamadı (" + boot.leagueError + ")."; return; }
+  state.leagues = (boot.leagues || []).filter(l => !isExcluded(l));
+  let saved = null; try { saved = JSON.parse(lsGet("banko2:sel") || "null"); } catch (e) {}
+  const lk = new Set(state.leagues.map(l => l.key));
+  state.sel = new Set((saved || state.leagues.map(l => l.key)).filter(k => lk.has(k)));
+  if ($("aiProv")) { $("aiProv").value = state.ai.provider; $("aiModel").value = state.ai.models[state.ai.provider]; }
+  renderLeaguePicker(); render();
+  loadSelected(false);
+})();
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script>
+</body>
+</html>
