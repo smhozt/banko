@@ -647,6 +647,18 @@
   .my-pk .pk-x { width:42px; }
   .my-pk .pk-m { overflow:hidden; }
   @media (max-width:440px) { .my-pk .pk-m b .crest { display:none; } .my-pk .pk-m b .nm { margin-left:0; } .my-pk .chip2 small { display:none; } }
+  /* ---------- Dün / Bugün kartı ---------- */
+  .day-h { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .day-h .seg button { height:36px; }
+  .day-sum { display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 18px; margin:14px 0 4px; }
+  .day-sum .big { font:700 44px/1 var(--fc); }
+  .day-sum .big small { font:600 22px var(--fc); color:var(--muted); margin-left:4px; }
+  .day-sum span { color:var(--muted); font-size:14px; }
+  .day-sum span b { color:var(--ink); font-weight:600; }
+  .day-cp { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:12px 0 0; padding:10px 12px; background:var(--sunk); border-radius:12px; font-size:14px; }
+  .day-cp b { font-weight:600; }
+  @media (max-width:720px) { .day-h .seg button { height:40px; } .day-sum .big { font-size:38px; } }
+  @media (max-width:440px) { #dayBody .tk-pk .crest { display:none; } #dayBody .tk-pk .pk-m b .nm { margin-left:0; } #dayBody .tk-pk { gap:10px; padding:10px 12px; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
 </style>
 </head>
@@ -810,7 +822,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {} }, detId: null, detPick: null, my: [], slipTab: "auto", detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {} }, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -872,7 +884,7 @@ function schedulePrefs() {
 function lsGet(k) { return k in MEM ? MEM[k] : null; }
 function lsSet(k, v) { MEM[k] = String(v); if (PERSIST.includes(k)) schedulePrefs(); }
 function lsDel(k) { delete MEM[k]; if (PERSIST.includes(k)) schedulePrefs(); }
-function saveUI() { lsSet("banko2:ui", JSON.stringify({ tab: state.tab, range: state.range, sort: state.sort, trusted: state.trusted, calib: state.calib, mktOn: state.mktOn, thr: state.thr, view: state.view, home: { n: state.home.n, style: state.home.style, hours: state.home.hours }, ai: { provider: state.ai.provider, models: state.ai.models } })); }
+function saveUI() { lsSet("banko2:ui", JSON.stringify({ tab: state.tab, range: state.range, sort: state.sort, trusted: state.trusted, calib: state.calib, mktOn: state.mktOn, autoSave: state.autoSave, thr: state.thr, view: state.view, home: { n: state.home.n, style: state.home.style, hours: state.home.hours }, ai: { provider: state.ai.provider, models: state.ai.models } })); }
 function loadUI() {
   try {
     const u = JSON.parse(lsGet("banko2:ui") || "null");
@@ -883,6 +895,7 @@ function loadUI() {
     if (typeof u.trusted === "boolean") state.trusted = u.trusted;
     if (typeof u.calib === "boolean") state.calib = u.calib;
     if (typeof u.mktOn === "boolean") state.mktOn = u.mktOn;
+    if (typeof u.autoSave === "boolean") state.autoSave = u.autoSave;
     if (u.thr) TABS.forEach(t => { const v = +u.thr[t.id]; if (v >= 40 && v <= 95) state.thr[t.id] = v; });
     if (u.view === "home" || u.view === "matches" || u.view === "track") state.view = u.view;
     if (u.home) {
@@ -1316,6 +1329,7 @@ function infoBody() {
     <h3 id="inf-odds">Oranlar ve piyasa</h3><p>Bet365 ve bahisçi ortalaması <b>football-data.co.uk</b>'tan, 1,5 / 3,5 üst ve KG var için konsensüs oranlar <b>Bzzoiro Sports Data</b>'dan gelir. Testte bahisçi oranları modelden daha isabetli çıktı. "Piyasa uyumlu" etiketi ikisinin en fazla 5 puan farkla aynı fikirde olduğunu, "ayrışıyor" 15 puandan fazla fark olduğunu gösterir.</p>
     <h3 id="inf-elo">Elo</h3><p>ClubElo puanlarından hesaplanan beklenen puandır, bağımsız ikinci bir görüştür. Testte kupon isabetine ek katkısı görülmedi; bilgi amaçlıdır.</p>
     <h3 id="inf-cr">Korner</h3><p><b>football-data.co.uk</b> geçmiş maçlarından: ev sahibinin son 15 iç saha, deplasman takımının son 15 dış saha maçı. Takımların korner geçmişi zayıf bir sinyal olduğu için değerler lig ortalamasına doğru çekilir; rakip gücü hesaba katılmaz.</p>
+    <h3 id="inf-auto">Otomatik kayıt ve Dün kartı</h3><p>Sunucu her sabah günlük yenilemeden sonra önümüzdeki 24 saatin bankolarını kaydeder: maç başına en yüksek pazar, düzeltilmiş olasılık %70 ve üstü, en fazla 40 seçim. Ertesi gün <b>Dün</b> kartı bunları sonuçlarla karşılaştırır. Ayarlardan açıksa aynı anda günün kuponu da senin kupon ayarlarınla kurulup Takip'e "Otomatik kupon" olarak kaydedilir.</p>
     <h3 id="inf-note">Unutma</h3><p>"Banko" yalnızca modelin yüksek olasılık verdiği anlamına gelir, garanti değildir. Model bahis şirketlerini geçmez. İstatistiktir, bahis tavsiyesi değildir. 18+</p></div>`;
 }
 
@@ -1351,6 +1365,7 @@ function setBody() {
       <label class="opt"><span><b>Düşük güvenli maçları gizle</b><small>Takım verisi az olan maçlar listeye girmez.</small></span><input type="checkbox" class="sw" id="trustedS"></label></div>
     <div class="sgrp"><h3>Olasılıklar</h3>
       <label class="opt"><span><b>Gerçek isabete göre düzelt</b><small>13 bin maçlık geriye dönük teste göre pazar bazında düzeltme.</small></span><input type="checkbox" class="sw" id="calibS"></label>
+      <label class="opt"><span><b>Her sabah otomatik kupon</b><small>Günün kuponu kupon ayarlarınla (tarz, maç sayısı, süre) kurulur ve Takip'e "Otomatik kupon" olarak kaydedilir.</small></span><input type="checkbox" class="sw" id="autoS"></label>
       <label class="opt"><span><b>Piyasa onayı iste</b><small>Kupondaki maç sonucu ve 2,5 üst seçiminde bahisçi oranları ters yöndeyse seçim elenir.</small></span><input type="checkbox" class="sw" id="mktS"></label></div>
     <div class="sgrp"><h3>Diğer</h3>
       <label class="opt"><span><b>Koyu tema</b></span><input type="checkbox" class="sw" id="darkS"></label>
@@ -1379,7 +1394,7 @@ function syncSheet() {
   $("thrSOut").textContent = "%" + thr;
   document.querySelectorAll("#presetsS button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.p === thr)));
   document.querySelectorAll("#sortsS button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === state.sort)));
-  $("trustedS").checked = state.trusted; $("calibS").checked = state.calib; $("mktS").checked = state.mktOn;
+  $("trustedS").checked = state.trusted; $("calibS").checked = state.calib; $("mktS").checked = state.mktOn; $("autoS").checked = state.autoSave;
   $("darkS").checked = document.documentElement.dataset.theme === "dark";
 }
 function openSheet(kind, arg) {
@@ -1507,6 +1522,9 @@ function buildHome() {
       <section class="card" aria-labelledby="cpT"><div class="card-h"><h2 id="cpT">Günün kuponu</h2></div><div class="cp-ctl" id="cpCtl"></div><div id="cpBody"></div></section>
       <section class="card" aria-labelledby="sgT"><h2 id="sgT">Günün önerileri</h2><div class="sg" id="sgBody"></div></section>
     </div>
+    <section class="card" style="margin-top:20px" aria-labelledby="dyT" id="dayC">
+      <div class="day-h"><h2 id="dyT">Dün ne oldu?</h2><div class="seg" role="group" aria-label="Gün" id="dayTabs"></div></div>
+      <div id="dayBody"></div></section>
     <section class="card" style="margin-top:20px" aria-labelledby="crT">
       <div class="card-h"><h2 id="crT">Korner köşesi</h2><span class="muted">geçmiş sayılara dayanır, model değil</span></div>
       <div class="sg" id="crBody"></div><p class="tk-note" id="crNote"></p>
@@ -1560,6 +1578,7 @@ function renderHome() {
     : `<div class="sg-c"><span class="sg-t">${esc(s.t)}</span><span class="sg-m">${esc(s.m)}</span><span class="sg-d">${esc(s.d)}</span></div>`).join("");
   renderAI();
   renderCorners(base);
+  renderDays();
   ensureElo(base);
   ensureMkt(base);
   const loaded = Object.keys(state.data).filter(k => state.sel.has(k)).length;
@@ -1697,6 +1716,9 @@ async function copyText(text, btn, label) {
   setTimeout(() => { btn.textContent = label; }, 1800);
 }
 function homeClick(e) {
+  const dt = e.target.closest("[data-day]");
+  if (dt) { state.days.tab = dt.dataset.day; state.days.all = false; renderDays(); return; }
+  if (e.target.closest("[data-dmore]")) { state.days.all = !state.days.all; renderDays(); return; }
   const op = e.target.closest("[data-open]");
   if (op) { openDetail(op.dataset.open, op.dataset.tab); return; }
   const n = e.target.closest("[data-n]");
@@ -1718,6 +1740,45 @@ function homeClick(e) {
   if (as && state.aiCoupon && state.aiCoupon.picks.length) trackSave(as, "ai", "Yapay zeka kuponu", state.aiCoupon);
 }
 
+// ---------- Dün / Bugün: sunucunun her sabah aldığı bankolar fotoğrafı, sonuçlarıyla
+async function loadDays() {
+  const D = state.days;
+  if (D.status === "loading") return;
+  D.status = "loading"; D.err = "";
+  try { D.data = await gs("getDays"); D.status = "done"; }
+  catch (e) { D.status = "error"; D.err = String(e.message || e); }
+  if (state.view === "home") renderDays();
+}
+function renderDays() {
+  const D = state.days, body = $("dayBody");
+  if (!body) return;
+  if (D.status === "idle") loadDays();
+  $("dyT").textContent = D.tab === "y" ? "Dün ne oldu?" : "Bugün ne oluyor?";
+  $("dayTabs").innerHTML = [["y", "Dün"], ["t", "Bugün"]].map(x => `<button type="button" data-day="${x[0]}" aria-pressed="${D.tab === x[0]}">${x[1]}</button>`).join("");
+  if (D.status === "error") { body.innerHTML = `<p class="ai-empty">Okunamadı: ${esc(D.err)}</p>`; return; }
+  if (!D.data) { body.innerHTML = `<ol class="picks" style="margin-top:14px">${'<li class="pk skel-pk" aria-hidden="true"><span class="sk" style="width:46px;height:22px"></span><span class="sk-c"><span class="sk" style="width:80%"></span><span class="sk" style="width:45%"></span></span><span class="sk" style="width:58px;height:28px;margin-left:auto"></span></li>'.repeat(2)}</ol>`; return; }
+  const day = D.data.days[D.tab === "y" ? 0 : 1], sn = day && day.snap;
+  if (!sn || !sn.picks) {
+    body.innerHTML = `<div class="ai-empty">${ILL.ticket}<p>${D.tab === "y" ? "Dün için kayıt yok. Sunucu her sabah o günün bankolarını kaydeder; ertesi gün burada sonuçlarıyla görünür." : "Bugünün kaydı henüz alınmadı. Sunucu her sabah günlük yenilemeden sonra kaydeder."}</p></div>`;
+    return;
+  }
+  const ps = sn.picks, done = ps.filter(p => p.ok === true || p.ok === false), hit = done.filter(p => p.ok === true).length, pend = ps.filter(p => p.ok === null).length;
+  const avg = done.length ? Math.round(done.reduce((a, p) => a + p.p, 0) / done.length * 100) : null;
+  const order = ps.slice().sort((a, b) => new Date(a.d) - new Date(b.d));
+  const shown = D.all ? order : order.slice(0, 6);
+  let cpLine = "";
+  if (sn.cp) {
+    const r = state.track.data && state.track.data.coupons.find(c => c.id === sn.cp);
+    if (r) { const h = r.picks.filter(p => p.ok === true).length, n = r.picks.length; cpLine = `<div class="day-cp"><b>Otomatik kupon</b><span class="st ${r.state}">${stLabel[r.state]}</span><span>${h}/${n} tuttu, tahmini birlikte %${pn(r.comb)}</span></div>`; }
+    else cpLine = `<div class="day-cp"><b>Otomatik kupon</b><span>${sn.cpN || ""} seçimle takibe alındı, sonucu Takip'te.</span></div>`;
+  }
+  body.innerHTML = `<div class="day-sum">${done.length ? `<span class="big">${hit}<small>/ ${done.length}</small></span><span>tuttu (<b>%${Math.round(hit / done.length * 100)}</b>), modelin ortalaması <b>%${avg}</b></span>` : `<span>Henüz biten maç yok.</span>`}${pend ? `<span>${pend} maç bekliyor</span>` : ""}</div>
+    <p class="muted" style="margin:0">Modelin %70 ve üstü verdiği ${ps.length} seçim, maç başına en yüksek pazar.${D.data.rate ? " Sonuç kaynağı istek limitine takıldı, bazıları sonra güncellenir." : ""}</p>
+    <ol class="picks" style="margin-top:12px">${shown.map(trackPick).join("")}</ol>
+    ${order.length > 6 ? `<div class="sh-btns"><button type="button" class="ghost" data-dmore>${D.all ? "Daha az göster" : `Tümünü göster (${order.length})`}</button></div>` : ""}
+    ${cpLine}`;
+}
+
 // ---------- kupon takibi
 async function trackSave(btn, kind, title, cp) {
   if (btn.disabled) return;
@@ -1737,6 +1798,7 @@ async function loadTrack() {
   catch (e) { T.status = "error"; T.error = String(e.message || e); }
   updateBadge();
   if (state.view === "track") render();
+  else if (state.view === "home") renderDays();
 }
 // İsabet grafiği: tahmin aralığına göre (%10'luk) gerçekleşen oran. Çapraz çizgi = model dediği kadar tuttu.
 function calibHTML(coupons) {
@@ -2053,6 +2115,7 @@ $("shBody").addEventListener("change", e => {
   if (id === "trustedS") { state.trusted = v; state.limit = 30; render(); }
   else if (id === "calibS") onCalib(e);
   else if (id === "mktS") { state.mktOn = v; state.home.seed = 0; render(); }
+  else if (id === "autoS") { state.autoSave = v; saveUI(); toast(v ? "Her sabah otomatik kupon kaydedilecek" : "Otomatik kupon kapatıldı"); }
   else if (id === "darkS") { const t = v ? "dark" : "light"; applyTheme(t); lsSet("banko2:theme", t); }
 });
 // paneli tutamaçtan aşağı sürükleyerek kapat
@@ -2135,7 +2198,7 @@ $("leagues").addEventListener("change", e => {
 
 // ---------- aşağı çekip yenile (yalnızca ana ekrana eklenmiş uygulamada; tarayıcının kendi yenilemesi varken çakışmasın)
 async function softRefresh() {
-  state.mkt.sig = state.elo.sig = state.corners.sig = ""; state.track.status = "idle";
+  state.mkt.sig = state.elo.sig = state.corners.sig = ""; state.track.status = "idle"; state.days.status = "idle";
   try { const r = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (r) r.update(); } catch (e) {}
   await loadSelected(false, true);
 }
