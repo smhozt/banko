@@ -626,6 +626,27 @@
     .star { width:40px; height:40px; }
     .x3 b { font-size:26px; }
   }
+  /* ---------- Kuponum ---------- */
+  .slip-tabs { margin:0 0 14px; }
+  .slip-tabs .c { font:600 13px var(--f); margin-left:6px; opacity:.8; }
+  .my-pk { display:flex; align-items:stretch; }
+  .my-pk .pk-b { flex:1; min-width:0; }
+  .pk-x { flex:none; width:48px; border:0; border-left:1px solid var(--line); background:transparent; color:var(--muted); font-size:22px; line-height:1; cursor:pointer; }
+  .pk-x:hover { color:var(--err); }
+  .my-pk.gone .pk-b { opacity:.55; cursor:default; }
+  .my-pk.gone .pk-l { color:var(--muted); }
+  .flag.in, .chip2.in { background:color-mix(in srgb, var(--t2) 20%, transparent); color:var(--ink); }
+  .chip2.in::before { background:var(--t2); }
+  .slip.mine .slip-n { background:var(--away); color:#fff; }
+  .toast { position:fixed; z-index:60; left:50%; bottom:calc(var(--navh, 0px) + env(safe-area-inset-bottom) + 84px); transform:translate(-50%, 12px); max-width:min(420px, calc(100vw - 32px));
+    padding:11px 16px; border-radius:12px; background:var(--ink); color:var(--bg); font-weight:600; font-size:14px; box-shadow:0 12px 30px -10px rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .18s, transform .18s; }
+  .toast.show { opacity:1; transform:translate(-50%, 0); }
+  @media (min-width:721px) { .toast { bottom:100px; } }
+  body.sopen .toast { bottom:auto; top:calc(env(safe-area-inset-top) + 14px); transform:translate(-50%, -8px); }
+  body.sopen .toast.show { transform:translate(-50%, 0); }
+  .my-pk .pk-x { width:42px; }
+  .my-pk .pk-m { overflow:hidden; }
+  @media (max-width:440px) { .my-pk .pk-m b .crest { display:none; } .my-pk .pk-m b .nm { margin-left:0; } .my-pk .chip2 small { display:none; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
 </style>
 </head>
@@ -699,6 +720,7 @@
 <button class="pill" id="back" hidden>Listeye dön</button>
 <div class="ptr" id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></div>
 <button type="button" class="slip" id="slip" hidden aria-haspopup="dialog"></button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <nav class="nav" id="nav" aria-label="Sayfalar">
   <button type="button" data-v="home"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></svg></span>Anasayfa</button>
   <button type="button" data-v="matches"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.45 4.45h-4.7L8.2 10.3z"/><path d="M12 3v4.5M15.8 10.3l4.4-1.4M14.35 14.75l2.7 3.75M9.65 14.75l-2.7 3.75M8.2 10.3 3.8 8.9"/></svg></span>Maçlar</button>
@@ -788,7 +810,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {} }, detId: null, detPick: null, detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {} }, detId: null, detPick: null, my: [], slipTab: "auto", detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -836,7 +858,7 @@ async function gs(fn, ...args) {
   throw new Error("Giriş yapılamadı.");
 }
 const MEM = {};
-const PERSIST = ["banko2:ui", "banko2:sel", "banko2:theme", "banko2:ai", "banko2:fav", "banko2:seen"];
+const PERSIST = ["banko2:ui", "banko2:sel", "banko2:theme", "banko2:ai", "banko2:fav", "banko2:seen", "banko2:my"];
 let prefTimer = null;
 function schedulePrefs() {
   clearTimeout(prefTimer);
@@ -1026,6 +1048,8 @@ function rowHTML(m, tab) {
   const p = primary(m, tab), fav = m.pH >= m.pA, tier = tierOf(p);
   const win = tab === "win";
   const flags = [];
+  const my = myOf(m.id);
+  if (my) flags.push(`<span class="flag in">Kuponunda: ${esc(my.mk === "win" ? (my.side === "away" ? m.away : m.home) + " kazanır" : MK[my.mk])}</span>`);
   if (!m.trusted) flags.push('<span class="flag" title="Takım verisi az, model düşük güvenli">Düşük güven</span>');
   if (m.clipped) flags.push('<span class="flag" title="Kalibre değer uç noktada kırpılmıştı, ham model olasılığı gösteriliyor">Ham değer</span>');
   const st = (cls, id, label, v) => `<div class="stat ${cls} ${tab === id ? "on" : ""}"><span>${label}</span><b>${typeof v === "number" ? pn(v) : "-"}</b></div>`;
@@ -1149,15 +1173,79 @@ function render() {
 
 // ---------- kupon şeridi: kupon her sayfada bir dokunuş uzakta
 function updateSlip() {
-  const el = $("slip"), cp = state.lastCoupon, open = document.body.classList.contains("sopen") || document.body.classList.contains("open");
-  const show = !!(cp && cp.picks.length) && !(state.view === "home" && state.cpVis) && !open;
+  const el = $("slip"), open = document.body.classList.contains("sopen") || document.body.classList.contains("open");
+  const mine = state.my.length > 0, R = mine ? resolveMy() : null;
+  const cp = mine ? { picks: R.live.map(x => ({ m: x.m, pk: x.pk })), comb: R.comb } : state.lastCoupon;
+  const show = mine ? !open : !!(cp && cp.picks.length) && !(state.view === "home" && state.cpVis) && !open;
   el.hidden = !show;
+  el.classList.toggle("mine", mine);
   document.body.classList.toggle("has-slip", show);
   if (!show) return;
-  const co = combOdds(cp.picks), H = state.home;
-  const html = `<span class="slip-n">${cp.picks.length}</span><span class="slip-t"><b>Günün kuponu · ${esc(STYLES[H.style].label)}</b><small>${cp.picks.length} seçim, birlikte %${pn(cp.comb)}</small></span>${co ? `<span class="slip-o"><b>${fo(co)}</b><small>oran</small></span>` : `<span class="slip-o"><b>%${pn(cp.comb)}</b><small>olasılık</small></span>`}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>`;
+  const co = cp.picks.length ? combOdds(cp.picks) : null, H = state.home, n = mine ? state.my.length : cp.picks.length;
+  const title = mine ? "Kuponum" : `Günün kuponu · ${esc(STYLES[H.style].label)}`;
+  const sub = mine ? (cp.picks.length ? `${cp.picks.length} seçim, birlikte %${pn(cp.comb)}` : "hesaplanacak seçim yok") : `${cp.picks.length} seçim, birlikte %${pn(cp.comb)}`;
+  const html = `<span class="slip-n">${n}</span><span class="slip-t"><b>${title}</b><small>${sub}</small></span>${co ? `<span class="slip-o"><b>${fo(co)}</b><small>oran</small></span>` : cp.picks.length ? `<span class="slip-o"><b>%${pn(cp.comb)}</b><small>olasılık</small></span>` : ""}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>`;
   if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }
-  el.setAttribute("aria-label", `Günün kuponu, ${cp.picks.length} seçim. Ayrıntıyı aç`);
+  el.setAttribute("aria-label", `${mine ? "Kuponum" : "Günün kuponu"}, ${n} seçim. Ayrıntıyı aç`);
+}
+
+// ---------- Kuponum: kendi seçtiğin maçlarla kupon (en fazla 8 seçim, bir maçtan tek seçim)
+const MY_MAX = 8;
+let toastT = null;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 1900); }
+function saveMy() { lsSet("banko2:my", JSON.stringify(state.my)); }
+const myOf = id => state.my.find(x => x.id === id);
+const sameSel = (s, pk) => s && s.mk === pk.market && (pk.market !== "win" || (s.side || "") === (pk.side || ""));
+function pickP(m, mk, side) { return mk === "win" ? (side === "away" ? m.pA : m.pH) : primary(m, mk); }
+// Kayıtlı seçimleri güncel maç verisiyle eşleştirir; başlamış ya da listeden düşmüş maçlar ayrı işaretlenir
+function resolveMy() {
+  const all = new Map(flatten().map(m => [m.id, m])), now = Date.now(), out = [];
+  for (const s of state.my) {
+    const m = all.get(s.id), kick = new Date(s.d), started = kick.getTime() <= now;
+    const p = m ? pickP(m, s.mk, s.side) : s.p;
+    out.push({ s, m: m || null, started, gone: !m, pk: { market: s.mk, side: s.mk === "win" ? (s.side || "home") : null, p: typeof p === "number" ? p : s.p } });
+  }
+  const live = out.filter(x => x.m && !x.started);
+  return { rows: out, live, comb: live.reduce((a, c) => a * c.pk.p, 1) };
+}
+function addMy(m, pk, quiet) {
+  const ex = myOf(m.id);
+  if (ex && sameSel(ex, pk)) { if (!quiet) toast("Bu seçim zaten kuponunda"); return "same"; }
+  if (!ex && state.my.length >= MY_MAX) { if (!quiet) toast(`Kupon en fazla ${MY_MAX} seçim alır`); return "full"; }
+  const rec = { id: m.id, lk: m.lk, h: m.hraw, a: m.araw, d: m.kick.toISOString(), lg: m.league, c: m.country, mk: pk.market, side: pk.market === "win" ? (pk.side || "home") : "", p: Math.round(pk.p * 1000) / 1000 };
+  if (ex) Object.assign(ex, rec); else state.my.push(rec);
+  saveMy(); buzz(12);
+  if (!quiet) toast(ex ? `Kupondaki seçim değişti: ${pickLabel(m, pk)}` : `Kupona eklendi · ${state.my.length} seçim`);
+  return ex ? "changed" : "added";
+}
+function removeMy(id) { state.my = state.my.filter(x => x.id !== id); saveMy(); buzz(); }
+function importToMy(picks) {
+  let n = 0, full = false;
+  for (const c of picks) { const r = addMy(c.m, c.pk, true); if (r === "added" || r === "changed") n++; if (r === "full") full = true; }
+  toast(n ? `${n} seçim kuponuna aktarıldı${full ? `, kupon doldu (en fazla ${MY_MAX})` : ""}` : full ? `Kupon dolu (en fazla ${MY_MAX})` : "Bu seçimler zaten kuponunda");
+  render();
+}
+function myRow(x) {
+  const s = x.s, kick = new Date(s.d), di = dayInfo(kick), home = tn(s.h), away = tn(s.a);
+  const lbl = s.mk === "win" ? (s.side === "away" ? away : home) + " kazanır" : MK[s.mk];
+  const state_ = x.gone ? "Listede yok" : x.started ? "Başladı" : "";
+  const od = x.m && !x.started ? pickOdds(x.m, x.pk) : null;
+  return `<li class="pk my-pk${x.gone || x.started ? " gone" : ""} tier${tierOf(x.pk.p)}"><button type="button" class="pk-b" ${x.m ? `data-open="${esc(s.id)}" data-tab="${s.mk}"` : "disabled"} aria-label="${esc(home)} ile ${esc(away)} maçını aç">
+    <span class="pk-t">${esc(fmtTime(kick))}<small>${esc(di.tag || di.num + " " + di.month.slice(0, 3))}</small></span>
+    <span class="pk-m"><b>${crest(s.lk, s.h, home, 22)}${crest(s.lk, s.a, away, 22)}<span class="nm">${esc(home)} - ${esc(away)}</span></b><span class="pk-l">${esc(lbl)}</span>${x.m && !x.started ? pickChips(x.m, x.pk) : state_ ? `<span class="chips2"><span class="chip2 na">${state_}, hesaba katılmaz</span></span>` : ""}</span>
+    <span class="pk-p"><span class="pv"><b>${pn(x.pk.p)}</b>%</span><span class="meter"><i style="width:${pn(x.pk.p)}%"></i></span>${od ? `<span class="pk-o">${od.src} ${fo(od.v)}</span>` : ""}</span></button>
+    <button type="button" class="pk-x" data-rm="${esc(s.id)}" aria-label="${esc(home)} - ${esc(away)} seçimini çıkar">×</button></li>`;
+}
+function myBody() {
+  const R = resolveMy();
+  if (!R.rows.length) return `<div class="ai-empty">${ILL.ticket}<p>Kuponun boş. Bir maça dokun, detayda pazarı seç ve <b>Kupona ekle</b> de. Ya da günün kuponunu buraya aktarıp üstünde oyna.</p></div>
+    <div class="sh-btns"><button type="button" class="ghost solid" data-act="import">Günün kuponunu aktar</button></div>`;
+  const dead = R.rows.length - R.live.length;
+  return `<ol class="picks">${R.rows.map(myRow).join("")}</ol>
+    ${R.live.length ? combHTML(R.live.map(x => ({ m: x.m, pk: x.pk })), R.comb) : `<p class="muted" style="margin-top:12px">Hesaplanacak seçim kalmadı.</p>`}
+    ${dead ? `<p class="sh-note">${dead} seçim başladığı ya da listeden düştüğü için hesaba ve kayda katılmaz. <button type="button" class="lnk" data-act="clean">Temizle</button></p>` : ""}
+    <div class="sh-btns"><button type="button" class="ghost solid" data-act="mysave" ${R.live.length ? "" : "disabled"}>Takibe al</button><button type="button" class="ghost" data-act="mycopy" ${R.live.length ? "" : "disabled"}>Kopyala</button><button type="button" class="ghost" data-act="import">Günün kuponunu ekle</button><button type="button" class="ghost" data-act="clear">Kuponu boşalt</button></div>
+    <p class="sh-note">Kupon en fazla ${MY_MAX} seçim alır, bir maçtan tek seçim girer. Kuponun bu cihazda ve hesabında saklanır.</p>`;
 }
 
 // ---------- maç detay paneli: model, piyasa, oran, Elo ve korner tek yerde
@@ -1196,7 +1284,8 @@ function detailBody() {
     .map(([l, p, mp, od]) => `<div><span>${l}</span><b>${pn(p)}<small style="display:inline;font:600 14px var(--fc)">%</small></b><small>${mp !== null && mp !== undefined ? `piyasa %${pn(mp)}` : "piyasa –"}${od ? ` · oran ${fo(od)}` : ""}</small></div>`).join("");
   const rows = pks.map(pk => {
     const mi = marketInfo(m, pk), od = pickOdds(m, pk), mp = mktProb(m, pk.market, pk.side);
-    return `<li><button type="button" class="mk-row" data-pk="${pk.market}" aria-pressed="${pk.market === state.detPick}"><span class="mk-l"><b>${esc(pickLabel(m, pk))}</b>${mi && mi.cls !== "na" ? `<span class="chip2 ${mi.cls}">${esc(mi.tag)}</span>` : ""}</span><span class="mk-v"><b>${pn(pk.p)}</b><small>%</small></span><span class="mk-v mk-m">${mp !== null ? "%" + pn(mp) : "–"}</span><span class="mk-v mk-o">${od ? fo(od.v) : "–"}</span></button></li>`;
+    const inMy = sameSel(myOf(m.id), pk);
+    return `<li><button type="button" class="mk-row" data-pk="${pk.market}" aria-pressed="${pk.market === state.detPick}"><span class="mk-l"><b>${esc(pickLabel(m, pk))}</b>${inMy ? '<span class="chip2 in">Kuponunda</span>' : ""}${mi && mi.cls !== "na" ? `<span class="chip2 ${mi.cls}">${esc(mi.tag)}</span>` : ""}</span><span class="mk-v"><b>${pn(pk.p)}</b><small>%</small></span><span class="mk-v mk-m">${mp !== null ? "%" + pn(mp) : "–"}</span><span class="mk-v mk-o">${od ? fo(od.v) : "–"}</span></button></li>`;
   }).join("");
   const ei = eloInfo(m, { market: "win", side }), er = ER(m.id);
   const elo = ei ? `<p class="dt-line"><b>${esc(ei.tag)}.</b> ${esc(side === "home" ? m.home : m.away)} için beklenen puan: model %${pn(ei.mod)}, Elo %${pn(ei.elo)}.</p>`
@@ -1212,7 +1301,9 @@ function detailBody() {
     <div class="dt-sec"><h3>Pazarlar <span class="muted">seçmek için dokun</span></h3><ul class="mk-list"><li class="mk-head" aria-hidden="true"><span>Seçim</span><span>Model</span><span>Piyasa</span><span>Oran</span></li>${rows}</ul></div>
     <div class="dt-sec"><h3>Elo görüşü</h3>${elo}</div>
     <div class="dt-sec"><h3>Korner</h3>${cor}</div>
-    <div class="sh-btns" style="margin-top:18px">${sel ? `<button type="button" class="ghost solid" data-act="trk">Takibe al: ${esc(pickLabel(m, sel))}</button>` : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button></div>
+    <div class="sh-btns" style="margin-top:18px">${sel ? (() => { const ex = myOf(m.id), same = sameSel(ex, sel), full = !ex && state.my.length >= MY_MAX;
+      return `<button type="button" class="ghost solid" data-act="my" ${full ? "disabled" : ""}>${same ? "Kupondan çıkar" : ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}</button><button type="button" class="ghost" data-act="trk">Tek seçim takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button></div>
+    ${state.my.length ? `<p class="sh-note">Kuponunda ${state.my.length} seçim var. <button type="button" class="lnk" data-act="openmy">Kuponu aç</button></p>` : ""}
     <p class="sh-note">Oran: Bet365, yoksa bahisçi ortalaması; 1,5 / 3,5 üst ve KG var için konsensüs. <button type="button" class="lnk" data-info="odds">Ayrıntı</button></p>`;
 }
 // ---------- "Nasıl hesaplanıyor?"
@@ -1236,12 +1327,19 @@ function couponCtlHTML() {
     <div class="seg" role="group" aria-label="Kupon tarzı">${Object.keys(STYLES).map(k => `<button type="button" data-style="${k}" aria-pressed="${H.style === k}">${STYLES[k].label}</button>`).join("")}</div>
     <div class="seg" role="group" aria-label="Süre">${HOURS.map(h => `<button type="button" data-hours="${h}" aria-pressed="${H.hours === h}">${h} saat</button>`).join("")}</div>`;
 }
+function slipTabs() {
+  return `<div class="seg full slip-tabs" role="group" aria-label="Kupon"><button type="button" data-st="my" aria-pressed="${state.slipTab === "my"}">Kuponum<span class="c">${state.my.length}</span></button><button type="button" data-st="auto" aria-pressed="${state.slipTab === "auto"}">Günün kuponu</button></div>`;
+}
 function slipBody() {
+  if (state.slipTab === "my") return slipTabs() + myBody();
+  return slipTabs() + autoBody();
+}
+function autoBody() {
   const cp = state.lastCoupon;
   const ctl = `<div class="cp-ctl">${couponCtlHTML()}</div>`;
   if (!cp || !cp.picks.length) return ctl + `<div class="ai-empty">${ILL.ticket}<p>Bu ayarlarda kupona girecek maç yok. Dengeli tarzı ya da daha uzun süreyi dene.</p></div>`;
   return ctl + `${cp.short ? `<p class="muted">İstenen ${state.home.n} yerine ${cp.picks.length} seçim bulundu.</p>` : ""}<ol class="picks">${cp.picks.map(c => pickRow(c.m, c.pk)).join("")}</ol>${combHTML(cp.picks, cp.comb)}
-    <div class="sh-btns"><button type="button" class="ghost solid" data-act="save">Takibe al</button><button type="button" class="ghost" data-act="new">Farklı kupon</button><button type="button" class="ghost" data-act="copy">Kuponu kopyala</button></div>`;
+    <div class="sh-btns"><button type="button" class="ghost solid" data-act="save">Takibe al</button><button type="button" class="ghost" data-act="tomy">Kuponuma aktar</button><button type="button" class="ghost" data-act="new">Farklı kupon</button><button type="button" class="ghost" data-act="copy">Kuponu kopyala</button></div>`;
 }
 function setBody() {
   const t = TABS.find(x => x.id === state.tab), thr = state.thr[state.tab];
@@ -1263,13 +1361,14 @@ function syncSheet() {
   const k = state.sheet;
   if (!k || k === "info") return;
   if (k === "match") {
-    const sig = [state.detId, state.detPick, state.detLoading, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size].join("|");
+    const sig = [state.detId, state.detPick, JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size].join("|");
     if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y; }
     return;
   }
   if (k === "slip") {
     const cp = state.lastCoupon, H = state.home;
-    const sig = [H.n, H.style, H.hours, state.mkt.status, state.elo.status, cp ? cp.picks.map(c => c.m.id + c.pk.market + pn(c.pk.p)).join(",") : ""].join("|");
+    const sig = [state.slipTab, JSON.stringify(state.my), state.calib, H.n, H.style, H.hours, state.mkt.status, state.elo.status, cp ? cp.picks.map(c => c.m.id + c.pk.market + pn(c.pk.p)).join(",") : ""].join("|");
+    $("shT").textContent = state.slipTab === "my" ? "Kuponum" : "Günün kuponu";
     if (sig !== state.slipSig) { state.slipSig = sig; $("shBody").innerHTML = slipBody(); }
     return;
   }
@@ -1287,6 +1386,7 @@ function openSheet(kind, arg) {
   if (document.body.classList.contains("open")) setDrawer(false);
   if (!state.sheet) sheetOpener = document.activeElement;
   state.sheet = kind; state.slipSig = "";
+  if (kind === "slip") state.slipTab = arg === "auto" || arg === "my" ? arg : (state.my.length ? "my" : "auto");
   $("shT").textContent = { slip: "Günün kuponu", set: "Ayarlar", match: "Maç detayı", info: "Nasıl hesaplanıyor?" }[kind];
   $("shBody").innerHTML = kind === "set" ? setBody() : kind === "info" ? infoBody() : "";
   $("shBody").scrollTop = 0;
@@ -1451,7 +1551,7 @@ function renderHome() {
   state.lastCoupon = cp;
   const loading = (state.running || !state.leagues.length) && !base.length;
   $("cpBody").innerHTML = cp.picks.length
-    ? `${cp.short ? `<p class="muted">İstenen ${H.n} yerine ${cp.picks.length} seçim bulundu. Dengeli tarzı ya da daha uzun süreyi deneyebilirsin.</p>` : ""}<ol class="picks">${cp.picks.map(c => pickRow(c.m, c.pk)).join("")}</ol>${combHTML(cp.picks, cp.comb)}<div class="cp-act"><button type="button" class="ghost" id="cpCopy">Kuponu kopyala</button><button type="button" class="ghost" id="cpSave">Takibe al</button></div>`
+    ? `${cp.short ? `<p class="muted">İstenen ${H.n} yerine ${cp.picks.length} seçim bulundu. Dengeli tarzı ya da daha uzun süreyi deneyebilirsin.</p>` : ""}<ol class="picks">${cp.picks.map(c => pickRow(c.m, c.pk)).join("")}</ol>${combHTML(cp.picks, cp.comb)}<div class="cp-act"><button type="button" class="ghost" id="cpCopy">Kuponu kopyala</button><button type="button" class="ghost" id="cpSave">Takibe al</button><button type="button" class="ghost" id="cpToMy">Kuponuma aktar</button></div>`
     : loading ? `<ol class="picks" aria-label="Kupon yükleniyor">${'<li class="pk skel-pk" aria-hidden="true"><span class="sk" style="width:46px;height:22px"></span><span class="sk-c"><span class="sk" style="width:80%"></span><span class="sk" style="width:45%"></span></span><span class="sk" style="width:58px;height:28px;margin-left:auto"></span></li>'.repeat(3)}</ol>`
     : `<p class="ai-empty">${loading ? "" : `Bu ayarlarda yeterli aday maç yok. ${H.style === "safe" ? "Dengeli tarzı" : "Daha uzun süreyi"} deneyebilirsin.`}</p>`;
 
@@ -1610,6 +1710,8 @@ function homeClick(e) {
   if (cc && state.lastCoupon) { copyText(couponText(state.lastCoupon.picks, state.lastCoupon.comb, "Günün kuponu"), cc, "Kuponu kopyala"); return; }
   const ac = e.target.closest("#aiCopy");
   if (ac && state.aiCoupon) { copyText(couponText(state.aiCoupon.picks, state.aiCoupon.comb, "Yapay zeka kuponu"), ac, "Kuponu kopyala"); return; }
+  if (e.target.closest("#cpToMy") && state.lastCoupon && state.lastCoupon.picks.length) { importToMy(state.lastCoupon.picks); return; }
+  if (e.target.closest("#aiToMy") && state.aiCoupon && state.aiCoupon.picks.length) { importToMy(state.aiCoupon.picks.map(c => ({ m: c.m, pk: { ...c.pk, p: pickP(c.m, c.pk.market, c.pk.side) } }))); return; }
   const cs = e.target.closest("#cpSave");
   if (cs && state.lastCoupon && state.lastCoupon.picks.length) { trackSave(cs, "main", "Günün kuponu", state.lastCoupon); return; }
   const as = e.target.closest("#aiSave");
@@ -1812,7 +1914,7 @@ function renderAI() {
     const { r, picks, comb, oneriler } = res;
     if (picks.length) state.aiCoupon = { picks, comb };
     html += `${r.ozet ? `<p class="ai-sum">${esc(r.ozet)}</p>` : ""}${r.cevap ? `<div class="ai-ans">${esc(r.cevap)}</div>` : ""}<div class="ai-cols">
-      ${picks.length ? `<div><h3>${esc(r.kupon.baslik || "Yapay zeka kuponu")}</h3><ol class="picks">${picks.map(c => pickRow(c.m, c.pk, c.note)).join("")}</ol>${combHTML(picks, comb)}<div class="cp-act"><button type="button" class="ghost" id="aiCopy">Kuponu kopyala</button><button type="button" class="ghost" id="aiSave">Takibe al</button></div></div>` : ""}
+      ${picks.length ? `<div><h3>${esc(r.kupon.baslik || "Yapay zeka kuponu")}</h3><ol class="picks">${picks.map(c => pickRow(c.m, c.pk, c.note)).join("")}</ol>${combHTML(picks, comb)}<div class="cp-act"><button type="button" class="ghost" id="aiCopy">Kuponu kopyala</button><button type="button" class="ghost" id="aiSave">Takibe al</button><button type="button" class="ghost" id="aiToMy">Kuponuma aktar</button></div></div>` : ""}
       ${oneriler.length ? `<div><h3>Öneriler</h3>${oneriler.map(o => `<div class="ai-s"><b>${esc(o.baslik)}</b><p>${esc(o.metin)}</p>${o.matches.length ? `<div class="chips">${o.matches.map(m => `<button type="button" data-open="${esc(m.id)}" data-tab="win">${esc(m.home)} - ${esc(m.away)}</button>`).join("")}</div>` : ""}</div>`).join("")}</div>` : ""}
     </div>`;
   } else if (A.status !== "loading" && !A.error) {
@@ -1900,13 +2002,32 @@ $("shBody").addEventListener("click", e => {
     if (!m) return;
     if (a.dataset.act === "show") { const id = m.id, tab = state.detPick; closeSheet(true); openMatch(id, tab); return; }
     if (a.dataset.act === "trk") { const pk = detPicks(m).find(x => x.market === state.detPick); if (pk) trackSave(a, "main", "Tek seçim: " + pickLabel(m, pk), { picks: [{ m, pk }], comb: pk.p }); }
+    if (a.dataset.act === "my") { const pk = detPicks(m).find(x => x.market === state.detPick); if (!pk) return; if (sameSel(myOf(m.id), pk)) { removeMy(m.id); toast("Kupondan çıkarıldı"); } else addMy(m, pk); render(); }
+    if (a.dataset.act === "openmy") openSheet("slip", "my");
     return;
   }
   if (state.sheet === "slip") {
+    const st = e.target.closest("[data-st]");
+    if (st) { state.slipTab = st.dataset.st; syncSheet(); $("shBody").scrollTop = 0; return; }
+    const rm = e.target.closest("[data-rm]");
+    if (rm) { removeMy(rm.dataset.rm); render(); return; }
     const op = e.target.closest("[data-open]");
     if (op) { openDetail(op.dataset.open, op.dataset.tab); return; }
     const a = e.target.closest("[data-act]");
+    if (a && state.slipTab === "my") {
+      const k = a.dataset.act, R = resolveMy(), cp = { picks: R.live.map(x => ({ m: x.m, pk: x.pk })), comb: R.comb };
+      if (k === "import") { if (state.lastCoupon && state.lastCoupon.picks.length) importToMy(state.lastCoupon.picks); else toast("Günün kuponunda aktarılacak seçim yok"); }
+      else if (k === "mysave" && cp.picks.length) trackSave(a, "main", "Kendi kuponum", cp);
+      else if (k === "mycopy" && cp.picks.length) copyText(couponText(cp.picks, cp.comb, "Kuponum"), a, "Kopyala");
+      else if (k === "clean") { const live = new Set(R.live.map(x => x.s.id)); state.my = state.my.filter(x => live.has(x.id)); saveMy(); render(); }
+      else if (k === "clear") {
+        if (a.dataset.armed) { state.my = []; saveMy(); render(); return; }
+        a.dataset.armed = "1"; a.textContent = "Emin misin? Tekrar bas"; setTimeout(() => { if (a.isConnected) { delete a.dataset.armed; a.textContent = "Kuponu boşalt"; } }, 3000);
+      }
+      return;
+    }
     if (a && state.lastCoupon) {
+      if (a.dataset.act === "tomy") { importToMy(state.lastCoupon.picks); state.slipTab = "my"; syncSheet(); return; }
       if (a.dataset.act === "save") trackSave(a, "main", "Günün kuponu", state.lastCoupon);
       else if (a.dataset.act === "copy") copyText(couponText(state.lastCoupon.picks, state.lastCoupon.comb, "Günün kuponu"), a, "Kuponu kopyala");
       else if (a.dataset.act === "new") { state.home.seed = (state.home.seed || 0) + 1; render(); }
@@ -2053,6 +2174,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) setH
   loadUI();
   const th = lsGet("banko2:theme"); if (th) applyTheme(th);
   try { state.fav = new Set(JSON.parse(lsGet("banko2:fav") || "[]")); } catch (e) {}
+  try { const my = JSON.parse(lsGet("banko2:my") || "[]"); if (Array.isArray(my)) state.my = my.filter(x => x && x.id && MK[x.mk]).slice(0, MY_MAX); } catch (e) {}
   try { const a = JSON.parse(lsGet("banko2:ai") || "null"); if (a && a.day === dayKey(new Date()) && a.result) { state.ai.result = a.result; state.ai.at = a.at; state.ai.usedProv = a.used || ""; state.ai.note = a.note || ""; state.ai.sig = a.sig || ""; } } catch (e) {}
   if (boot.leagueError && !(boot.leagues || []).length) { $("errors").textContent = "Lig listesi alınamadı (" + boot.leagueError + ")."; return; }
   state.leagues = (boot.leagues || []).filter(l => !isExcluded(l));
