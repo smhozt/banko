@@ -716,6 +716,8 @@
   button[aria-busy="true"] { cursor:progress; opacity:.85; }
   button[aria-busy="true"] .spin { margin-right:8px; }
   .ghost.done { background:var(--t2); border-color:var(--t2); color:#06140E; }
+  .ghost.in-my { background:color-mix(in srgb, var(--t2) 14%, transparent); border:2px solid var(--t2); color:var(--ink); font-weight:600; }
+  .ghost.in-my u { text-underline-offset:3px; color:var(--err); text-decoration-color:var(--err); }
   @keyframes pop { 0% { transform:scale(1); } 40% { transform:scale(1.04); } 100% { transform:scale(1); } }
   .pop { animation:pop .35s ease; }
   @keyframes freshIn { from { opacity:.25; transform:translateY(6px); } }
@@ -1495,7 +1497,8 @@ function detailBody() {
     <div class="dt-sec"><h3>Korner</h3>${cor}</div>
     <div class="sh-btns" style="margin-top:18px">${sel ? (() => { const ex = myOf(m.id), same = sameSel(ex, sel), full = !ex && state.my.length >= MY_MAX;
       const fl = state.detFlash && state.detFlash.until > Date.now() ? state.detFlash.text : "";
-      return `<button type="button" class="ghost solid${fl ? " done pop" : ""}" data-act="my" ${full ? "disabled" : ""}>${fl ? "✓ " + esc(fl) : `${same ? "Kupondan çıkar" : ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}`}</button><button type="button" class="ghost" data-act="trk">Tek seçim takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button></div>
+      const cls = fl ? "ghost solid done pop" : same ? "ghost in-my" : "ghost solid";
+      return `<button type="button" class="${cls}" data-act="my" ${full ? "disabled" : ""} aria-pressed="${same}">${fl ? "✓ " + esc(fl) : same ? `✓ Kuponda: ${esc(pickLabel(m, sel))} · <u>Çıkar</u>` : `${ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}`}</button><button type="button" class="ghost" data-act="trk">Tek seçim takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button></div>
     ${state.my.length ? (() => { const R = resolveMy(), co = R.live.length ? combOdds(R.live.map(x => ({ m: x.m, pk: x.pk }))) : null;
       return `<div class="dt-foot${state.myPulse && state.myPulse > Date.now() - 900 ? " pop" : ""}" role="status" aria-live="polite"><span class="slip-n">${state.my.length}</span><span class="ft"><b>Kuponum</b><small>${R.live.length ? `${R.live.length} seçim, birlikte %${pn(R.comb)}${co ? ` · oran ${fo(co)}` : ""}` : "hesaplanacak seçim yok"}</small></span><button type="button" class="ghost" data-act="openmy">Kuponu aç</button></div>`; })() : ""}
     <p class="sh-note">Oran: Bet365, yoksa bahisçi ortalaması; 1,5 / 3,5 üst ve KG var için konsensüs. <button type="button" class="lnk" data-info="odds">Ayrıntı</button></p>`;
