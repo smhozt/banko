@@ -642,8 +642,11 @@
     padding:11px 16px; border-radius:12px; background:var(--ink); color:var(--bg); font-weight:600; font-size:14px; box-shadow:0 12px 30px -10px rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .18s, transform .18s; }
   .toast.show { opacity:1; transform:translate(-50%, 0); }
   @media (min-width:721px) { .toast { bottom:100px; } }
-  body.sopen .toast { bottom:auto; top:calc(env(safe-area-inset-top) + 14px); transform:translate(-50%, -8px); }
-  body.sopen .toast.show { transform:translate(-50%, 0); }
+  @media (max-width:720px) {
+    body.sopen .toast { bottom:auto; top:calc(env(safe-area-inset-top) + 14px); transform:translate(-50%, -8px); }
+    body.sopen .toast.show { transform:translate(-50%, 0); }
+  }
+  @media (min-width:721px) { body.sopen .toast { bottom:28px; } }
   .my-pk .pk-x { width:42px; }
   .my-pk .pk-m { overflow:hidden; }
   @media (max-width:440px) { .my-pk .pk-m b .crest { display:none; } .my-pk .pk-m b .nm { margin-left:0; } .my-pk .chip2 small { display:none; } }
@@ -706,6 +709,27 @@
   .scr .sc b { font:700 30px var(--fc); letter-spacing:.5px; }
   .scr .sc small { display:block; color:var(--muted); font-size:12px; margin-top:3px; }
   .mk-sub { margin:12px 0 6px; color:var(--muted); font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.3px; }
+  /* ---------- basılma geri bildirimi ---------- */
+  .ghost, .pill, .mk-row, .pk-b, .sg-c, .scr, .lgh, .nav button, .slip, .seg button, .chips button, .quick button, .star, .pk-x, .lnk, .tk-del { transition:transform .08s ease, background-color .15s, opacity .15s; -webkit-tap-highlight-color:transparent; }
+  .ghost:active, .pill:active, .pk-b:active, .sg-c:active, .scr:active, .lgh:active, .slip:active, .seg button:active, .chips button:active, .quick button:active, .star:active, .pk-x:active, .mk-row:active { transform:scale(.97); }
+  .nav button:active .ni { transform:scale(.92); }
+  button[aria-busy="true"] { cursor:progress; opacity:.85; }
+  button[aria-busy="true"] .spin { margin-right:8px; }
+  .ghost.done { background:var(--t2); border-color:var(--t2); color:#06140E; }
+  @keyframes pop { 0% { transform:scale(1); } 40% { transform:scale(1.04); } 100% { transform:scale(1); } }
+  .pop { animation:pop .35s ease; }
+  @keyframes freshIn { from { opacity:.25; transform:translateY(6px); } }
+  .fresh .pk, .fresh .tk-pk { animation:freshIn .3s ease both; }
+  .fresh .pk:nth-child(2) { animation-delay:.04s; } .fresh .pk:nth-child(3) { animation-delay:.08s; } .fresh .pk:nth-child(4) { animation-delay:.12s; } .fresh .pk:nth-child(5) { animation-delay:.16s; } .fresh .pk:nth-child(6) { animation-delay:.2s; }
+  /* maç detayında altta yapışık kupon şeridi */
+  .dt-foot { position:sticky; bottom:-22px; margin:18px -18px -22px; padding:10px 18px calc(12px + env(safe-area-inset-bottom)); background:var(--raised); border-top:1px solid var(--line); display:flex; align-items:center; gap:12px; z-index:2; }
+  .dt-foot .slip-n { width:38px; height:38px; font-size:21px; background:var(--away); color:#fff; }
+  .dt-foot .ft { flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.25; }
+  .dt-foot .ft b { font-weight:600; } .dt-foot .ft small { color:var(--muted); font-size:12.5px; }
+  .dt-foot .ghost { min-height:40px; }
+  @media (min-width:721px) { .dt-foot { margin:18px -22px -22px; padding:10px 22px 12px; } }
+  .ai-wait { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--sunk); border-radius:12px; }
+  .ai-wait small { display:block; color:var(--muted); font-size:12.5px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
 </style>
 </head>
@@ -870,7 +894,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {} }, detTable: false, detMore: false, scAll: false, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {} }, detTable: false, detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -1255,6 +1279,13 @@ function updateSlip() {
   el.setAttribute("aria-label", `${mine ? "Kuponum" : "Günün kuponu"}, ${n} seçim. Ayrıntıyı aç`);
 }
 
+// ---------- düğme meşgul göstergesi: basıldığı anda tepki verir, iş bitince eski haline döner
+function busy(btn, text) {
+  if (!btn || btn.getAttribute("aria-busy") === "true") return null;
+  const old = btn.innerHTML, dis = btn.disabled;
+  btn.setAttribute("aria-busy", "true"); btn.disabled = true; btn.innerHTML = `<span class="spin"></span>${esc(text)}`;
+  return () => { if (!btn.isConnected) return; btn.removeAttribute("aria-busy"); btn.disabled = dis; btn.innerHTML = old; };
+}
 // ---------- Kuponum: kendi seçtiğin maçlarla kupon (en fazla 8 seçim, bir maçtan tek seçim)
 const MY_MAX = 8;
 let toastT = null;
@@ -1387,7 +1418,9 @@ async function runMatchAI(id) {
   if (!m) return;
   const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
   if (!order.length) { X.ai[id] = { status: "error", err: "Yapay zeka anahtarı tanımlı değil. Anasayfadaki yapay zeka köşesinden ayarla." }; syncSheet(); return; }
-  X.ai[id] = { status: "loading" }; syncSheet();
+  if (X.ai[id] && X.ai[id].status === "loading") return;
+  X.ai[id] = { status: "loading" }; syncSheet(); buzz();
+  const sec = document.getElementById("aiSec"); if (sec) sec.scrollIntoView({ block: "nearest", behavior: "smooth" });
   try { if (state.detJob) await state.detJob; } catch (e) {}
   const r = MR(id), ti = X.ti[id], side = m.pH >= m.pA ? "home" : "away", ei = eloInfo(m, { market: "win", side }), c = CR(id);
   const num = v => (typeof v === "number" ? pn(v) : null);
@@ -1407,11 +1440,17 @@ async function runMatchAI(id) {
     } else X.ai[id] = { status: "error", err: ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi." };
   } catch (e) { X.ai[id] = { status: "error", err: String(e.message || e) }; }
   syncSheet();
+  const ok = X.ai[id].status === "done";
+  if (state.sheet === "match" && state.detId === id) {
+    const sec = document.getElementById("aiSec"); if (sec) sec.scrollIntoView({ block: "start", behavior: "smooth" });
+    toast(ok ? "Yapay zeka yorumu hazır" : "Yorum alınamadı");
+  } else toast(ok ? `${m.home} - ${m.away} yorumu hazır` : "Yorum alınamadı");
+  buzz(ok ? 15 : 30);
 }
 function aiBlock(m) {
   const a = state.extra.ai[m.id];
   if (!a) return `<p class="dt-line">Modelin, piyasanın ve formun ne dediğini yapay zeka kısaca özetler.</p><div class="sh-btns"><button type="button" class="ghost" data-act="ai">Bu maçı yorumla</button></div>`;
-  if (a.status === "loading") return `<p class="dt-line"><span class="spin"></span>Yorum hazırlanıyor…</p>`;
+  if (a.status === "loading") return `<div class="ai-wait" role="status"><span class="spin"></span><span><b>Yorum hazırlanıyor…</b><small>Yapay zeka maçın verisini okuyor, 10-20 saniye sürebilir. Paneli kapatsan da hazırlanmaya devam eder.</small></span></div>`;
   if (a.status === "error") return `<p class="ai-err">${esc(a.err)}</p><div class="sh-btns"><button type="button" class="ghost" data-act="ai">Tekrar dene</button></div>`;
   const pk = a.one ? detPicks(m).find(x => x.market === a.one) : null;
   return `<div class="ai-m"><p>${esc(a.yorum)}</p>${pk ? `<p><b>Öne çıkan: ${esc(pickLabel(m, pk))}.</b> ${esc(a.neden)} <button type="button" class="lnk" data-pk="${pk.market}">Seç</button></p>` : ""}${a.dikkat.length ? `<ul>${a.dikkat.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}<span class="muted">${esc(a.prov)} · kesinlik içermez, bahis tavsiyesi değildir</span></div>
@@ -1451,12 +1490,14 @@ function detailBody() {
       ${state.detMore ? `<p class="mk-sub">Alt / üst, KG yok, beraberlik, çifte şans</p><ul class="mk-list"><li class="mk-head" aria-hidden="true"><span>Seçim</span><span>Model</span><span>Piyasa</span><span>Oran</span></li>${rowsX}</ul><p class="sh-note">Altlar üstlerin, çifte şans karşı tarafın tersidir. ≈ işaretli oranlar 1X2 oranlarından yaklaşık hesaplanır. 0,5 ve 4,5 çizgileri düzeltilmemiş model değeridir.</p>` : ""}` : ""}</div>
     <div class="dt-sec"><h3>Gol beklentisi <span class="muted">bilgi amaçlı</span></h3>${goalBlock(m)}</div>
     <div class="dt-sec"><h3>Puan durumu ve form</h3>${teamBlock(m)}</div>
-    <div class="dt-sec"><h3>Yapay zeka yorumu</h3>${aiBlock(m)}</div>
+    <div class="dt-sec" id="aiSec"><h3>Yapay zeka yorumu</h3>${aiBlock(m)}</div>
     <div class="dt-sec"><h3>Elo görüşü</h3>${elo}</div>
     <div class="dt-sec"><h3>Korner</h3>${cor}</div>
     <div class="sh-btns" style="margin-top:18px">${sel ? (() => { const ex = myOf(m.id), same = sameSel(ex, sel), full = !ex && state.my.length >= MY_MAX;
-      return `<button type="button" class="ghost solid" data-act="my" ${full ? "disabled" : ""}>${same ? "Kupondan çıkar" : ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}</button><button type="button" class="ghost" data-act="trk">Tek seçim takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button></div>
-    ${state.my.length ? `<p class="sh-note">Kuponunda ${state.my.length} seçim var. <button type="button" class="lnk" data-act="openmy">Kuponu aç</button></p>` : ""}
+      const fl = state.detFlash && state.detFlash.until > Date.now() ? state.detFlash.text : "";
+      return `<button type="button" class="ghost solid${fl ? " done pop" : ""}" data-act="my" ${full ? "disabled" : ""}>${fl ? "✓ " + esc(fl) : `${same ? "Kupondan çıkar" : ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}`}</button><button type="button" class="ghost" data-act="trk">Tek seçim takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button></div>
+    ${state.my.length ? (() => { const R = resolveMy(), co = R.live.length ? combOdds(R.live.map(x => ({ m: x.m, pk: x.pk }))) : null;
+      return `<div class="dt-foot${state.myPulse && state.myPulse > Date.now() - 900 ? " pop" : ""}" role="status" aria-live="polite"><span class="slip-n">${state.my.length}</span><span class="ft"><b>Kuponum</b><small>${R.live.length ? `${R.live.length} seçim, birlikte %${pn(R.comb)}${co ? ` · oran ${fo(co)}` : ""}` : "hesaplanacak seçim yok"}</small></span><button type="button" class="ghost" data-act="openmy">Kuponu aç</button></div>`; })() : ""}
     <p class="sh-note">Oran: Bet365, yoksa bahisçi ortalaması; 1,5 / 3,5 üst ve KG var için konsensüs. <button type="button" class="lnk" data-info="odds">Ayrıntı</button></p>`;
 }
 // ---------- "Nasıl hesaplanıyor?"
@@ -1519,7 +1560,7 @@ function syncSheet() {
   const k = state.sheet;
   if (!k || k === "info") return;
   if (k === "match") {
-    const sig = [state.detId, state.detPick, state.detTable, state.detMore, !!state.extra.ti[state.detId], JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size].join("|");
+    const sig = [state.detId, state.detPick, state.detTable, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size].join("|");
     if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y; }
     return;
   }
@@ -1717,6 +1758,7 @@ function renderHome() {
   const cp = buildCoupon(base, H.style, H.n, H.seed);
   state.lastCoupon = cp;
   const loading = (state.running || !state.leagues.length) && !base.length;
+  $("cpBody").classList.toggle("fresh", !!state.cpFresh);
   $("cpBody").innerHTML = cp.picks.length
     ? `${cp.short ? `<p class="muted">İstenen ${H.n} yerine ${cp.picks.length} seçim bulundu. Dengeli tarzı ya da daha uzun süreyi deneyebilirsin.</p>` : ""}<ol class="picks">${cp.picks.map(c => pickRow(c.m, c.pk)).join("")}</ol>${combHTML(cp.picks, cp.comb)}<div class="cp-act"><button type="button" class="ghost" id="cpCopy">Kuponu kopyala</button><button type="button" class="ghost" id="cpSave">Takibe al</button><button type="button" class="ghost" id="cpToMy">Kuponuma aktar</button><button type="button" class="ghost" id="cpShare">Resim olarak paylaş</button></div>`
     : loading ? `<ol class="picks" aria-label="Kupon yükleniyor">${'<li class="pk skel-pk" aria-hidden="true"><span class="sk" style="width:46px;height:22px"></span><span class="sk-c"><span class="sk" style="width:80%"></span><span class="sk" style="width:45%"></span></span><span class="sk" style="width:58px;height:28px;margin-left:auto"></span></li>'.repeat(3)}</ol>`
@@ -1890,7 +1932,7 @@ function homeClick(e) {
   if (st) { state.home.style = st.dataset.style; state.home.seed = 0; render(); return; }
   const hr = e.target.closest("[data-hours]");
   if (hr) { state.home.hours = +hr.dataset.hours; state.home.seed = 0; render(); return; }
-  if (e.target.closest("#cpNew")) { state.home.seed = (state.home.seed || 0) + 1; render(); return; }
+  if (e.target.closest("#cpNew")) { state.home.seed = (state.home.seed || 0) + 1; state.cpFresh = true; render(); state.cpFresh = false; toast("Farklı bir kupon kuruldu"); buzz(); return; }
   const cc = e.target.closest("#cpCopy");
   if (cc && state.lastCoupon) { copyText(couponText(state.lastCoupon.picks, state.lastCoupon.comb, "Günün kuponu"), cc, "Kuponu kopyala"); return; }
   const ac = e.target.closest("#aiCopy");
@@ -1964,6 +2006,8 @@ function shareRows(picks) {
 }
 async function shareCoupon(title, picks, comb) {
   if (!picks.length) { toast("Paylaşılacak seçim yok"); return; }
+  const ae = document.activeElement, done = busy(ae && ae.tagName === "BUTTON" ? ae : null, "Hazırlanıyor…");
+  setTimeout(() => { if (done) done(); }, 700);
   const rows = shareRows(picks), co = combOdds(picks);
   try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
   const W = 1080, RH = 168, HEAD = 250, FOOT = 270, H = HEAD + rows.length * RH + FOOT, cv = document.createElement("canvas");
@@ -2035,8 +2079,9 @@ async function loadTrack() {
   try { T.data = await gs("getCoupons"); T.status = "done"; }
   catch (e) { T.status = "error"; T.error = String(e.message || e); }
   updateBadge();
-  if (state.view === "track") render();
+  if (state.view === "track") { render(); if (T.status === "done" && T.manual) toast("Sonuçlar güncellendi"); }
   else if (state.view === "home") renderDays();
+  T.manual = false;
 }
 // İsabet grafiği: tahmin aralığına göre (%10'luk) gerçekleşen oran. Çapraz çizgi = model dediği kadar tuttu.
 function calibHTML(coupons) {
@@ -2093,7 +2138,7 @@ function renderTrack() {
     el.dataset.built = "1";
     el.innerHTML = `<div class="home"><div class="home-top"><h1>Takip</h1><p>Takibe aldığın kuponlar maçlar bitince sonuçla karşılaştırılır. Modelin gerçekte ne kadar tuttuğunu burada görürsün.</p></div><section class="card" style="margin-top:20px"><div class="card-h"><h2>Özet</h2><button type="button" class="ghost" id="tkRef">Sonuçları yenile</button></div><div id="tkSum"></div></section><section class="card" id="tkCalC" style="margin-top:20px" hidden><div class="card-h"><h2>İsabet grafiği</h2><span class="muted">model ne dedi, ne oldu</span></div><div id="tkCal"></div></section><div class="tk-list" id="tkList"></div></div>`;
     el.addEventListener("click", e => {
-      if (e.target.closest("#tkRef")) { state.track.status = "idle"; renderTrack(); return; }
+      if (e.target.closest("#tkRef")) { state.track.status = "idle"; state.track.manual = true; renderTrack(); buzz(); return; }
       const d = e.target.closest("[data-del]");
       if (!d) return;
       const id = d.dataset.del, armed = state.track.armed;
@@ -2102,7 +2147,8 @@ function renderTrack() {
       gs("deleteCoupon", id).then(() => { state.track.status = "idle"; renderTrack(); }).catch(() => { d.disabled = false; d.textContent = "Silinemedi"; });
     });
   }
-  const sum = $("tkSum"), list = $("tkList");
+  const sum = $("tkSum"), list = $("tkList"), rb = $("tkRef");
+  if (rb) { const ld = T.status === "loading"; rb.disabled = ld; rb.setAttribute("aria-busy", String(ld)); rb.innerHTML = ld ? '<span class="spin"></span>Yenileniyor…' : "Sonuçları yenile"; }
   if (T.status === "error") { sum.innerHTML = `<p class="ai-empty">Kayıtlar okunamadı: ${esc(T.error)}</p>`; list.innerHTML = ""; $("tkCalC").hidden = true; return "Takip yüklenemedi."; }
   if (!T.data) { sum.innerHTML = `<div class="tk-sum" aria-label="Yükleniyor">${'<div class="tk-s"><span class="sk" style="width:60%;height:30px;margin-bottom:8px"></span><span class="sk" style="width:80%"></span></div>'.repeat(3)}</div>`; list.innerHTML = ""; $("tkCalC").hidden = true; return "Takip yükleniyor."; }
   const D = T.data, st = D.stats, rate = st.n ? Math.round(st.hit / st.n * 100) : null, avg = st.n ? Math.round(st.sumP / st.n * 100) : null;
@@ -2225,6 +2271,8 @@ function renderAI() {
   if (A.note && res) $("aiBody").insertAdjacentHTML("afterbegin", `<p class="muted">${esc(A.note)}</p>`);
   $("aiMeta").textContent = res && A.at ? new Date(A.at).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }) + ", " + (A.usedProv || "") : "";
   $("aiRun").disabled = $("aiAsk").disabled = A.status === "loading";
+  $("aiRun").innerHTML = A.status === "loading" ? '<span class="spin"></span>Hazırlanıyor…' : "Günün yorumunu hazırla";
+  $("aiRun").setAttribute("aria-busy", String(A.status === "loading"));
   $("aiKeyState").textContent = ["gemini", "groq", "claude"].map(p => AI_NAMES[p] + ": " + (aiKey(p) ? "anahtar tanımlı" : "anahtar yok")).join(". ") + ".";
 }
 
@@ -2302,7 +2350,14 @@ $("shBody").addEventListener("click", e => {
     if (!m) return;
     if (a.dataset.act === "show") { const id = m.id, tab = state.detPick; closeSheet(true); openMatch(id, tab); return; }
     if (a.dataset.act === "trk") { const pk = detPicks(m).find(x => x.market === state.detPick); if (pk) trackSave(a, "main", "Tek seçim: " + pickLabel(m, pk), { picks: [{ m, pk }], comb: pk.p }); }
-    if (a.dataset.act === "my") { const pk = detPicks(m).find(x => x.market === state.detPick); if (!pk) return; if (sameSel(myOf(m.id), pk)) { removeMy(m.id); toast("Kupondan çıkarıldı"); } else addMy(m, pk); render(); }
+    if (a.dataset.act === "my") {
+      const pk = detPicks(m).find(x => x.market === state.detPick); if (!pk) return;
+      let txt;
+      if (sameSel(myOf(m.id), pk)) { removeMy(m.id); toast("Kupondan çıkarıldı"); txt = "Kupondan çıkarıldı"; }
+      else { const r = addMy(m, pk); txt = r === "added" ? "Kupona eklendi" : r === "changed" ? "Kupondaki seçim değişti" : ""; }
+      if (txt) { state.detFlash = { text: txt, until: Date.now() + 1400 }; state.myPulse = Date.now(); setTimeout(() => { state.detFlash = null; syncSheet(); }, 1450); }
+      render();
+    }
     if (a.dataset.act === "openmy") openSheet("slip", "my");
     if (a.dataset.act === "tbl") { state.detTable = !state.detTable; syncSheet(); }
     if (a.dataset.act === "more") { state.detMore = !state.detMore; syncSheet(); }
@@ -2313,7 +2368,7 @@ $("shBody").addEventListener("click", e => {
     const st = e.target.closest("[data-st]");
     if (st) { state.slipTab = st.dataset.st; syncSheet(); $("shBody").scrollTop = 0; return; }
     const rm = e.target.closest("[data-rm]");
-    if (rm) { removeMy(rm.dataset.rm); render(); return; }
+    if (rm) { removeMy(rm.dataset.rm); render(); toast(`Kupondan çıkarıldı · ${state.my.length} seçim kaldı`); return; }
     const op = e.target.closest("[data-open]");
     if (op) { openDetail(op.dataset.open, op.dataset.tab); return; }
     const a = e.target.closest("[data-act]");
@@ -2335,7 +2390,7 @@ $("shBody").addEventListener("click", e => {
       if (a.dataset.act === "share") { shareCoupon("Günün kuponu", state.lastCoupon.picks, state.lastCoupon.comb); return; }
       if (a.dataset.act === "save") trackSave(a, "main", "Günün kuponu", state.lastCoupon);
       else if (a.dataset.act === "copy") copyText(couponText(state.lastCoupon.picks, state.lastCoupon.comb, "Günün kuponu"), a, "Kuponu kopyala");
-      else if (a.dataset.act === "new") { state.home.seed = (state.home.seed || 0) + 1; render(); }
+      else if (a.dataset.act === "new") { state.home.seed = (state.home.seed || 0) + 1; render(); const ol = $("shBody").querySelector(".picks"); if (ol) { ol.classList.add("fresh"); } toast("Farklı bir kupon kuruldu"); buzz(); }
       return;
     }
     homeClick(e);
@@ -2355,9 +2410,9 @@ $("shBody").addEventListener("input", e => {
 $("shBody").addEventListener("change", e => {
   const id = e.target.id, v = e.target.checked;
   buzz();
-  if (id === "trustedS") { state.trusted = v; state.limit = 30; render(); }
-  else if (id === "calibS") onCalib(e);
-  else if (id === "mktS") { state.mktOn = v; state.home.seed = 0; render(); }
+  if (id === "trustedS") { state.trusted = v; state.limit = 30; render(); toast(v ? "Düşük güvenli maçlar gizlendi" : "Düşük güvenli maçlar da gösteriliyor"); }
+  else if (id === "calibS") { onCalib(e); toast(v ? "Olasılıklar gerçek isabete göre düzeltiliyor" : "Ham model olasılıkları gösteriliyor"); }
+  else if (id === "mktS") { state.mktOn = v; state.home.seed = 0; render(); toast(v ? "Kuponda piyasa onayı açık" : "Kuponda piyasa onayı kapalı"); }
   else if (id === "autoS") { state.autoSave = v; saveUI(); toast(v ? "Her sabah otomatik kupon kaydedilecek" : "Otomatik kupon kapatıldı"); }
   else if (id === "darkS") { const t = v ? "dark" : "light"; applyTheme(t); lsSet("banko2:theme", t); }
 });
