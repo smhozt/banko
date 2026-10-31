@@ -699,6 +699,13 @@
   .fm i.G { background:#1E8A5F; } .fm i.B { background:#8A968F; } .fm i.M { background:#C2412A; }
   .h2h { margin:10px 0 0; padding:0; list-style:none; font-size:14px; display:grid; gap:4px; }
   .h2h li { display:flex; gap:10px; } .h2h .muted { min-width:56px; }
+  .pst { width:100%; border-collapse:collapse; margin-top:8px; font-size:13.5px; }
+  .pst th { font:600 12px/1.2 var(--f); color:var(--muted); text-align:right; padding:4px 6px; white-space:nowrap; }
+  .pst th:first-child, .pst td:first-child { text-align:left; padding-left:0; }
+  .pst td { padding:6px; text-align:right; border-top:1px solid var(--line); white-space:nowrap; }
+  .pst td:first-child { white-space:normal; font-weight:600; }
+  .pst td small { color:var(--muted); }
+  .pst-n { margin:6px 0 0; font-size:13px; color:var(--muted); }
   .h2s { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 2px; font-size:13px; }
   .h2s span { padding:2px 9px; border:1px solid var(--line); border-radius:999px; color:var(--muted); white-space:nowrap; }
   .h2s b { color:var(--ink); }
@@ -1446,11 +1453,20 @@ function teamBlock(m) {
   if (!ti.ok) return `<p class="dt-line">Bu lig için bu sezonun sonuçları alınamadı${ti.err ? " (" + esc(ti.err) + ")" : ""}.</p>`;
   const one = (r, f, name) => r ? `<div class="tf"><span class="tf-pos">${r.pos}.</span><span class="tf-n">${esc(name)}</span>${formChips(f)}<span class="tf-s">${r.pts} puan · ${r.p} maç · ${r.w}G ${r.d}B ${r.l}M · averaj ${r.gf}-${r.ga}</span></div>`
     : `<div class="tf"><span class="tf-pos">–</span><span class="tf-n">${esc(name)}</span><span></span><span class="tf-s">Bu sezon biten maçı yok.</span></div>`;
+  const f1 = v => typeof v === "number" ? v.toFixed(1).replace(".", ",") : "–";
+  const prow = (r, name) => r ? `<tr><td>${esc(name)}</td><td>${f1(r.sf)} <small>/ ${f1(r.sa)}</small></td><td>${f1(r.of)} <small>/ ${f1(r.oa)}</small></td><td>${typeof r.pos === "number" ? "%" + Math.round(r.pos) : "–"}</td><td>${f1(r.cf)}</td></tr>` : "";
+  const conv = (r, name) => { if (!r || typeof r.of !== "number" || typeof r.gf !== "number") return ""; const c = r.of > 0 ? r.gf / r.of : null;
+    if (c !== null && r.of >= 3 && c >= 0.5) return `${name} isabetli şutuna göre çok gol buluyor; bu verim genelde sürmez.`;
+    if (c !== null && r.of >= 4 && c <= 0.15) return `${name} çok pozisyon üretiyor ama az gol atıyor; goller gelebilir.`;
+    return ""; };
+  const pnotes = [conv(ti.stH, m.home), conv(ti.stA, m.away)].filter(Boolean);
+  const play = ti.stH || ti.stA ? `<h3 style="margin:14px 0 4px;font:600 16px var(--fc)">Son maçlarda oyun <span class="muted" style="font:400 13px var(--f)">son ${Math.max((ti.stH || {}).n || 0, (ti.stA || {}).n || 0)} maç ortalaması</span></h3>
+    <table class="pst"><thead><tr><th></th><th>Şut <small>at/yen</small></th><th>İsabetli</th><th>Topla</th><th>Korner</th></tr></thead><tbody>${prow(ti.stH, m.home)}${prow(ti.stA, m.away)}</tbody></table>${pnotes.map(t => `<p class="pst-n">${esc(t)}</p>`).join("")}` : "";
   const S = ti.h2hSum, nS = S && S.seasons > 1 ? S.seasons : 1;
   const h2s = S && S.n ? `<div class="h2s"><span>${esc(tn(m.hraw))} <b>${S.hw}</b> G</span><span>Beraberlik <b>${S.d}</b></span><span>${esc(tn(m.araw))} <b>${S.aw}</b> G</span><span>Maç başı <b>${dc1(S.g / S.n)}</b> gol</span><span>2,5 üst <b>${S.o25}/${S.n}</b></span><span>KG var <b>${S.bt}/${S.n}</b></span></div>` : "";
   const h2h = ti.h2h.length ? `${h2s}<ul class="h2h">${ti.h2h.map(x => `<li><span class="muted">${esc(fmDate(x.t))}</span><span>${esc(tn(x.h))} <b>${esc(x.s)}</b> ${esc(tn(x.a))}</span></li>`).join("")}</ul>` : `<p class="muted" style="margin:10px 0 0">${nS > 1 ? `Son ${nS} sezonda` : "Bu sezon"} aralarında maç yok.</p>`;
   const tbl = state.detTable ? `<table class="mt"><thead><tr><th>#</th><th>Takım</th><th>M</th><th>Av</th><th>P</th></tr></thead><tbody>${ti.table.map(r => `<tr class="${r.tm === m.hraw || r.tm === m.araw ? "me" : ""}"><td>${r.pos}</td><td>${esc(tn(r.tm))}</td><td>${r.p}</td><td>${r.gf - r.ga > 0 ? "+" : ""}${r.gf - r.ga}</td><td>${r.pts}</td></tr>`).join("")}</tbody></table>` : "";
-  return `${one(ti.home, ti.formH, m.home)}${one(ti.away, ti.formA, m.away)}
+  return `${one(ti.home, ti.formH, m.home)}${one(ti.away, ti.formA, m.away)}${play}
     <h3 style="margin:14px 0 4px;font:600 16px var(--fc)">${nS > 1 ? `Aralarındaki maçlar <span class="muted" style="font:400 13px var(--f)">son ${nS} sezon${S.n ? `, ${S.n} maç` : ""}</span>` : "Bu sezon aralarında"}</h3>${h2h}
     <div class="sh-btns" style="margin-top:10px"><button type="button" class="ghost" data-act="tbl">${state.detTable ? "Tabloyu gizle" : `Puan tablosu (${ti.n} takım)`}</button></div>${tbl}
     <p class="sh-note">Bu sezonun ${ti.played} maç sonucundan hesaplanır; puan silme gibi özel durumlar yüzünden resmi tablodan küçük farklar olabilir. Formda en yeni maç solda.</p>`;
@@ -1479,7 +1495,8 @@ async function runMatchAI(id) {
     elo: ei ? ei.tag : null, korner: c && typeof c.e === "number" ? dc(c.e) + " bekleniyor" : null,
     puan: ti && ti.ok ? { ev: ti.home && { sira: ti.home.pos, puan: ti.home.pts, mac: ti.home.p }, dep: ti.away && { sira: ti.away.pos, puan: ti.away.pts, mac: ti.away.p }, takim: ti.n } : null,
     form: ti && ti.ok ? { ev: ti.formH.map(x => x.r).join(""), dep: ti.formA.map(x => x.r).join(""), not: "en yeni maç solda, G galibiyet B beraberlik M mağlubiyet" } : null,
-    aralarinda: ti && ti.ok ? ti.h2h.map(x => x.h + " " + x.s + " " + x.a) : [], dusuk_guven: !m.trusted };
+    aralarinda: ti && ti.ok ? ti.h2h.map(x => x.h + " " + x.s + " " + x.a) : [],
+    oyun: ti && ti.ok && (ti.stH || ti.stA) ? { ev: ti.stH, dep: ti.stA, not: "son maçların ortalaması: sf/sa atılan/yenen şut, of/oa isabetli şut, pos topa sahip olma %, cf korner, gf/ga gol" } : null, dusuk_guven: !m.trusted };
   try {
     const res = await gs("callAI", { order, models: A.models, system: AI_MATCH, prompt: "Bu maçı yorumla. Veriler (yüzde):\n" + JSON.stringify(data) });
     if (res && res.ok) {
@@ -1556,7 +1573,7 @@ function infoBody() {
     <h3 id="inf-cal">Düzeltme</h3><p>13 bin maçlık geriye dönük teste göre model bazı pazarlarda abartılı çıktı; örneğin KG var için %72 verilen maçların %59'u tuttu. Bu yüzden olasılıklar <b>pazar bazında gerçek isabete göre</b> düzeltilir. Kupona seçilen en yüksek olasılıklardan ayrıca 3 puan düşülür, çünkü en yükseği seçmek iyimserlik katar. Ayarlardan kapatılabilir.</p>
     <h3 id="inf-cp">Kupon nasıl seçilir</h3><p>Seçilen süre içindeki güvenilir verili maçlardan, tarzın izin verdiği pazarlarda eşiği geçen en yüksek olasılıklar alınır. Aynı ligden en fazla 2 maç, aynı pazardan en fazla seçimlerin yarısı girer. Piyasa onayı açıksa maç sonucu ve 2,5 üst seçimlerinde bahisçi oranları ters yöndeyse seçim elenir.</p>
     <h3 id="inf-comb">Birlikte tutma olasılığı</h3><p>Seçimler birbirinden bağımsız kabul edilip olasılıkları çarpılır. 4 seçim tek tek %80 olsa bile hepsinin birlikte tutma olasılığı yaklaşık %41'dir. Kupon oranı, seçimlerin bahisçi oranlarının çarpımıdır (bahisçi marjı dahil); bir maçın oranı yoksa hesaplanmaz.</p>
-    <h3 id="inf-odds">Oranlar ve piyasa</h3><p>Bet365 ve bahisçi ortalaması <b>football-data.co.uk</b>'tan, 1,5 / 3,5 üst ve KG var için konsensüs oranlar <b>Bzzoiro Sports Data</b>'dan gelir. Piyasa olasılığı varsa <b>Pinnacle</b>'dan alınır: düşük marjlı ve araştırmalarda en isabetli bulunan bahisçi. Yoksa bahisçi ortalaması kullanılır. Testte bahisçi oranları modelden daha isabetli çıktı. "Piyasa uyumlu" etiketi ikisinin en fazla 5 puan farkla aynı fikirde olduğunu, "ayrışıyor" 15 puandan fazla fark olduğunu gösterir.</p>
+    <h3 id="inf-odds">Oranlar ve piyasa</h3><p>Bet365 ve bahisçi ortalaması <b>football-data.co.uk</b>'tan, 1,5 / 3,5 üst ve KG var için konsensüs oranlar <b>Bzzoiro Sports Data</b>'dan gelir. Kaynak <b>Pinnacle</b> oranı verirse piyasa olasılığı ondan alınır (en isabetli bahisçi); vermediği maçlarda bahisçi ortalaması kullanılır. Testte bahisçi oranları modelden daha isabetli çıktı. "Piyasa uyumlu" etiketi ikisinin en fazla 5 puan farkla aynı fikirde olduğunu, "ayrışıyor" 15 puandan fazla fark olduğunu gösterir.</p>
     <h3 id="inf-form">Puan durumu ve form</h3><p>Ligin bu sezon biten maçlarından hesaplanır: puan, averaj, son 5 maç (en yenisi solda) ve aralarındaki maçlar. Puan silme ve play-off ayrımı gibi özel durumlar hesaba katılmaz. Model formu doğrudan kullanmaz; bu bilgi kendi kontrolün içindir.</p>
     <h3 id="inf-more">Diğer pazarlar</h3><p>Alt/üst, KG yok, beraberlik ve çifte şans ana olasılıklardan türetilir: 2,5 alt = 100 − 2,5 üst, X2 = 100 − ev sahibi kazanır gibi. Böylece düzeltme bu pazarlara da tutarlı yansır. Çifte şans oranı kaynaklarda olmadığı için 1X2 oranlarından yaklaşık hesaplanır (≈). Bu pazarlar kuponlara ve listeye girmez; maç detayından Kuponum'a eklenebilir ve Takip'te sonuçlanır.</p>
     <h3 id="inf-score">Skor tahmini</h3><p>Modelin iki takım için beklediği gol sayısından Poisson dağılımıyla her skorun olasılığı hesaplanır ve en olası skor gösterilir. İlk yarı ve takım golü de bilgi amaçlıdır. Bu değerler geriye dönük testle düzeltilmedi.</p>
