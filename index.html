@@ -290,6 +290,16 @@
   .st.won { background:var(--t1); border-color:var(--t1); color:var(--bg); }
   .st.lost { border-color:var(--err); color:var(--err); }
   .st.pending, .st.void { color:var(--muted); }
+  .st.lv { color:var(--ink); border-color:var(--t2); display:inline-flex; align-items:center; gap:6px; }
+  .st.lv.ok { background:color-mix(in srgb, var(--t2) 18%, transparent); }
+  .st.lv.no { border-color:var(--line); }
+  .st.lv i { width:7px; height:7px; border-radius:50%; background:var(--err); animation:lvP 1.4s ease-in-out infinite; }
+  .st.lv.ht i, .st.lv.ft i { animation:none; background:var(--muted); }
+  @keyframes lvP { 50% { opacity:.25; } }
+  .tk-r .sc.lvs { color:var(--ink); font-size:19px; white-space:nowrap; }
+  .tk-r .st.lv { font-size:12px; padding:2px 8px; }
+  .tk-r .sc.lvs small { font:700 12px/1 var(--fb, inherit); color:var(--err); margin-right:5px; vertical-align:middle; }
+  @media (prefers-reduced-motion: reduce) { .st.lv i { animation:none; } }
   .tk-pk { display:grid; grid-template-columns:62px minmax(0,1fr) auto; gap:12px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--line); }
   .tk-pk:last-child { border-bottom:0; }
   .tk-pk .pk-m b { white-space:normal; }
@@ -829,7 +839,7 @@
     </div>
     <div id="leagues"></div>
     <h3>Veriyi yenile</h3>
-    <p class="hint" id="dataInfo">Maç verisi sunucuda saklanır ve günde iki kez kendiliğinden yenilenir. Gerekirse seçili ligleri kaynaktan şimdi çekebilirsin.</p>
+    <p class="hint" id="dataInfo">Maç verisi sunucuda saklanır ve her sabah kendiliğinden yenilenir. Kaynak günde 200 istek kabul ettiği için zorla yenileme yalnızca 2 saatten eski ligleri çeker.</p>
     <button class="ghost" id="refresh">Zorla yenile</button>
     <button class="ghost" id="logout">Oturumu kapat</button>
   </div>
@@ -895,8 +905,8 @@ const RANGES = [["today","Bugün"],["tomorrow","Yarın"],["7","7 gün"],["all","
 const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
-  progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {} }, detTable: false, detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, stale: {}, fcUsed: null, pinned: null, backY: null, keys: {},
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {} }, detTable: false, detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -1008,8 +1018,10 @@ async function loadSelected(force, again) {
       for (const k of part) {
         if (res.data && res.data[k]) { state.data[k] = res.data[k]; delete state.errors[k]; }
         else state.errors[k] = (res.errors && res.errors[k]) || "Veri alınamadı";
+        if (res.stale && res.stale[k]) state.stale[k] = res.stale[k]; else if (res.data && res.data[k]) delete state.stale[k];
       }
-      if (res.rate) state.limitHit = true;
+      if (typeof res.used === "number") state.fcUsed = res.used;
+      if (res.rate && part.some(k => !(res.data && res.data[k]))) state.limitHit = true;
       state.progress.done += part.length; scheduleRender();
     }
   } catch (e) { for (const k of keys) if (!state.data[k]) state.errors[k] = e.message || String(e); }
@@ -1244,15 +1256,23 @@ function chromeTop() {
   const ni = document.querySelector('#nav [data-v="track"] .ni'); if (ni) { const old = ni.querySelector(".nb"); if (old) old.remove(); if (nb) ni.insertAdjacentHTML("beforeend", nb); }
   document.querySelectorAll("#nav button").forEach(b => { if (b.dataset.v === state.view) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
 }
+function usageLine() {
+  const el = $("dataInfo"); if (!el || state.fcUsed === null) return;
+  let u = el.querySelector(".fc-use"); if (!u) { u = document.createElement("span"); u.className = "fc-use"; el.appendChild(u); }
+  u.textContent = " Bugün kullanılan: " + state.fcUsed + " / 200 istek.";
+}
 function chromeBottom(liveText) {
+  usageLine();
   $("live").textContent = liveText;
   const errs = Object.entries(state.errors).filter(([k]) => state.sel.has(k)).map(([k, e]) => { const L = state.leagues.find(l => l.key === k); return (L ? L.name : k) + " (" + e + ")"; });
   const nt = $("notice");
   if (state.limitHit) {
-    const failed = Object.keys(state.errors).filter(k => state.sel.has(k)).map(k => (state.leagues.find(l => l.key === k) || { name: k }).name);
-    nt.innerHTML = `<div class="notice"><h2>İstek limiti doldu</h2><p>Veri kaynağı bu sunucudan gelen istekleri şu an kabul etmiyor. Script özelliklerine ücretsiz FC_API_KEY anahtarını eklersen limit sana özel olur (günlük 200 istek). Anahtarsız istekler ortak bir sınırı paylaşır. Önbellekteki ligler listelenmeye devam eder.</p>${failed.length ? `<p class="nt-list">${failed.length} lig yüklenemedi: ${esc(failed.slice(0, 3).join(", "))}${failed.length > 3 ? " ve diğerleri" : ""}.</p>` : ""}<div class="nt-actions"><button class="ghost" id="dismissNotice">Yüklenen ligleri göster</button></div></div>`;
+    const failed = Object.keys(state.errors).filter(k => state.sel.has(k) && /limit/.test(state.errors[k])).map(k => (state.leagues.find(l => l.key === k) || { name: k }).name);
+    nt.innerHTML = `<div class="notice"><h2>İstek sınırı doldu</h2><p>Veri kaynağı günde 200, dakikada 60 istek kabul ediyor. Sınır dolduğu için bazı ligler şu an çekilemedi. Diğer ligler normal listeleniyor; sabahki otomatik yenilemede hepsi tamamlanır, ayrıca bir şey yapmana gerek yok.</p>${failed.length ? `<p class="nt-list">${failed.length} lig bekliyor: ${esc(failed.slice(0, 3).join(", "))}${failed.length > 3 ? " ve diğerleri" : ""}.</p>` : ""}<div class="nt-actions"><button class="ghost" id="dismissNotice">Tamam</button></div></div>`;
   } else nt.innerHTML = "";
-  $("errors").textContent = state.limitHit ? "" : errs.length ? errs.length + " lig yüklenemedi: " + errs.slice(0, 5).join(", ") + (errs.length > 5 ? " ve diğerleri" : "") + ". Zorla yenile ile tekrar deneyebilirsin." : "";
+  const st = Object.keys(state.stale).filter(k => state.sel.has(k) && state.data[k]);
+  const stTxt = st.length ? st.length + " ligde kaynağa ulaşılamadı, son kayıtlı veri gösteriliyor (" + new Date(Math.min(...st.map(k => state.stale[k]))).toLocaleString("tr-TR", { timeZone: TZ, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + ")." : "";
+  $("errors").textContent = state.limitHit ? stTxt : errs.length ? errs.length + " lig yüklenemedi: " + errs.slice(0, 5).join(", ") + (errs.length > 5 ? " ve diğerleri" : "") + ". Biraz sonra tekrar dene." + (stTxt ? " " + stTxt : "") : stTxt;
 }
 function render() {
   applyView(); chromeTop();
@@ -1958,6 +1978,7 @@ async function loadDays() {
   try { D.data = await gs("getDays"); D.status = "done"; }
   catch (e) { D.status = "error"; D.err = String(e.message || e); }
   if (state.view === "home") renderDays();
+  ensureLive();
 }
 function renderScores(base, loading) {
   const el = $("scBody"); if (!el) return;
@@ -1995,7 +2016,7 @@ function renderDays() {
     if (r) { const h = r.picks.filter(p => p.ok === true).length, n = r.picks.length; cpLine = `<div class="day-cp"><b>Otomatik kupon</b><span class="st ${r.state}">${stLabel[r.state]}</span><span>${h}/${n} tuttu, tahmini birlikte %${pn(r.comb)}</span></div>`; }
     else cpLine = `<div class="day-cp"><b>Otomatik kupon</b><span>${sn.cpN || ""} seçimle takibe alındı, sonucu Takip'te.</span></div>`;
   }
-  body.innerHTML = `<div class="day-sum">${done.length ? `<span class="big">${hit}<small>/ ${done.length}</small></span><span>tuttu (<b>%${Math.round(hit / done.length * 100)}</b>), modelin ortalaması <b>%${avg}</b></span>` : `<span>Henüz biten maç yok.</span>`}${pend ? `<span>${pend} maç bekliyor</span>` : ""}</div>
+  body.innerHTML = `<div class="day-sum">${done.length ? `<span class="big">${hit}<small>/ ${done.length}</small></span><span>tuttu (<b>%${Math.round(hit / done.length * 100)}</b>), modelin ortalaması <b>%${avg}</b></span>` : `<span>Henüz biten maç yok.</span>`}${pend ? `<span>${pend} maç bekliyor${(n => n ? `, ${n} tanesi oynanıyor` : "")(ps.filter(p => p.ok === null && state.live[liveKey(p)] && /live|ht/.test(state.live[liveKey(p)].st)).length)}</span>` : ""}</div>
     <p class="muted" style="margin:0">Modelin %70 ve üstü verdiği ${ps.length} seçim, maç başına en yüksek pazar.${D.data.rate ? " Sonuç kaynağı istek limitine takıldı, bazıları sonra güncellenir." : ""}</p>
     <ol class="picks" style="margin-top:12px">${shown.map(trackPick).join("")}</ol>
     ${order.length > 6 ? `<div class="sh-btns"><button type="button" class="ghost" data-dmore>${D.all ? "Daha az göster" : `Tümünü göster (${order.length})`}</button></div>` : ""}
@@ -2081,7 +2102,7 @@ async function loadTrack() {
   T.status = "loading"; T.error = "";
   try { T.data = await gs("getCoupons"); T.status = "done"; }
   catch (e) { T.status = "error"; T.error = String(e.message || e); }
-  updateBadge();
+  updateBadge(); ensureLive();
   if (state.view === "track") { render(); if (T.status === "done" && T.manual) toast("Sonuçlar güncellendi"); }
   else if (state.view === "home") renderDays();
   T.manual = false;
@@ -2126,20 +2147,79 @@ function updateBadge() {
   chromeTop();
 }
 const stLabel = { won: "Tuttu", lost: "Yattı", pending: "Bekliyor", void: "İptal" };
+// ---------- canlı skor: başlamış ve sonuçlanmamış seçimler dakikada bir yoklanır
+const liveKey = p => p.h + "|" + p.a + "|" + p.d;
+function hitNow(p, h, a) {
+  const t = h + a;
+  switch (p.mk) {
+    case "win": return p.side === "away" ? a > h : h > a;
+    case "o05": return t >= 1; case "o15": return t >= 2; case "o25": return t >= 3; case "o35": return t >= 4; case "o45": return t >= 5;
+    case "u15": return t <= 1; case "u25": return t <= 2; case "u35": return t <= 3; case "u45": return t <= 4;
+    case "bt": return h > 0 && a > 0; case "nb": return !(h > 0 && a > 0);
+    case "x": return h === a; case "1x": return h >= a; case "x2": return a >= h; case "12": return h !== a;
+  }
+  return null;
+}
+// Gol olmadan artık değişmeyecek sonuçlar: 1,5 üst iki golle kesinleşir, alt pazarlar sınırı geçince kaybolur
+function settledNow(p, h, a) {
+  const t = h + a, o = { o05: 1, o15: 2, o25: 3, o35: 4, o45: 5 }[p.mk], u = { u15: 1, u25: 2, u35: 3, u45: 4 }[p.mk];
+  if (o) return t >= o ? true : null;
+  if (u) return t > u ? false : null;
+  if (p.mk === "bt") return h > 0 && a > 0 ? true : null;
+  if (p.mk === "nb") return h > 0 && a > 0 ? false : null;
+  return null;
+}
+function liveCands() {
+  const now = Date.now(), out = new Map(), add = p => { const t = new Date(p.d).getTime(); if (p.ok === null && t < now + 60e3 && t > now - 8 * 3600e3) out.set(liveKey(p), p); };
+  if (state.track.data) state.track.data.coupons.forEach(r => r.picks.forEach(add));
+  if (state.days.data) state.days.data.days.forEach(d => d.snap && d.snap.picks && d.snap.picks.forEach(add));
+  return [...out.values()];
+}
+let liveTimer = null, liveBusy = false;
+async function pollLive() {
+  clearTimeout(liveTimer); liveTimer = null;
+  if (document.hidden || liveBusy) return;
+  const c = liveCands();
+  if (!c.length) return;
+  liveBusy = true;
+  let res = null;
+  try { res = await gs("getLive", c.map(p => ({ id: liveKey(p), h: p.h, a: p.a, d: p.d }))); } catch (e) {}
+  liveBusy = false;
+  if (res && res.on !== false) {
+    state.live = res.live || {}; state.liveAt = Date.now();
+    // biten maç varsa sunucu sonuçlandırsın: Takip ve Dün kartı yeniden okunur
+    const fin = Object.keys(state.live).filter(k => state.live[k].st === "ft" && !state.liveDone[k]);
+    fin.forEach(k => state.liveDone[k] = 1);
+    if (fin.length) { state.track.status = "idle"; loadTrack(); state.days.status = "idle"; loadDays(); }
+    else { if (state.view === "track") renderTrack(); if (state.view === "home") renderDays(); }
+  }
+  if (res && res.on === false) return;   // canlı kaynak anahtarı yok
+  liveTimer = setTimeout(pollLive, 60e3);
+}
+function ensureLive() { if (!liveTimer && !liveBusy) pollLive(); }
+function liveBit(p, L) {
+  if (L.st === "off") return `<span class="st void">Ertelendi</span>`;
+  if (!L.g) return `<span class="st lv"><i></i>Canlı</span>`;
+  const [h, a] = L.g, fin = L.st === "ft", set = settledNow(p, h, a), ok = fin ? hitNow(p, h, a) : set !== null ? set : hitNow(p, h, a);
+  const txt = fin ? (ok ? "Tuttu" : "Yattı") : set === true ? "Tuttu" : set === false ? "Yattı" : L.st === "ht" ? "Devre" : ok ? "Tutuyor" : "Tutmuyor";
+  const cls = fin || set !== null ? (ok ? "won" : "lost") : "lv " + (L.st === "ht" ? "ht " : "") + (ok ? "ok" : "no");
+  const min = fin ? "MS" : L.st === "ht" ? "İY" : L.m ? L.m + "'" : "";
+  return `<span class="sc lvs">${min ? `<small>${esc(min)}</small>` : ""}${h} - ${a}</span><span class="st ${cls}">${cls.startsWith("lv") ? "<i></i>" : ""}${txt}</span>`;
+}
 function trackPick(p) {
   const kick = new Date(p.d), di = dayInfo(kick);
   const lbl = p.mk === "win" ? (p.side === "away" ? tn(p.a) : tn(p.h)) + " kazanır" : MK[p.mk];
   const s = p.ok === true ? "won" : p.ok === false ? "lost" : p.ok === "void" ? "void" : "pending";
   return `<li class="tk-pk"><span class="pk-t">${esc(fmtTime(kick))}<small>${esc(di.tag || di.num + " " + di.month.slice(0, 3))}</small></span>
     <span class="pk-m"><b>${crest(p.lk, p.h, tn(p.h), 22)}${crest(p.lk, p.a, tn(p.a), 22)}<span class="nm">${esc(tn(p.h))} - ${esc(tn(p.a))}</span></b><span class="pk-l">${esc(lbl)}, tahmin %${pn(p.p)}</span></span>
-    <span class="tk-r">${p.s ? `<span class="sc">${esc(p.s.replace(":", " - "))}</span>` : ""}<span class="st ${s}">${stLabel[s]}</span></span></li>`;
+    <span class="tk-r">${s === "pending" && state.live[liveKey(p)] ? liveBit(p, state.live[liveKey(p)]) : `${p.s ? `<span class="sc">${esc(p.s.replace(":", " - "))}</span>` : ""}<span class="st ${s}">${stLabel[s]}</span>`}</span></li>`;
 }
 function renderTrack() {
   const T = state.track, el = $("vTrack");
   if (T.status === "idle") loadTrack();
   if (!el.dataset.built) {
     el.dataset.built = "1";
-    el.innerHTML = `<div class="home"><div class="home-top"><h1>Takip</h1><p>Takibe aldığın kuponlar maçlar bitince sonuçla karşılaştırılır. Modelin gerçekte ne kadar tuttuğunu burada görürsün.</p></div><section class="card" style="margin-top:20px"><div class="card-h"><h2>Özet</h2><button type="button" class="ghost" id="tkRef">Sonuçları yenile</button></div><div id="tkSum"></div></section><section class="card" id="tkCalC" style="margin-top:20px" hidden><div class="card-h"><h2>İsabet grafiği</h2><span class="muted">model ne dedi, ne oldu</span></div><div id="tkCal"></div></section><div class="tk-list" id="tkList"></div></div>`;
+    el.innerHTML = `<div class="home"><div class="home-top"><h1>Takip</h1><p>Takibe aldığın kuponlar maç oynanırken canlı skorla, bitince sonuçla gösterilir. Modelin gerçekte ne kadar tuttuğunu burada görürsün.</p></div><section class="card" style="margin-top:20px"><div class="card-h"><h2>Özet</h2><button type="button" class="ghost" id="tkRef">Sonuçları yenile</button></div><div id="tkSum"></div></section><section class="card" id="tkCalC" style="margin-top:20px" hidden><div class="card-h"><h2>İsabet grafiği</h2><span class="muted">model ne dedi, ne oldu</span></div><div id="tkCal"></div></section><div class="tk-list" id="tkList"></div></div>`;
     el.addEventListener("click", e => {
       if (e.target.closest("#tkRef")) { state.track.status = "idle"; state.track.manual = true; renderTrack(); buzz(); return; }
       const d = e.target.closest("[data-del]");
@@ -2467,7 +2547,7 @@ let refreshArmed = null;
 $("refresh").addEventListener("click", () => {
   const b = $("refresh");
   if (refreshArmed) { clearTimeout(refreshArmed); refreshArmed = null; b.textContent = "Zorla yenile"; setDrawer(false); loadSelected(true); return; }
-  b.textContent = "Emin misin? " + state.sel.size + " lig yeniden çekilir";
+  b.textContent = "Emin misin? Eski veriler yeniden çekilir";
   refreshArmed = setTimeout(() => { refreshArmed = null; b.textContent = "Zorla yenile"; }, 4000);
 });
 document.querySelector(".quick").addEventListener("click", e => {
@@ -2527,7 +2607,7 @@ async function softRefresh() {
 
 function setHH() { document.documentElement.style.setProperty("--hh", document.querySelector(".top").offsetHeight + "px"); }
 window.addEventListener("resize", setHH); setHH();
-document.addEventListener("visibilitychange", () => { if (!document.hidden) setHH(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { setHH(); if (Date.now() - state.liveAt > 50e3) pollLive(); } });
 (async function init() {
   render();
   let boot;
@@ -2535,6 +2615,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) setH
   catch (e) { $("errors").textContent = "Sunucuya ulaşılamadı (" + (e.message || e) + ")."; return; }
   Object.assign(MEM, boot.prefs || {});
   state.keys = boot.keys || {};
+  if (typeof boot.fcUsed === "number") state.fcUsed = boot.fcUsed;
   loadUI();
   const th = lsGet("banko2:theme"); if (th) applyTheme(th);
   try { state.fav = new Set(JSON.parse(lsGet("banko2:fav") || "[]")); } catch (e) {}
