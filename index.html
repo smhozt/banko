@@ -296,6 +296,22 @@
   .st.lv i { width:7px; height:7px; border-radius:50%; background:var(--err); animation:lvP 1.4s ease-in-out infinite; }
   .st.lv.ht i, .st.lv.ft i { animation:none; background:var(--muted); }
   @keyframes lvP { 50% { opacity:.25; } }
+  .lv-src { display:block; margin-top:3px; font-size:12px; color:var(--muted); }
+  .lv-grp { margin-top:20px; }
+  .lv-grp > h2 { display:flex; align-items:center; gap:8px; }
+  .lv-grp > h2 .lv-n { font:600 14px/1 var(--f); color:var(--muted); }
+  .lv-dot { width:9px; height:9px; border-radius:50%; background:var(--err); display:inline-block; animation:lvP 1.4s ease-in-out infinite; }
+  .lv-cps { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+  .lv-cp { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; padding:12px 14px; border:1px solid var(--line); border-radius:14px; }
+  .lv-cp b { font-size:15px; margin-right:auto; }
+  .lv-cp .chip { font-size:12.5px; padding:2px 9px; border-radius:999px; border:1px solid var(--line); color:var(--muted); white-space:nowrap; }
+  .lv-cp .chip.won { background:var(--t1); border-color:var(--t1); color:var(--bg); }
+  .lv-cp .chip.lost { border-color:var(--err); color:var(--err); }
+  .lv-cp .chip.ok { border-color:var(--t2); color:var(--ink); background:color-mix(in srgb, var(--t2) 16%, transparent); }
+  .lv-cp .verdict { width:100%; font-size:13px; color:var(--muted); }
+  .lv-meta { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px; color:var(--muted); font-size:13px; }
+  .ni .nb.lvb { background:var(--err); }
+  @media (prefers-reduced-motion: reduce) { .lv-dot { animation:none; } }
   .tk-r .sc.lvs { color:var(--ink); font-size:19px; white-space:nowrap; }
   .tk-r .st.lv { font-size:12px; padding:2px 8px; }
   .tk-r .sc.lvs small { font:700 12px/1 var(--fb, inherit); color:var(--err); margin-right:5px; vertical-align:middle; }
@@ -485,7 +501,7 @@
     body.has-slip { padding-bottom:calc(var(--navh) + env(safe-area-inset-bottom) + 92px); }
     .wrap { padding-left:max(14px, env(safe-area-inset-left)); padding-right:max(14px, env(safe-area-inset-right)); }
     .views-row { display:none; }
-    .nav { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; position:fixed; left:0; right:0; bottom:0; z-index:35; padding:5px 10px calc(5px + env(safe-area-inset-bottom));
+    .nav { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; position:fixed; left:0; right:0; bottom:0; z-index:35; padding:5px 10px calc(5px + env(safe-area-inset-bottom));
       background:color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-top:1px solid var(--line); }
     .slip { left:12px; right:12px; width:auto; bottom:calc(var(--navh) + env(safe-area-inset-bottom) + 8px); }
     #back { right:14px; bottom:calc(var(--navh) + env(safe-area-inset-bottom) + 16px); }
@@ -777,6 +793,7 @@
   <section id="notice" aria-live="polite"></section>
   <div id="vHome" hidden></div>
   <div id="vTrack" hidden></div>
+  <div id="vLive" hidden></div>
   <div id="vMatches">
   <section class="hero-wrap" id="hero"></section>
 
@@ -820,6 +837,7 @@
 <nav class="nav" id="nav" aria-label="Sayfalar">
   <button type="button" data-v="home"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/></svg></span>Anasayfa</button>
   <button type="button" data-v="matches"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l3.8 2.8-1.45 4.45h-4.7L8.2 10.3z"/><path d="M12 3v4.5M15.8 10.3l4.4-1.4M14.35 14.75l2.7 3.75M9.65 14.75l-2.7 3.75M8.2 10.3 3.8 8.9"/></svg></span>Maçlar</button>
+  <button type="button" data-v="live"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.2"/><path d="M8.2 15.8a5.4 5.4 0 0 1 0-7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.4 18.6a9.4 9.4 0 0 1 0-13.2M18.6 5.4a9.4 9.4 0 0 1 0 13.2"/></svg></span>Canlı</button>
   <button type="button" data-v="track"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M6 20v-6M11 20V9M16 20v-9M20.5 4.5 16 8l-3-2.5L8.5 9"/></svg></span>Takip</button>
 </nav>
 <section class="bsheet" id="bsheet" role="dialog" aria-modal="true" aria-labelledby="shT" aria-hidden="true">
@@ -981,7 +999,7 @@ function loadUI() {
     if (typeof u.mktOn === "boolean") state.mktOn = u.mktOn;
     if (typeof u.autoSave === "boolean") state.autoSave = u.autoSave;
     if (u.thr) TABS.forEach(t => { const v = +u.thr[t.id]; if (v >= 40 && v <= 95) state.thr[t.id] = v; });
-    if (u.view === "home" || u.view === "matches" || u.view === "track") state.view = u.view;
+    if (u.view === "home" || u.view === "matches" || u.view === "track" || u.view === "live") state.view = u.view;
     if (u.home) {
       if (u.home.n >= 2 && u.home.n <= 6) state.home.n = u.home.n | 0;
       if (["safe", "balanced", "goals"].includes(u.home.style)) state.home.style = u.home.style;
@@ -1241,6 +1259,7 @@ function renderMatches() {
 function applyView() {
   $("vHome").hidden = state.view !== "home";
   $("vTrack").hidden = state.view !== "track";
+  $("vLive").hidden = state.view !== "live";
   $("vMatches").hidden = state.view !== "matches";
   document.body.dataset.view = state.view;
 }
@@ -1252,8 +1271,10 @@ function chromeTop() {
   const pr = state.progress;
   $("prog").style.width = pr.total ? (pr.done / pr.total * 100) + "%" : "0";
   const nb = state.badgeN ? `<span class="nb" aria-label="${state.badgeN} yeni sonuç">${state.badgeN}</span>` : "";
-  $("views").innerHTML = [["home", "Anasayfa"], ["matches", "Maçlar"], ["track", "Takip"]].map(v => `<button type="button" data-v="${v[0]}" aria-pressed="${state.view === v[0]}">${v[1]}${v[0] === "track" ? nb : ""}</button>`).join("");
+  const ln = liveCount(), lb = ln ? `<span class="nb lvb" aria-label="${ln} maç oynanıyor">${ln}</span>` : "";
+  $("views").innerHTML = [["home", "Anasayfa"], ["matches", "Maçlar"], ["live", "Canlı"], ["track", "Takip"]].map(v => `<button type="button" data-v="${v[0]}" aria-pressed="${state.view === v[0]}">${v[1]}${v[0] === "track" ? nb : v[0] === "live" ? lb : ""}</button>`).join("");
   const ni = document.querySelector('#nav [data-v="track"] .ni'); if (ni) { const old = ni.querySelector(".nb"); if (old) old.remove(); if (nb) ni.insertAdjacentHTML("beforeend", nb); }
+  const nl = document.querySelector('#nav [data-v="live"] .ni'); if (nl) { const old = nl.querySelector(".nb"); if (old) old.remove(); if (lb) nl.insertAdjacentHTML("beforeend", lb); }
   document.querySelectorAll("#nav button").forEach(b => { if (b.dataset.v === state.view) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
 }
 function usageLine() {
@@ -1277,7 +1298,7 @@ function chromeBottom(liveText) {
 function render() {
   applyView(); chromeTop();
   if (state.view !== "home") { const { base } = homePool(); state.lastCoupon = buildCoupon(base, state.home.style, state.home.n, state.home.seed); ensureMkt(base); }
-  const live = state.view === "home" ? renderHome() : state.view === "track" ? renderTrack() : renderMatches();
+  const live = state.view === "home" ? renderHome() : state.view === "track" ? renderTrack() : state.view === "live" ? renderLive() : renderMatches();
   chromeBottom(live);
   updateSlip(); syncSheet();
   saveUI();
@@ -1521,7 +1542,7 @@ function detailBody() {
       return `<button type="button" class="${cls}" data-act="my" ${full ? "disabled" : ""} aria-pressed="${same}">${fl ? "✓ " + esc(fl) : same ? `✓ Kuponda: ${esc(pickLabel(m, sel))} · <u>Çıkar</u>` : `${ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}`}</button><button type="button" class="ghost" data-act="trk">Tek seçim takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button></div>
     ${state.my.length ? (() => { const R = resolveMy(), co = R.live.length ? combOdds(R.live.map(x => ({ m: x.m, pk: x.pk }))) : null;
       return `<div class="dt-foot${state.myPulse && state.myPulse > Date.now() - 900 ? " pop" : ""}" role="status" aria-live="polite"><span class="slip-n">${state.my.length}</span><span class="ft"><b>Kuponum</b><small>${R.live.length ? `${R.live.length} seçim, birlikte %${pn(R.comb)}${co ? ` · oran ${fo(co)}` : ""}` : "hesaplanacak seçim yok"}</small></span><button type="button" class="ghost" data-act="openmy">Kuponu aç</button></div>`; })() : ""}
-    <p class="sh-note">Oran: Bet365, yoksa bahisçi ortalaması; 1,5 / 3,5 üst ve KG var için konsensüs. <button type="button" class="lnk" data-info="odds">Ayrıntı</button></p>`;
+    <p class="sh-note">Oran: Bet365, yoksa bahisçi ortalaması; 1,5 / 3,5 üst ve KG var için konsensüs.${(r => r && r.pin ? " Piyasa olasılığı Pinnacle'dan (en isabetli bahisçi)." : "")(MR(m.id))} <button type="button" class="lnk" data-info="odds">Ayrıntı</button></p>`;
 }
 // ---------- "Nasıl hesaplanıyor?"
 function infoBody() {
@@ -1530,7 +1551,7 @@ function infoBody() {
     <h3 id="inf-cal">Düzeltme</h3><p>13 bin maçlık geriye dönük teste göre model bazı pazarlarda abartılı çıktı; örneğin KG var için %72 verilen maçların %59'u tuttu. Bu yüzden olasılıklar <b>pazar bazında gerçek isabete göre</b> düzeltilir. Kupona seçilen en yüksek olasılıklardan ayrıca 3 puan düşülür, çünkü en yükseği seçmek iyimserlik katar. Ayarlardan kapatılabilir.</p>
     <h3 id="inf-cp">Kupon nasıl seçilir</h3><p>Seçilen süre içindeki güvenilir verili maçlardan, tarzın izin verdiği pazarlarda eşiği geçen en yüksek olasılıklar alınır. Aynı ligden en fazla 2 maç, aynı pazardan en fazla seçimlerin yarısı girer. Piyasa onayı açıksa maç sonucu ve 2,5 üst seçimlerinde bahisçi oranları ters yöndeyse seçim elenir.</p>
     <h3 id="inf-comb">Birlikte tutma olasılığı</h3><p>Seçimler birbirinden bağımsız kabul edilip olasılıkları çarpılır. 4 seçim tek tek %80 olsa bile hepsinin birlikte tutma olasılığı yaklaşık %41'dir. Kupon oranı, seçimlerin bahisçi oranlarının çarpımıdır (bahisçi marjı dahil); bir maçın oranı yoksa hesaplanmaz.</p>
-    <h3 id="inf-odds">Oranlar ve piyasa</h3><p>Bet365 ve bahisçi ortalaması <b>football-data.co.uk</b>'tan, 1,5 / 3,5 üst ve KG var için konsensüs oranlar <b>Bzzoiro Sports Data</b>'dan gelir. Testte bahisçi oranları modelden daha isabetli çıktı. "Piyasa uyumlu" etiketi ikisinin en fazla 5 puan farkla aynı fikirde olduğunu, "ayrışıyor" 15 puandan fazla fark olduğunu gösterir.</p>
+    <h3 id="inf-odds">Oranlar ve piyasa</h3><p>Bet365 ve bahisçi ortalaması <b>football-data.co.uk</b>'tan, 1,5 / 3,5 üst ve KG var için konsensüs oranlar <b>Bzzoiro Sports Data</b>'dan gelir. Piyasa olasılığı varsa <b>Pinnacle</b>'dan alınır: düşük marjlı ve araştırmalarda en isabetli bulunan bahisçi. Yoksa bahisçi ortalaması kullanılır. Testte bahisçi oranları modelden daha isabetli çıktı. "Piyasa uyumlu" etiketi ikisinin en fazla 5 puan farkla aynı fikirde olduğunu, "ayrışıyor" 15 puandan fazla fark olduğunu gösterir.</p>
     <h3 id="inf-form">Puan durumu ve form</h3><p>Ligin bu sezon biten maçlarından hesaplanır: puan, averaj, son 5 maç (en yenisi solda) ve aralarındaki maçlar. Puan silme ve play-off ayrımı gibi özel durumlar hesaba katılmaz. Model formu doğrudan kullanmaz; bu bilgi kendi kontrolün içindir.</p>
     <h3 id="inf-more">Diğer pazarlar</h3><p>Alt/üst, KG yok, beraberlik ve çifte şans ana olasılıklardan türetilir: 2,5 alt = 100 − 2,5 üst, X2 = 100 − ev sahibi kazanır gibi. Böylece düzeltme bu pazarlara da tutarlı yansır. Çifte şans oranı kaynaklarda olmadığı için 1X2 oranlarından yaklaşık hesaplanır (≈). Bu pazarlar kuponlara ve listeye girmez; maç detayından Kuponum'a eklenebilir ve Takip'te sonuçlanır.</p>
     <h3 id="inf-score">Skor tahmini</h3><p>Modelin iki takım için beklediği gol sayısından Poisson dağılımıyla her skorun olasılığı hesaplanır ve en olası skor gösterilir. İlk yarı ve takım golü de bilgi amaçlıdır. Bu değerler geriye dönük testle düzeltilmedi.</p>
@@ -2170,17 +2191,34 @@ function settledNow(p, h, a) {
   return null;
 }
 function liveCands() {
-  const now = Date.now(), out = new Map(), add = p => { const t = new Date(p.d).getTime(); if (p.ok === null && t < now + 60e3 && t > now - 8 * 3600e3) out.set(liveKey(p), p); };
-  if (state.track.data) state.track.data.coupons.forEach(r => r.picks.forEach(add));
-  if (state.days.data) state.days.data.days.forEach(d => d.snap && d.snap.picks && d.snap.picks.forEach(add));
+  const now = Date.now(), out = new Map(), add = p => { const t = new Date(p.d).getTime(); if ((p.ok === null || p.ok === undefined) && t < now + 60e3 && t > now - 8 * 3600e3) out.set(liveKey(p), p); };
+  allPicks().forEach(x => add(x.p));
   return [...out.values()];
+}
+// Takip, Bugün ve Kuponum'daki bütün seçimler, nereden geldikleriyle
+function allPicks() {
+  const out = [];
+  if (state.track.data) state.track.data.coupons.forEach(r => r.picks.forEach(p => out.push({ p, src: r.title || "Takip", cp: r.id })));
+  if (state.days.data) { const d = state.days.data.days[1]; if (d && d.snap && d.snap.picks) d.snap.picks.forEach(p => out.push({ p, src: "Günün bankosu" })); }
+  state.my.forEach(x => out.push({ p: Object.assign({ ok: null }, x), src: "Kuponum", cp: "my" }));
+  return out;
+}
+function nextKick() {
+  const now = Date.now(); let t = Infinity;
+  allPicks().forEach(({ p }) => { const k = new Date(p.d).getTime(); if ((p.ok === null || p.ok === undefined) && k > now && k < t) t = k; });
+  return t;
+}
+function liveCount() {
+  const ks = new Set();
+  allPicks().forEach(({ p }) => { const L = state.live[liveKey(p)]; if ((p.ok === null || p.ok === undefined) && L && (L.st === "live" || L.st === "ht")) ks.add(liveKey(p)); });
+  return ks.size;
 }
 let liveTimer = null, liveBusy = false;
 async function pollLive() {
   clearTimeout(liveTimer); liveTimer = null;
   if (document.hidden || liveBusy) return;
   const c = liveCands();
-  if (!c.length) return;
+  if (!c.length) { const nk = nextKick(); if (nk < Infinity) liveTimer = setTimeout(pollLive, Math.min(Math.max(nk - Date.now() + 30e3, 60e3), 30 * 60e3)); return; }
   liveBusy = true;
   let res = null;
   try { res = await gs("getLive", c.map(p => ({ id: liveKey(p), h: p.h, a: p.a, d: p.d }))); } catch (e) {}
@@ -2191,7 +2229,7 @@ async function pollLive() {
     const fin = Object.keys(state.live).filter(k => state.live[k].st === "ft" && !state.liveDone[k]);
     fin.forEach(k => state.liveDone[k] = 1);
     if (fin.length) { state.track.status = "idle"; loadTrack(); state.days.status = "idle"; loadDays(); }
-    else { if (state.view === "track") renderTrack(); if (state.view === "home") renderDays(); }
+    else { if (state.view === "track") renderTrack(); if (state.view === "home") renderDays(); if (state.view === "live") { renderLive(); } chromeTop(); }
   }
   if (res && res.on === false) return;   // canlı kaynak anahtarı yok
   liveTimer = setTimeout(pollLive, 60e3);
@@ -2206,12 +2244,12 @@ function liveBit(p, L) {
   const min = fin ? "MS" : L.st === "ht" ? "İY" : L.m ? L.m + "'" : "";
   return `<span class="sc lvs">${min ? `<small>${esc(min)}</small>` : ""}${h} - ${a}</span><span class="st ${cls}">${cls.startsWith("lv") ? "<i></i>" : ""}${txt}</span>`;
 }
-function trackPick(p) {
+function trackPick(p, extra) {
   const kick = new Date(p.d), di = dayInfo(kick);
   const lbl = p.mk === "win" ? (p.side === "away" ? tn(p.a) : tn(p.h)) + " kazanır" : MK[p.mk];
   const s = p.ok === true ? "won" : p.ok === false ? "lost" : p.ok === "void" ? "void" : "pending";
   return `<li class="tk-pk"><span class="pk-t">${esc(fmtTime(kick))}<small>${esc(di.tag || di.num + " " + di.month.slice(0, 3))}</small></span>
-    <span class="pk-m"><b>${crest(p.lk, p.h, tn(p.h), 22)}${crest(p.lk, p.a, tn(p.a), 22)}<span class="nm">${esc(tn(p.h))} - ${esc(tn(p.a))}</span></b><span class="pk-l">${esc(lbl)}, tahmin %${pn(p.p)}</span></span>
+    <span class="pk-m"><b>${crest(p.lk, p.h, tn(p.h), 22)}${crest(p.lk, p.a, tn(p.a), 22)}<span class="nm">${esc(tn(p.h))} - ${esc(tn(p.a))}</span></b><span class="pk-l">${esc(lbl)}, tahmin %${pn(p.p)}${typeof extra === "string" && extra ? `<span class="lv-src">${esc(extra)}</span>` : ""}</span></span>
     <span class="tk-r">${s === "pending" && state.live[liveKey(p)] ? liveBit(p, state.live[liveKey(p)]) : `${p.s ? `<span class="sc">${esc(p.s.replace(":", " - "))}</span>` : ""}<span class="st ${s}">${stLabel[s]}</span>`}</span></li>`;
 }
 function renderTrack() {
@@ -2251,6 +2289,69 @@ function renderTrack() {
     return `<section class="card"><div class="tk-h"><h3>${esc(r.title)}</h3><span class="st ${r.state}">${stLabel[r.state]}</span><span class="muted">${di.num} ${di.month}, tahmini birlikte tutma %${pn(r.comb)}</span><button type="button" class="ghost tk-del" data-del="${esc(r.id)}">Sil</button></div><ol class="picks" style="margin-top:12px">${r.picks.map(trackPick).join("")}</ol></section>`;
   }).join("");
   return `${D.coupons.length} kupon takipte.`;
+}
+
+// ---------- canlı sayfası
+function pickNow(p) {
+  if (p.ok === true) return "won"; if (p.ok === false) return "lost"; if (p.ok === "void") return "void";
+  const L = state.live[liveKey(p)];
+  if (!L || !L.g) return L && L.st === "off" ? "void" : "wait";
+  const [h, a] = L.g;
+  if (L.st === "ft") return hitNow(p, h, a) ? "won" : "lost";
+  const set = settledNow(p, h, a);
+  if (set !== null) return set ? "won" : "lost";
+  return hitNow(p, h, a) ? "ok" : "no";
+}
+function cpSummary(title, picks) {
+  const c = { won: 0, lost: 0, ok: 0, no: 0, wait: 0, void: 0 };
+  picks.forEach(p => c[pickNow(p)]++);
+  const chips = [["won", "tuttu"], ["ok", "şu an tutuyor"], ["no", "şu an tutmuyor"], ["lost", "yattı"], ["wait", "bekliyor"]].filter(x => c[x[0]]).map(x => `<span class="chip ${x[0]}">${c[x[0]]} ${x[1]}</span>`).join("");
+  const v = c.lost ? "Kupon yattı." : c.no ? `Şu an ${c.no} seçim tutmuyor, maçlar sürüyor.` : c.ok || c.wait ? (c.ok ? "Şu an her şey yolunda" + (c.wait ? `, ${c.wait} maç daha var.` : ".") : `${c.wait} maç bekleniyor.`) : "Kupon tuttu.";
+  return `<div class="lv-cp"><b>${esc(title)}</b>${chips}<span class="verdict">${v}</span></div>`;
+}
+function renderLive() {
+  const el = $("vLive");
+  if (state.track.status === "idle") loadTrack();
+  if (state.days.status === "idle") loadDays();
+  if (Date.now() - state.liveAt > 50e3) ensureLive();
+  if (!el.dataset.built) {
+    el.dataset.built = "1";
+    el.innerHTML = `<div class="home"><div class="home-top"><h1>Canlı</h1><p>Takip, Kuponum ve günün bankolarındaki maçlar. Oynananlar dakikada bir yenilenir, bitenler birkaç dakika içinde sonuçlanır.</p><div class="lv-meta"><span id="lvAt"></span><button type="button" class="ghost" id="lvRef">Şimdi yenile</button></div></div><div id="lvBody"></div></div>`;
+    el.addEventListener("click", e => { if (e.target.closest("#lvRef")) { buzz(); const b = $("lvRef"); b.disabled = true; b.innerHTML = '<span class="spin"></span>Yenileniyor…'; pollLive().finally(() => { b.disabled = false; b.textContent = "Şimdi yenile"; renderLive(); }); } });
+  }
+  $("lvAt").textContent = state.liveAt ? "Son güncelleme " + new Date(state.liveAt).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }) : "";
+  const body = $("lvBody"), now = Date.now();
+  if (!state.track.data && !state.days.data && !state.my.length) { body.innerHTML = `<ol class="picks" style="margin-top:14px">${'<li class="pk skel-pk" aria-hidden="true"><span class="sk" style="width:46px;height:22px"></span><span class="sk-c"><span class="sk" style="width:80%"></span><span class="sk" style="width:45%"></span></span><span class="sk" style="width:58px;height:28px;margin-left:auto"></span></li>'.repeat(3)}</ol>`; return "Canlı yükleniyor."; }
+  // aynı maç + aynı pazar birden fazla yerde olabilir: tek satır, kaynaklar birlikte yazılır
+  const rows = new Map();
+  allPicks().forEach(({ p, src }) => {
+    const t = new Date(p.d).getTime();
+    if (t < now - 10 * 3600e3 || t > now + 12 * 3600e3) return;
+    const k = liveKey(p) + "|" + p.mk + "|" + (p.mk === "win" ? p.side || "home" : "");
+    const r = rows.get(k); if (r) { if (!r.src.includes(src)) r.src.push(src); if (p.ok !== null && p.ok !== undefined) r.p = p; } else rows.set(k, { p, src: [src], t });
+  });
+  const all = [...rows.values()].sort((a, b) => a.t - b.t), G = { live: [], done: [], next: [], nodata: [] };
+  all.forEach(r => {
+    const st = pickNow(r.p), L = state.live[liveKey(r.p)];
+    if (r.t > now) G.next.push(r);
+    else if (st === "won" || st === "lost" || st === "void" || (L && L.st === "ft")) G.done.push(r);
+    else if (L && (L.st === "live" || L.st === "ht")) G.live.push(r);
+    else G.nodata.push(r);
+  });
+  const li = list => `<ol class="picks" style="margin-top:12px">${list.map(r => trackPick(r.p, r.src.join(" · "))).join("")}</ol>`;
+  // kupon özetleri: başlamış maçı olan kuponlar
+  const cps = [];
+  if (state.track.data) state.track.data.coupons.forEach(c => { if (c.state === "pending" && c.picks.some(p => new Date(p.d).getTime() <= now)) cps.push(cpSummary(c.title || "Kupon", c.picks)); });
+  if (state.my.length && state.my.some(x => new Date(x.d).getTime() <= now)) cps.push(cpSummary("Kuponum", state.my.map(x => Object.assign({ ok: null }, x))));
+  let html = "";
+  if (cps.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Kuponlarım şu an</h2></div><div class="lv-cps">${cps.join("")}</div></section>`;
+  if (G.live.length) html += `<section class="card lv-grp"><div class="card-h"><h2><span class="lv-dot" aria-hidden="true"></span>Oynanıyor <span class="lv-n">${G.live.length}</span></h2></div>${li(G.live)}</section>`;
+  if (G.nodata.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Başladı <span class="lv-n">${G.nodata.length}</span></h2><span class="muted">canlı skor bu maçlar için gelmedi, bitince sonuçlanır</span></div>${li(G.nodata)}</section>`;
+  if (G.next.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Sıradaki <span class="lv-n">${G.next.length}</span></h2><span class="muted">önümüzdeki 12 saat</span></div>${li(G.next)}</section>`;
+  if (G.done.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Biten <span class="lv-n">${G.done.length}</span></h2><span class="muted">son 10 saat</span></div>${li(G.done.slice().reverse())}</section>`;
+  if (!html) html = `<section class="card lv-grp"><div class="ai-empty">${ILL.ticket}<p>Şu an takip ettiğin maç yok. Takibe aldığın kuponlar, Kuponum'a eklediğin seçimler ve günün bankoları burada oynanırken görünür.</p></div></section>`;
+  body.innerHTML = html;
+  return G.live.length ? `${G.live.length} maç oynanıyor.` : "Şu an oynanan maç yok.";
 }
 
 // ---------- yapay zeka
