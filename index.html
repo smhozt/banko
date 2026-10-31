@@ -342,7 +342,11 @@
   .chips button { border:1px solid var(--line); background:transparent; color:var(--ink); border-radius:999px; padding:3px 10px; font:500 13px var(--f); cursor:pointer; }
   .chips button:hover { border-color:var(--muted); }
   .ai-ans { background:var(--sunk); border-radius:12px; padding:12px 14px; margin-top:14px; max-width:75ch; white-space:pre-wrap; }
-  .ai-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:16px; }
+  .ai-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:16px; scroll-margin-top:90px; }
+  #aiBody { margin-top:14px; }
+  .ai-q { margin:4px 0 0 auto; max-width:85%; width:fit-content; background:color-mix(in srgb, var(--t2) 16%, transparent); border:1px solid color-mix(in srgb, var(--t2) 40%, transparent); border-radius:14px 14px 4px 14px; padding:9px 13px; white-space:pre-wrap; }
+  .ai-q small { display:block; font-size:12px; color:var(--muted); margin-bottom:2px; }
+  .ai-win { font-size:13px; color:var(--muted); margin:8px 0 0; }
   .ai-ask { display:flex; gap:8px; flex:1 1 320px; }
   .ai-ask input { flex:1; min-width:0; height:42px; border:1px solid var(--line); background:var(--bg); border-radius:10px; padding:0 12px; }
   .ai-err { color:var(--err); font-size:14px; margin:12px 0 0; }
@@ -1787,11 +1791,11 @@ function buildHome() {
     </section>
     <section class="card ai" aria-labelledby="aiT">
       <div class="card-h"><h2 id="aiT">Yapay zeka köşesi</h2><span class="muted" id="aiMeta"></span></div>
-      <div id="aiBody" aria-live="polite"></div>
-      <div class="ai-actions">
+      <div class="ai-actions" id="aiActs">
         <button type="button" class="ghost solid" id="aiRun">Günün yorumunu hazırla</button>
-        <form class="ai-ask" id="aiForm"><label class="sr" for="aiQ">Yapay zekaya sor</label><input id="aiQ" type="text" maxlength="300" placeholder="Örnek: düşük riskli 3 maçlık kupon yap"><button class="ghost" id="aiAsk" type="submit">Sor</button></form>
+        <form class="ai-ask" id="aiForm"><label class="sr" for="aiQ">Yapay zekaya sor</label><input id="aiQ" type="text" maxlength="300" placeholder="Örnek: önümüzdeki 3 saat için 3 banko maç"><button class="ghost" id="aiAsk" type="submit">Sor</button></form>
       </div>
+      <div id="aiBody" aria-live="polite"></div>
       <details class="ai-set" id="aiSet"><summary>Yapay zeka ayarları</summary>
         <div class="row2"><label for="aiProv" class="muted">Sağlayıcı</label><select id="aiProv"><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="claude">Claude</option></select>
           <label for="aiModel" class="muted">Model</label><input id="aiModel" type="text" autocomplete="off"></div>
@@ -1803,8 +1807,8 @@ function buildHome() {
   $("aiModel").value = state.ai.models[state.ai.provider];
   $("aiProv").addEventListener("change", e => { state.ai.provider = e.target.value; $("aiModel").value = state.ai.models[state.ai.provider]; saveUI(); renderAI(); });
   $("aiModel").addEventListener("change", e => { state.ai.models[state.ai.provider] = e.target.value.trim() || AI_DEFAULT_MODEL[state.ai.provider]; saveUI(); });
-  $("aiRun").addEventListener("click", () => runAI("daily"));
-  $("aiForm").addEventListener("submit", e => { e.preventDefault(); const q = $("aiQ").value.trim(); if (q) runAI("ask", q); });
+  $("aiRun").addEventListener("click", () => { $("aiActs").scrollIntoView({ block: "start", behavior: "smooth" }); runAI("daily"); });
+  $("aiForm").addEventListener("submit", e => { e.preventDefault(); const q = $("aiQ").value.trim(); if (!q) return; $("aiQ").value = ""; $("aiQ").blur(); $("aiActs").scrollIntoView({ block: "start", behavior: "smooth" }); runAI("ask", q); });
   $("vHome").addEventListener("click", homeClick);
   $("calibH").addEventListener("change", onCalib);
   if ("IntersectionObserver" in window) new IntersectionObserver(es => { const v = es[es.length - 1].isIntersecting; if (v !== state.cpVis) { state.cpVis = v; updateSlip(); } }, { threshold: 0.12 }).observe($("cpT").closest(".card"));
@@ -2413,18 +2417,36 @@ function aiSig() {
   const { base } = homePool();
   return (state.calib ? "c" : "r") + "|" + base.slice().sort((a, b) => maxP(b) - maxP(a)).slice(0, 12).map(m => m.id + ":" + pn(maxP(m))).join(",");
 }
+// Sorudaki zaman şartı: "3 saat", "bugün", "bu akşam/gece", "yarın". Bulunamazsa null (ana sayfa süresi kullanılır).
+function aiWindow(q) {
+  const t = String(q || "").toLocaleLowerCase("tr-TR"), now = Date.now();
+  let m = t.match(/(\d{1,2})\s*(?:saat|sa\b)/);
+  if (m) { const h = Math.min(+m[1], 96); return { label: `önümüzdeki ${h} saat`, ok: k => k - now <= h * 36e5 }; }
+  if (/yar[ıi]n/.test(t)) return { label: "yarın", ok: k => dayInfo(new Date(k)).tag === "Yarın" };
+  if (/bu\s*ak[şs]am|bu\s*gece/.test(t)) return { label: "bu akşam", ok: k => dayInfo(new Date(k)).tag === "Bugün" || k - now <= 6 * 36e5 && new Date(k).getHours() < 4 };
+  if (/bug[üu]n/.test(t)) return { label: "bugün", ok: k => dayInfo(new Date(k)).tag === "Bugün" };
+  return null;
+}
 async function runAI(kind, question) {
   const A = state.ai;
   const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
   if (!order.length) { A.error = "Hiçbir sağlayıcı için anahtar tanımlı değil. Script özelliklerine GEMINI_API_KEY veya GROQ_API_KEY ekle."; $("aiSet").open = true; renderAI(); return; }
-  const { base } = homePool();
-  if (!base.length) { A.error = "Seçili aralıkta güvenilir veriyle maç yok. Süreyi uzat ya da lig ekle."; renderAI(); return; }
+  A.kind = kind; A.q = kind === "ask" ? String(question).slice(0, 300) : ""; A.win = "";
+  const W = kind === "ask" ? aiWindow(question) : null, now = Date.now();
+  const base = W ? flatten().filter(m => m.trusted && m.kick.getTime() > now && W.ok(m.kick.getTime())) : homePool().base;
+  if (W) A.win = W.label;
+  if (!base.length) {
+    const nx = flatten().filter(m => m.trusted && m.kick.getTime() > now).sort((a, b) => a.kick - b.kick)[0];
+    if (W) { A.result = { ozet: "", cevap: `${W.label[0].toLocaleUpperCase("tr-TR") + W.label.slice(1)} içinde güvenilir veriyle maç yok.${nx ? ` En yakın maç ${dayInfo(nx.kick).tag || dayInfo(nx.kick).num + " " + dayInfo(nx.kick).month} ${fmtTime(nx.kick)}: ${nx.home} - ${nx.away}.` : ""} Süreyi uzatıp tekrar sorabilirsin.`, kupon: { baslik: "", secimler: [] }, oneriler: [] }; A.at = Date.now(); A.usedProv = ""; A.sig = aiSig(); A.error = ""; renderAI(); return; }
+    A.error = "Seçili aralıkta güvenilir veriyle maç yok. Süreyi uzat ya da lig ekle."; renderAI(); return;
+  }
   const ranked = base.slice().sort((a, b) => maxP(b) - maxP(a)).slice(0, 40);
   const idMap = {};
   const list = ranked.map((m, i) => { const id = "m" + (i + 1); idMap[id] = m; return { id, lig: trc(m.country) + " " + m.league, mac: m.home + " - " + m.away, saat: dayInfo(m.kick).num + " " + dayInfo(m.kick).month + " " + fmtTime(m.kick), ev: pn(m.pH), ber: pn(m.pD), dep: pn(m.pA), u15: pn(m.o15), u25: pn(m.o25), u35: pn(m.o35), kg: pn(m.bt) }; });
   const H = state.home;
   const ask = kind === "ask" ? "Kullanıcı sorusu: " + String(question).slice(0, 300) : `Günün yorumunu hazırla. ${H.n} maçlık, "${STYLES[H.style].label}" tarzında bir kupon öner ve 3 ile 5 öneri yaz.`;
-  const prompt = `${ask}\nSaat dilimi: Sofia. Maç listesi (yüzde olarak):\n${JSON.stringify(list)}`;
+  const nowTxt = new Date().toLocaleString("tr-TR", { timeZone: TZ, day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+  const prompt = `${ask}\nŞu an: ${nowTxt} (Sofia saati).${W ? ` Kullanıcı ${W.label} içindeki maçları istedi; listede yalnızca bu aralıktaki ${list.length} maç var. Başka maç önerme; istenen sayıda uygun maç yoksa bunu açıkça söyle.` : ""} Maç listesi (yüzde olarak, saat Sofia):\n${JSON.stringify(list)}`;
   A.status = "loading"; A.error = ""; A.note = ""; renderAI();
   try {
     const res = await gs("callAI", { order, models: A.models, system: AI_SYSTEM, prompt });
@@ -2433,7 +2455,7 @@ async function runAI(kind, question) {
       A.at = Date.now(); A.usedProv = AI_NAMES[res.prov] + " / " + res.model; A.sig = aiSig();
       const f = (res.fails || []).map(x => String(x).split(":")[0]);
       if (f.length) A.note = f.join(", ") + " yanıt vermedi, " + AI_NAMES[res.prov] + " kullanıldı.";
-      lsSet("banko2:ai", JSON.stringify({ day: dayKey(new Date()), result: A.result, at: A.at, used: A.usedProv, note: A.note, sig: A.sig }));
+      lsSet("banko2:ai", JSON.stringify({ day: dayKey(new Date()), result: A.result, at: A.at, used: A.usedProv, note: A.note, sig: A.sig, kind: A.kind, q: A.q, win: A.win }));
     } else A.error = ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi.";
   } catch (e) { A.error = (e && e.message) || String(e); }
   A.status = "idle"; renderAI();
@@ -2459,7 +2481,8 @@ function renderAI() {
   const res = stale ? null : resolveAI();
   let html = "";
   if (stale) html += `<p class="ai-empty">Önceki yorum eski verilerle hazırlanmıştı${A.at ? " (" + new Date(A.at).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }) + ")" : ""}, bu yüzden gizlendi. "Günün yorumunu hazırla" ile yenile.</p>`;
-  if (A.status === "loading") html += `<p class="ai-empty"><span class="spin"></span>Yapay zeka yorumu hazırlanıyor…</p>`;
+  if (A.kind === "ask" && A.q && (A.status === "loading" || res || A.error)) html += `<div class="ai-q"><small>Sorun</small>${esc(A.q)}</div>${A.win ? `<p class="ai-win">Yalnızca ${esc(A.win)} içindeki maçlara bakıldı.</p>` : ""}`;
+  if (A.status === "loading") html += `<p class="ai-empty"><span class="spin"></span>${A.kind === "ask" ? "Yanıt hazırlanıyor…" : "Yapay zeka yorumu hazırlanıyor…"}</p>`;
   if (A.error) html += `<p class="ai-err" role="alert">${esc(A.error)}</p>`;
   state.aiCoupon = null;
   if (res) {
@@ -2474,7 +2497,7 @@ function renderAI() {
       : `<p class="ai-empty">Yapay zeka, maç listesini okuyup kupon ve öneri hazırlar. Başlamak için aşağıdaki ayarlardan bir API anahtarı ekle.</p>`;
   }
   $("aiBody").innerHTML = html;
-  if (A.note && res) $("aiBody").insertAdjacentHTML("afterbegin", `<p class="muted">${esc(A.note)}</p>`);
+  if (A.note && res) $("aiBody").insertAdjacentHTML("beforeend", `<p class="muted" style="margin-top:10px;font-size:13px">${esc(A.note)}</p>`);
   $("aiMeta").textContent = res && A.at ? new Date(A.at).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }) + ", " + (A.usedProv || "") : "";
   $("aiRun").disabled = $("aiAsk").disabled = A.status === "loading";
   $("aiRun").innerHTML = A.status === "loading" ? '<span class="spin"></span>Hazırlanıyor…' : "Günün yorumunu hazırla";
@@ -2743,7 +2766,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) { se
   const th = lsGet("banko2:theme"); if (th) applyTheme(th);
   try { state.fav = new Set(JSON.parse(lsGet("banko2:fav") || "[]")); } catch (e) {}
   try { const my = JSON.parse(lsGet("banko2:my") || "[]"); if (Array.isArray(my)) state.my = my.filter(x => x && x.id && MK[x.mk]).slice(0, MY_MAX); } catch (e) {}
-  try { const a = JSON.parse(lsGet("banko2:ai") || "null"); if (a && a.day === dayKey(new Date()) && a.result) { state.ai.result = a.result; state.ai.at = a.at; state.ai.usedProv = a.used || ""; state.ai.note = a.note || ""; state.ai.sig = a.sig || ""; } } catch (e) {}
+  try { const a = JSON.parse(lsGet("banko2:ai") || "null"); if (a && a.day === dayKey(new Date()) && a.result) { state.ai.result = a.result; state.ai.at = a.at; state.ai.usedProv = a.used || ""; state.ai.note = a.note || ""; state.ai.sig = a.sig || ""; state.ai.kind = a.kind || ""; state.ai.q = a.q || ""; state.ai.win = a.win || ""; } } catch (e) {}
   if (boot.leagueError && !(boot.leagues || []).length) { $("errors").textContent = "Lig listesi alınamadı (" + boot.leagueError + ")."; return; }
   state.leagues = (boot.leagues || []).filter(l => !isExcluded(l));
   let saved = null; try { saved = JSON.parse(lsGet("banko2:sel") || "null"); } catch (e) {}
