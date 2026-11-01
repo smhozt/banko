@@ -700,6 +700,31 @@
   .my-pk .pk-b { flex:1; min-width:0; }
   .pk-x { flex:none; width:48px; border:0; border-left:1px solid var(--line); background:transparent; color:var(--muted); font-size:22px; line-height:1; cursor:pointer; }
   .pk-x:hover { color:var(--err); }
+  .my-pk { flex-wrap:wrap; }
+  .pk-doc { flex:1 1 100%; display:flex; align-items:center; gap:10px; padding:8px 14px 12px; font-size:13.5px; line-height:1.4; color:var(--ink); }
+  .pk-doc > span { flex:1; min-width:0; }
+  .pk-doc .ghost { flex:none; height:34px; padding:0 12px; font-size:13px; }
+  .dt-doc { margin-top:16px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--t2) 14%, transparent); }
+  .doc-sum { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px; margin-bottom:10px; border-radius:12px; background:color-mix(in srgb, var(--t2) 14%, transparent); font-size:14px; }
+  .doc-sum span { flex:1 1 200px; }
+  .lv-list, .hl, .srl { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .lv { width:100%; display:grid; grid-template-columns:74px minmax(0,1fr) auto 52px; gap:10px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid transparent; background:var(--sunk); color:inherit; font:inherit; text-align:left; cursor:pointer; }
+  .lv[aria-pressed="true"] { border-color:var(--ink); }
+  .lv-t { font:700 12px var(--f); text-transform:uppercase; letter-spacing:.4px; padding:4px 0; border-radius:999px; text-align:center; background:var(--bg); }
+  .lv.s .lv-t { color:var(--t1); } .lv.m .lv-t { color:var(--t2); } .lv.b .lv-t { color:var(--warn-fg); background:var(--warn-bg); }
+  .lv-l { display:flex; flex-direction:column; min-width:0; } .lv-l b { font-weight:600; } .lv-l small { color:var(--muted); font-size:12.5px; }
+  .lv-p { font:700 24px/1 var(--fc); white-space:nowrap; } .lv-p b { font:inherit; } .lv-p small { font-size:14px; }
+  .lv-o { text-align:right; font-weight:600; color:var(--muted); font-size:14px; }
+  .hl-b { width:100%; text-align:left; padding:9px 12px 9px 30px; border-radius:12px; border:0; background:var(--sunk); color:inherit; font:inherit; font-size:14.5px; line-height:1.4; cursor:pointer; position:relative; }
+  .hl-b::before { content:""; position:absolute; left:13px; top:15px; width:7px; height:7px; border-radius:50%; background:var(--t2); }
+  .srl { margin-top:12px; gap:6px; }
+  .srl button { width:100%; display:grid; grid-template-columns:44px minmax(0,1fr); gap:10px; align-items:center; text-align:left; padding:9px 12px; border-radius:12px; border:1px solid transparent; background:var(--sunk); color:inherit; font:inherit; cursor:pointer; }
+  .srl button:hover { border-color:var(--muted); }
+  .srl b { font:700 28px/1 var(--fc); text-align:center; }
+  .srl span { display:flex; flex-direction:column; min-width:0; }
+  .srl .srl-t { font-weight:600; } .srl small { color:var(--muted); font-size:13px; }
+  .tblm { margin-top:12px; }
+  @media (max-width:720px) { .lv { grid-template-columns:62px minmax(0,1fr) auto 44px; gap:8px; } .lv-p { font-size:21px; } }
   .my-pk.gone .pk-b { opacity:.55; cursor:default; }
   .my-pk.gone .pk-l { color:var(--muted); }
   .flag.in, .chip2.in { background:color-mix(in srgb, var(--t2) 20%, transparent); color:var(--ink); }
@@ -978,7 +1003,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, stale: {}, fcUsed: null, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {} }, detTable: false, detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {} }, detTable: false, detTblMode: "all", srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -1268,7 +1293,7 @@ function trendFlag(m) {
   if (t === "bt") return `<span class="flag tr" title="İki takımın son 5'er lig maçında">Son maçlar: KG var ${m.th[7] + m.ta[7]}/${n}</span>`;
   if (t === "gol") return `<span class="flag tr">Son 5: ${m.th[8]}/${m.th[0]} ve ${m.ta[8]}/${m.ta[0]} maçta gol attılar</span>`;
   if (t === "sans") { const w = unlucky(m.th) ? m.home : m.away; return `<span class="flag tr" title="Son maçlarda çok isabetli şut, az gol">${esc(w)}: şanssız hücum, goller gelebilir</span>`; }
-  if (t === "def") { const hm = m.th[9] / m.th[0] >= m.ta[9] / m.ta[0], r = hm ? m.th : m.ta; return `<span class="flag tr">${esc(hm ? m.home : m.away)}: son ${r[0]} maçın ${r[9]}'inde gol yemedi</span>`; }
+  if (t === "def") { const hm = m.th[9] / m.th[0] >= m.ta[9] / m.ta[0], r = hm ? m.th : m.ta; return `<span class="flag tr">${esc(hm ? m.home : m.away)}: son ${r[0]} maçın ${r[9]}${NLOC(r[9])} gol yemedi</span>`; }
   return "";
 }
 const fold = s => String(s || "").toLocaleLowerCase("tr-TR").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ı/g, "i");
@@ -1468,14 +1493,14 @@ function myRow(x) {
     <span class="pk-t">${esc(fmtTime(kick))}<small>${esc(di.tag || di.num + " " + di.month.slice(0, 3))}</small></span>
     <span class="pk-m"><b>${crest(s.lk, s.h, home, 22)}${crest(s.lk, s.a, away, 22)}<span class="nm">${esc(home)} - ${esc(away)}</span></b><span class="pk-l">${esc(lbl)}</span>${x.m && !x.started ? pickChips(x.m, x.pk) : state_ ? `<span class="chips2"><span class="chip2 na">${state_}, hesaba katılmaz</span></span>` : ""}</span>
     <span class="pk-p"><span class="pv"><b>${pn(x.pk.p)}</b>%</span><span class="meter"><i style="width:${pn(x.pk.p)}%"></i></span>${od ? `<span class="pk-o">${od.src} ${fo(od.v)}</span>` : ""}</span></button>
-    <button type="button" class="pk-x" data-rm="${esc(s.id)}" aria-label="${esc(home)} - ${esc(away)} seçimini çıkar">×</button></li>`;
+    <button type="button" class="pk-x" data-rm="${esc(s.id)}" aria-label="${esc(home)} - ${esc(away)} seçimini çıkar">×</button>${(d => d ? `<div class="pk-doc"><span>${esc(d.txt)}</span>${d.pk ? `<button type="button" class="ghost" data-act="doc" data-id="${esc(s.id)}" data-mk="${d.pk.market}" data-side="${d.pk.side || ""}">Uygula</button>` : ""}</div>` : "")(x.m && !x.started ? doctor(x.m, x.pk) : null)}</li>`;
 }
 function myBody() {
   const R = resolveMy();
   if (!R.rows.length) return `<div class="ai-empty">${ILL.ticket}<p>Kuponun boş. Bir maça dokun, detayda pazarı seç ve <b>Kupona ekle</b> de. Ya da günün kuponunu buraya aktarıp üstünde oyna.</p></div>
     <div class="sh-btns"><button type="button" class="ghost solid" data-act="import">Günün kuponunu aktar</button></div>`;
-  const dead = R.rows.length - R.live.length;
-  return `<ol class="picks">${R.rows.map(myRow).join("")}</ol>
+  const dead = R.rows.length - R.live.length, docs = R.live.map(x => doctor(x.m, x.pk)).filter(d => d && d.pk);
+  return `${docs.length ? `<div class="doc-sum"><span><b>Kupon doktoru</b> ${docs.length} seçimde daha mantıklı bir alternatif buldu.</span><button type="button" class="ghost solid" data-act="docall">Hepsini uygula</button></div>` : ""}<ol class="picks">${R.rows.map(myRow).join("")}</ol>
     ${R.live.length ? combHTML(R.live.map(x => ({ m: x.m, pk: x.pk })), R.comb) : `<p class="muted" style="margin-top:12px">Hesaplanacak seçim kalmadı.</p>`}
     ${dead ? `<p class="sh-note">${dead} seçim başladığı ya da listeden düştüğü için hesaba ve kayda katılmaz. <button type="button" class="lnk" data-act="clean">Temizle</button></p>` : ""}
     <div class="sh-btns"><button type="button" class="ghost solid" data-act="mysave" ${R.live.length ? "" : "disabled"}>Takibe al</button><button type="button" class="ghost" data-act="mycopy" ${R.live.length ? "" : "disabled"}>Kopyala</button><button type="button" class="ghost" data-act="myshare" ${R.live.length ? "" : "disabled"}>Resim olarak paylaş</button><button type="button" class="ghost" data-act="import">Günün kuponunu ekle</button><button type="button" class="ghost" data-act="clear">Kuponu boşalt</button></div>
@@ -1490,7 +1515,7 @@ function detPicks(m) {
     .concat(EXTRA_MK.map(k => ({ market: k, p: primary(m, k), x: true }))).filter(x => typeof x.p === "number" && !isNaN(x.p));
 }
 function openDetail(id, tab) {
-  state.detTable = false; state.detMore = EXTRA_MK.includes(tab);
+  state.detTable = false; state.detTblMode = "all"; state.detMore = EXTRA_MK.includes(tab);
   state.detId = id; state.detPick = MK[tab] ? tab : (MK[state.tab] ? state.tab : "win");
   openSheet("match");
   ensureDetail(id);
@@ -1535,7 +1560,7 @@ function teamBlock(m) {
   const ti = state.extra.ti[m.id];
   if (!ti) return `<p class="dt-line">${state.detLoading ? "Puan durumu ve form alınıyor…" : "Bilgi yok."}</p>`;
   if (!ti.ok) return `<p class="dt-line">Bu lig için bu sezonun sonuçları alınamadı${ti.err ? " (" + esc(ti.err) + ")" : ""}.</p>`;
-  const one = (r, f, name) => r ? `<div class="tf"><span class="tf-pos">${r.pos}.</span><span class="tf-n">${esc(name)}</span>${formChips(f)}<span class="tf-s">${r.pts} puan · ${r.p} maç · ${r.w}G ${r.d}B ${r.l}M · averaj ${r.gf}-${r.ga}</span></div>`
+  const one = (r, f, name) => r ? `<div class="tf"><span class="tf-pos">${r.pos}.</span><span class="tf-n">${esc(name)}</span>${formChips(f)}<span class="tf-s">${r.pts} puan · ${r.p} maç · ${r.w}G ${r.d}B ${r.l}M · averaj ${r.gf}-${r.ga}${r.tm === m.hraw ? vrow("hs", r.tm) : r.tm === m.araw ? vrow("as", r.tm) : ""}</span></div>`
     : `<div class="tf"><span class="tf-pos">–</span><span class="tf-n">${esc(name)}</span><span></span><span class="tf-s">Bu sezon biten maçı yok.</span></div>`;
   const f1 = v => typeof v === "number" ? v.toFixed(1).replace(".", ",") : "–";
   const prow = (r, name) => r ? `<tr><td>${esc(name)}</td><td>${f1(r.sf)} <small>/ ${f1(r.sa)}</small></td><td>${f1(r.of)} <small>/ ${f1(r.oa)}</small></td><td>${typeof r.pos === "number" ? "%" + Math.round(r.pos) : "–"}</td><td>${f1(r.cf)}</td></tr>` : "";
@@ -1549,7 +1574,15 @@ function teamBlock(m) {
   const S = ti.h2hSum, nS = S && S.seasons > 1 ? S.seasons : 1;
   const h2s = S && S.n ? `<div class="h2s"><span>${esc(tn(m.hraw))} <b>${S.hw}</b> G</span><span>Beraberlik <b>${S.d}</b></span><span>${esc(tn(m.araw))} <b>${S.aw}</b> G</span><span>Maç başı <b>${dc1(S.g / S.n)}</b> gol</span><span>2,5 üst <b>${S.o25}/${S.n}</b></span><span>KG var <b>${S.bt}/${S.n}</b></span></div>` : "";
   const h2h = ti.h2h.length ? `${h2s}<ul class="h2h">${ti.h2h.map(x => `<li><span class="muted">${esc(fmDate(x.t))}</span><span>${esc(tn(x.h))} <b>${esc(x.s)}</b> ${esc(tn(x.a))}</span></li>`).join("")}</ul>` : `<p class="muted" style="margin:10px 0 0">${nS > 1 ? `Son ${nS} sezonda` : "Bu sezon"} aralarında maç yok.</p>`;
-  const tbl = state.detTable ? `<table class="mt"><thead><tr><th>#</th><th>Takım</th><th>M</th><th>Av</th><th>P</th></tr></thead><tbody>${ti.table.map(r => `<tr class="${r.tm === m.hraw || r.tm === m.araw ? "me" : ""}"><td>${r.pos}</td><td>${esc(tn(r.tm))}</td><td>${r.p}</td><td>${r.gf - r.ga > 0 ? "+" : ""}${r.gf - r.ga}</td><td>${r.pts}</td></tr>`).join("")}</tbody></table>` : "";
+  const TM = state.detTblMode, hasSplit = ti.table[0] && ti.table[0].hs;
+  const vrow = (key, tm) => { const v = venueRank(ti.table, tm, key); return v ? ` · ${key === "hs" ? "iç sahada" : "deplasmanda"} ${v.pos}. (${v.r[1]}G ${v.r[2]}B ${v.r[3]}M)` : ""; };
+  const tblRows = () => {
+    if (TM === "all" || !hasSplit) return ti.table.map(r => ({ tm: r.tm, pos: r.pos, p: r.p, gd: r.gf - r.ga, pts: r.pts }));
+    const key = TM === "home" ? "hs" : TM === "away" ? "as" : "fs";
+    return ti.table.filter(r => r[key][0] > 0).map(r => ({ tm: r.tm, p: r[key][0], gd: r[key][4] - r[key][5], gf: r[key][4], pts: r[key][6], w: r[key] }))
+      .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf).map((r, i) => ({ ...r, pos: i + 1 }));
+  };
+  const tbl = state.detTable ? `${hasSplit ? `<div class="seg tblm" role="group" aria-label="Tablo türü">${[["all", "Genel"], ["home", "İç saha"], ["away", "Deplasman"], ["form", "Son 5"]].map(([k, l]) => `<button type="button" data-act="tblm" data-m="${k}" aria-pressed="${TM === k}">${l}</button>`).join("")}</div>` : ""}<table class="mt"><thead><tr><th>#</th><th>Takım</th><th>M</th><th>Av</th><th>P</th></tr></thead><tbody>${tblRows().map(r => `<tr class="${r.tm === m.hraw || r.tm === m.araw ? "me" : ""}"><td>${r.pos}</td><td>${esc(tn(r.tm))}</td><td>${r.p}</td><td>${r.gd > 0 ? "+" : ""}${r.gd}</td><td>${r.pts}</td></tr>`).join("")}</tbody></table>${TM === "form" ? '<p class="sh-note">Son 5 maçta toplanan puana göre.</p>' : ""}` : "";
   return `${one(ti.home, ti.formH, m.home)}${one(ti.away, ti.formA, m.away)}${play}
     <h3 style="margin:14px 0 4px;font:600 16px var(--fc)">${nS > 1 ? `Aralarındaki maçlar <span class="muted" style="font:400 13px var(--f)">son ${nS} sezon${S.n ? `, ${S.n} maç` : ""}</span>` : "Bu sezon aralarında"}</h3>${h2h}
     <div class="sh-btns" style="margin-top:10px"><button type="button" class="ghost" data-act="tbl">${state.detTable ? "Tabloyu gizle" : `Puan tablosu (${ti.n} takım)`}</button></div>${tbl}
@@ -1580,6 +1613,8 @@ async function runMatchAI(id) {
     puan: ti && ti.ok ? { ev: ti.home && { sira: ti.home.pos, puan: ti.home.pts, mac: ti.home.p }, dep: ti.away && { sira: ti.away.pos, puan: ti.away.pts, mac: ti.away.p }, takim: ti.n } : null,
     form: ti && ti.ok ? { ev: ti.formH.map(x => x.r).join(""), dep: ti.formA.map(x => x.r).join(""), not: "en yeni maç solda, G galibiyet B beraberlik M mağlubiyet" } : null,
     aralarinda: ti && ti.ok ? ti.h2h.map(x => x.h + " " + x.s + " " + x.a) : [],
+    benzer_oran: (Q => Q.r || Q.g ? { mac: Q.r ? Q.r.n : Q.g.n, ev: Q.r ? pn(Q.r.h) : null, ber: Q.r ? pn(Q.r.d) : null, dep: Q.r ? pn(Q.r.a) : null, u25: Q.g ? pn(Q.g.o25) : Q.r ? pn(Q.r.o25) : null, kg: Q.g ? pn(Q.g.bt) : Q.r ? pn(Q.r.bt) : null, not: "bu oranlarla oynanmış geçmiş maçlarda gerçekleşen yüzde" } : null)(r ? simQuery(r.h, r.a, r.o) : {}),
+    seriler: highlights(m).map(x => x.t),
     oyun: ti && ti.ok && (ti.stH || ti.stA) ? { ev: ti.stH, dep: ti.stA, not: "son maçların ortalaması: sf/sa atılan/yenen şut, of/oa isabetli şut, pos topa sahip olma %, cf korner, gf/ga gol" } : null, dusuk_guven: !m.trusted };
   try {
     const res = await gs("callAI", { order, models: A.models, system: AI_MATCH, prompt: "Bu maçı yorumla. Veriler (yüzde):\n" + JSON.stringify(data) });
@@ -1634,6 +1669,8 @@ function detailBody() {
     <div class="dt-teams"><div class="dt-team">${crest(m.lk, m.hraw, m.home, 44)}${esc(m.home)}${favBtn(m.lk, m.hraw)}</div><span class="dt-vs">-</span><div class="dt-team">${crest(m.lk, m.araw, m.away, 44)}${esc(m.away)}${favBtn(m.lk, m.araw)}</div></div>
     ${flags.length ? `<div class="dt-flags">${flags.join("")}</div>` : ""}
     ${state.detLoading ? '<p class="muted" style="margin:10px 0 0"><span class="spin"></span>Piyasa, Elo ve korner verisi alınıyor…</p>' : ""}
+    ${(h => h ? `<div class="dt-sec"><h3>Öne çıkanlar</h3>${h}</div>` : "")(highlightsHTML(m))}
+    <div class="dt-sec"><h3>Bu maçta üç seçim</h3>${levelsHTML(m)}</div>
     <div class="dt-sec"><h3>Maç sonucu</h3><div class="x3">${x3}</div></div>
     <div class="dt-sec"><h3>Pazarlar <span class="muted">seçmek için dokun</span></h3><ul class="mk-list"><li class="mk-head" aria-hidden="true"><span>Seçim</span><span>Model</span><span>Piyasa</span><span>Oran</span></li>${rows}</ul>
       ${rowsX ? `<div class="sh-btns" style="margin-top:10px"><button type="button" class="ghost" data-act="more" aria-expanded="${state.detMore}">${state.detMore ? "Diğer pazarları gizle" : `Diğer pazarlar (${pks.filter(p => p.x).length})`}</button></div>
@@ -1641,8 +1678,10 @@ function detailBody() {
     <div class="dt-sec"><h3>Gol beklentisi <span class="muted">bilgi amaçlı</span></h3>${goalBlock(m)}</div>
     <div class="dt-sec"><h3>Puan durumu ve form</h3>${teamBlock(m)}</div>
     <div class="dt-sec" id="aiSec"><h3>Yapay zeka yorumu</h3>${aiBlock(m)}</div>
+    <div class="dt-sec"><h3>Benzer oranlı maçlar <span class="muted">geçmişte ne oldu</span></h3>${simBlock(m)}</div>
     <div class="dt-sec"><h3>Elo görüşü</h3>${elo}</div>
     <div class="dt-sec"><h3>Korner</h3>${cor}</div>
+    ${sel ? (d => d ? `<div class="pk-doc dt-doc"><span><b>Kupon doktoru:</b> ${esc(d.txt)}</span>${d.pk ? `<button type="button" class="ghost" data-pk="${d.pk.market}">Bunu seç</button>` : ""}</div>` : "")(doctor(m, sel)) : ""}
     <div class="sh-btns" style="margin-top:18px">${sel ? (() => { const ex = myOf(m.id), same = sameSel(ex, sel), full = !ex && state.my.length >= MY_MAX;
       const fl = state.detFlash && state.detFlash.until > Date.now() ? state.detFlash.text : "";
       const cls = fl ? "ghost solid done pop" : same ? "ghost in-my" : "ghost solid";
@@ -1659,9 +1698,13 @@ function infoBody() {
     <h3 id="inf-cp">Kupon nasıl seçilir</h3><p>Seçilen süre içindeki güvenilir verili maçlardan, tarzın izin verdiği pazarlarda eşiği geçen en yüksek olasılıklar alınır. Aynı ligden en fazla 2 maç, aynı pazardan en fazla seçimlerin yarısı girer. Piyasa onayı açıksa maç sonucu ve 2,5 üst seçimlerinde bahisçi oranları ters yöndeyse seçim elenir.</p>
     <h3 id="inf-comb">Birlikte tutma olasılığı</h3><p>Seçimler birbirinden bağımsız kabul edilip olasılıkları çarpılır. 4 seçim tek tek %80 olsa bile hepsinin birlikte tutma olasılığı yaklaşık %41'dir. Kupon oranı, seçimlerin bahisçi oranlarının çarpımıdır (bahisçi marjı dahil); bir maçın oranı yoksa hesaplanmaz.</p>
     <h3 id="inf-odds">Oranlar ve piyasa</h3><p>Bet365 ve bahisçi ortalaması <b>football-data.co.uk</b>'tan, 1,5 / 3,5 üst ve KG var için konsensüs oranlar <b>Bzzoiro Sports Data</b>'dan gelir. Kaynak <b>Pinnacle</b> oranı verirse piyasa olasılığı ondan alınır (en isabetli bahisçi); vermediği maçlarda bahisçi ortalaması kullanılır. Testte bahisçi oranları modelden daha isabetli çıktı. "Piyasa uyumlu" etiketi model ile piyasanın en fazla 5 puan farkla aynı fikirde olduğunu, "Piyasa farklı düşünüyor" 15 puandan fazla fark olduğunu gösterir. "Model daha iyimser" modelin piyasadan yüksek, "Piyasa daha iyimser" piyasanın modelden yüksek olasılık verdiği anlamına gelir.</p>
-    <h3 id="inf-form">Puan durumu ve form</h3><p>Ligin bu sezon biten maçlarından hesaplanır: puan, averaj, son 5 maç (en yenisi solda) ve aralarındaki maçlar. Puan silme ve play-off ayrımı gibi özel durumlar hesaba katılmaz. Model formu doğrudan kullanmaz; bu bilgi kendi kontrolün içindir.</p>
+    <h3 id="inf-form">Puan durumu ve form</h3><p>Ligin bu sezon biten maçlarından hesaplanır: puan, averaj, son 5 maç (en yenisi solda), iç saha, deplasman ve son 5 maç tabloları ve aralarındaki maçlar. Puan silme ve play-off ayrımı gibi özel durumlar hesaba katılmaz. Model formu doğrudan kullanmaz; bu bilgi kendi kontrolün içindir.</p>
     <h3 id="inf-more">Diğer pazarlar</h3><p>Alt/üst, KG yok, beraberlik ve çifte şans ana olasılıklardan türetilir: 2,5 alt = 100 − 2,5 üst, X2 = 100 − ev sahibi kazanır gibi. Böylece düzeltme bu pazarlara da tutarlı yansır. Çifte şans oranı kaynaklarda olmadığı için 1X2 oranlarından yaklaşık hesaplanır (≈). Bu pazarlar kuponlara ve listeye girmez; maç detayından Kuponum'a eklenebilir ve Takip'te sonuçlanır.</p>
     <h3 id="inf-score">Skor tahmini</h3><p>Modelin iki takım için beklediği gol sayısından Poisson dağılımıyla her skorun olasılığı hesaplanır ve en olası skor gösterilir. İlk yarı ve takım golü de bilgi amaçlıdır. Bu değerler geriye dönük testle düzeltilmedi.</p>
+    <h3 id="inf-lv">Üç seçim ve cesur seçimler</h3><p>Her maç için: <b>Güvenli</b> oranı en az 1,15 olan en yüksek olasılıklı seçim, <b>İkinci</b> farklı bir pazar ailesinden (sonuç, gol, karşılıklı gol) en yüksek olasılık, <b>Cesur</b> olasılığı %36–60, oranı en az 1,70 ve piyasa verisi varsa model ile piyasanın en fazla 10 puan farkla uyuştuğu seçim. Analiz'deki cesur liste piyasa oranı olan maçlardan, model ve piyasanın ortalamasına göre sıralanır. Cesur seçimler yaklaşık her iki denemede bir tutar.</p>
+    <h3 id="inf-doc">Kupon doktoru</h3><p>Kuponundaki her seçime bakar. Piyasa seçime 15 puandan fazla ters düşüyorsa aynı maçta hem modelin hem piyasanın onayladığı seçimi önerir. Aynı yönde en az 10 puan daha olası ve oranı 1,18'in üstünde bir seçim varsa (2,5 üst yerine 1,5 üst, ev sahibi kazanır yerine 1X gibi) onu önerir. Uygula, kupondaki seçimi değiştirir; oran düşer, tutma olasılığı artar.</p>
+    <h3 id="inf-sr">Seriler</h3><p>Sunucu her sabah her takımın bu sezonki lig maçlarından süren serileri hesaplar: galibiyet, yenilmezlik, mağlubiyet, 2,5 üst/alt, karşılıklı gol, gol yememe ve gol atamama; iç saha ve deplasman ayrı. <b>Çarpışma</b>, iki takımın serisinin aynı yönde olduğu maçlardır (ikisi de 2,5 üst serisinde gibi). Yalnızca lig maçları sayılır, kupa maçları girmez.</p>
+    <h3 id="inf-sim">Benzer oranlı maçlar</h3><p><b>football-data.co.uk</b> arşivinden 22 Avrupa liginin 2020/21–2025/26 sezonları (${nfmt(OH.n)} maç). Her maçın kapanış oranından (Pinnacle, yoksa ortalama) bahisçi marjı çıkarılmış olasılık hesaplanır. Bu maçın piyasa olasılığına en fazla birkaç puan uzak maçlar toplanır ve sonuçları sayılır; en az 300 maç olana kadar pencere genişler. Gol pazarları 2,5 üst oranı benzer maçlardan gelir.</p>
     <h3 id="inf-elo">Elo</h3><p>ClubElo puanlarından hesaplanan beklenen puandır, bağımsız ikinci bir görüştür. Testte kupon isabetine ek katkısı görülmedi; bilgi amaçlıdır.</p>
     <h3 id="inf-cr">Korner</h3><p><b>football-data.co.uk</b> geçmiş maçlarından: ev sahibinin son 15 iç saha, deplasman takımının son 15 dış saha maçı. Takımların korner geçmişi zayıf bir sinyal olduğu için değerler lig ortalamasına doğru çekilir; rakip gücü hesaba katılmaz.</p>
     <h3 id="inf-auto">Otomatik kayıt ve Dün kartı</h3><p>Sunucu her sabah günlük yenilemeden sonra önümüzdeki 24 saatin bankolarını kaydeder: maç başına en yüksek pazar, düzeltilmiş olasılık %70 ve üstü, en fazla 40 seçim. Ertesi gün <b>Dün</b> kartı bunları sonuçlarla karşılaştırır. Ayarlardan açıksa aynı anda günün kuponu da senin kupon ayarlarınla kurulup Takip'e "Otomatik kupon" olarak kaydedilir.</p>
@@ -1712,7 +1755,7 @@ function syncSheet() {
   const k = state.sheet;
   if (!k || k === "info") return;
   if (k === "match") {
-    const sig = [state.detId, state.detPick, state.detTable, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
+    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
     if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y; }
     return;
   }
@@ -1789,6 +1832,170 @@ function bestPick(m, markets) {
   return best;
 }
 const pickLabel = (m, pk) => pk.market === "win" ? (pk.side === "away" ? m.away : m.home) + " kazanır" : MK[pk.market];
+
+// ---------- üç seviye seçim: güvenli, ikinci, cesur
+const FAM = k => ["win", "x", "1x", "x2", "12"].includes(k) ? "res" : ["bt", "nb"].includes(k) ? "bt" : "goal";
+const NO_ODDS = new Set(["o05", "o45", "u45"]);
+function levels(m) {
+  const all = detPicks(m).filter(x => !NO_ODDS.has(x.market)).map(x => { const od = pickOdds(m, x), mp = mktProb(m, x.market, x.side); return { ...x, od: od ? od.v : null, est: estOdd(m, x), mp }; });
+  const safe = all.filter(x => x.p >= 0.6 && x.est >= 1.15).sort((a, b) => b.p - a.p)[0] || null;
+  const second = safe ? all.filter(x => FAM(x.market) !== FAM(safe.market) && x.p >= 0.55 && x.est >= 1.2).sort((a, b) => b.p - a.p)[0] || null : null;
+  const q = x => typeof x.mp === "number" ? (x.p + x.mp) / 2 : x.p;
+  const bold = all.filter(x => x.p >= 0.36 && x.p <= 0.6 && (x.od || x.est) >= 1.7 && (typeof x.mp !== "number" || Math.abs(x.p - x.mp) <= 0.1))
+    .sort((a, b) => (b.od ? 1 : 0) - (a.od ? 1 : 0) || q(b) - q(a))[0] || null;
+  return { safe, second, bold };
+}
+function levelsHTML(m) {
+  const L = levels(m), row = (t, cls, x, d) => x ? `<li><button type="button" class="lv ${cls}" data-pk="${x.market}" aria-pressed="${x.market === state.detPick}"><span class="lv-t">${t}</span><span class="lv-l"><b>${esc(pickLabel(m, x))}</b><small>${esc(d)}</small></span><span class="lv-p"><b>${pn(x.p)}</b><small>%</small></span><span class="lv-o">${x.od ? fo(x.od) : x.est ? "~" + fo(x.est) : "–"}</span></button></li>` : "";
+  const h = [row("Güvenli", "s", L.safe, "en yüksek olasılık"), row("İkinci", "m", L.second, "farklı pazardan"), row("Cesur", "b", L.bold, "yüksek oran, yaklaşık yarı yarıya")].join("");
+  return h ? `<ul class="lv-list">${h}</ul><p class="sh-note">Seçmek için dokun, sonra kupona ekleyebilirsin. Cesur seçimde model ile piyasanın uyumlu olması aranır. <button type="button" class="lnk" data-info="lv">Ayrıntı</button></p>` : `<p class="dt-line">Bu maçta öne çıkan seçim yok.</p>`;
+}
+// Analiz: günün cesur seçimleri (maç başına bir tane)
+function boldList(base) {
+  return base.map(m => ({ m, x: levels(m).bold })).filter(o => o.x && o.x.od && typeof o.x.mp === "number")
+    .sort((a, b) => (b.x.p + b.x.mp) - (a.x.p + a.x.mp)).slice(0, 5);
+}
+function renderBold(base) {
+  const el = $("bdBody"); if (!el) return;
+  const L = boldList(base);
+  if (!L.length) { el.innerHTML = `<p class="ai-empty">${state.mkt.status === "loading" || state.running ? "Oranlar alınıyor." : "Bu aralıkta model ve piyasanın uyuştuğu cesur seçim yok."}</p>`; return; }
+  el.innerHTML = L.map(({ m, x }) => { const di = dayInfo(m.kick); return `<button type="button" class="sg-c" data-open="${esc(m.id)}" data-tab="${x.market}"><span class="sg-t">%${pn((x.p + x.mp) / 2)} · ${fo(x.od)}</span><span class="sg-m">${esc(m.home)} - ${esc(m.away)}: ${esc(pickLabel(m, x))}</span><span class="sg-d">Model %${pn(x.p)}, piyasa %${pn(x.mp)}. ${esc(di.tag || di.num + " " + di.month.slice(0, 3))} ${esc(fmtTime(m.kick))}, ${esc(m.league)}.</span></button>`; }).join("");
+}
+
+// ---------- Kupon Doktoru: aynı maçta daha mantıklı seçim
+const SAFER = { o25: ["o15"], o35: ["o25", "o15"], bt: ["o15"], u25: ["u35"], u15: ["u25", "u35"], x: ["1x", "x2"], nb: ["u35"], "12": [] };
+function doctor(m, pk) {
+  if (!m || !pk) return null;
+  const all = detPicks(m).filter(x => !NO_ODDS.has(x.market) && x.market !== pk.market);
+  const lbl = x => { const od = pickOdds(m, x), e = od ? od.v : estOdd(m, x); return `${pickLabel(m, x)} %${pn(x.p)}${e ? " · " + (od ? "" : "~") + fo(e) : ""}`; };
+  const mi = marketInfo(m, pk);
+  if (mi && mi.cls === "bad") {
+    const fam = FAM(pk.market), alt = all.filter(x => x.p >= 0.6 && estOdd(m, x) >= 1.15 && (mi2 => mi2 && mi2.cls === "ok")(marketInfo(m, x))).sort((a, b) => (FAM(b.market) === fam) - (FAM(a.market) === fam) || b.p - a.p)[0];
+    return { kind: "mkt", pk: alt || null, txt: `Piyasa bu seçime katılmıyor (model %${pn(mi.mod)}, piyasa %${pn(mi.p)}).` + (alt ? ` İkisinin de onayladığı: ${lbl(alt)}` : "") };
+  }
+  const keys = pk.market === "win" ? [pk.side === "away" ? "x2" : "1x"] : SAFER[pk.market] || [];
+  for (const k of keys) {
+    const alt = all.find(x => x.market === k);
+    if (alt && alt.p >= pk.p + 0.1 && estOdd(m, alt) >= 1.18 && !((mi2 => mi2 && mi2.cls === "bad")(marketInfo(m, alt)))) return { kind: "safe", pk: alt, txt: `Aynı maçta daha güvenli: ${lbl(alt)}` };
+  }
+  return null;
+}
+
+// ---------- süren seriler (sunucu her sabah hesaplar; trend dizisinin 14. elemanı)
+const SR = [ // [indeks, en az, metin, sekme]
+  [2, 3, n => `${n} maçtır kazanıyor`, "win"], [3, 3, n => `${n} maçtır kaybediyor`, "win"], [0, 5, n => `${n} maçtır yenilmiyor`, "win"], [1, 5, n => `${n} maçtır kazanamıyor`, "win"],
+  [4, 4, n => `${n} maçtır 2,5 üst bitiyor`, "o25"], [5, 4, n => `${n} maçtır 2,5 alt bitiyor`, "u25"], [6, 4, n => `${n} maçtır karşılıklı gol var`, "bt"], [7, 4, n => `${n} maçtır karşılıklı gol yok`, "nb"],
+  [8, 3, n => `${n} maçtır gol yemiyor`, "nb"], [9, 3, n => `${n} maçtır gol atamıyor`, "nb"], [10, 8, n => `${n} maçtır gol atıyor`, "o15"], [11, 8, n => `${n} maçtır gol yiyor`, "o15"]];
+const SRV = [[0, 5, "yenilmiyor"], [1, 4, "kazanamıyor"], [2, 4, "kazanıyor"], [3, 3, "kaybediyor"]];
+const stk = (m, side) => { const r = side === "away" ? m.ta : m.th; return r && Array.isArray(r[13]) && r[13].length >= 20 ? r[13] : null; };
+function teamSeries(m, side) {
+  const S = stk(m, side); if (!S) return [];
+  const name = side === "away" ? m.away : m.home, out = [];
+  for (const [i, mn, f, tab] of SR) {
+    if (S[i] < mn) continue;
+    if ((i === 0 && S[2] >= S[0]) || (i === 1 && S[3] >= S[1])) continue;   // galibiyet serisi yenilmezliği zaten anlatıyor
+    if ((i === 10 && S[0] >= S[10]) || (i === 11 && S[1] >= S[11])) continue;
+    out.push({ n: S[i], sc: S[i] / mn, t: `${name}: ${f(S[i])}`, tab, k: i, side });
+  }
+  const off = side === "away" ? 16 : 12, where = side === "away" ? "deplasmanda" : "evinde";
+  for (const [j, mn, w] of SRV) {
+    const v = S[off + j]; if (v < mn || S[j] >= v) continue;
+    out.push({ n: v, sc: v / mn, t: `${name}: ${where} ${v} maçtır ${w}`, tab: "win", k: 100 + j, side });
+  }
+  return out.sort((a, b) => b.sc - a.sc);
+}
+// iki takımın serisi aynı yönde: çarpışma
+function clashes(m) {
+  const H = stk(m, "home"), A = stk(m, "away"); if (!H || !A) return [];
+  const out = [], both = (i, mn, t, tab) => { if (H[i] >= mn && A[i] >= mn) out.push({ n: Math.min(H[i], A[i]), sc: (H[i] + A[i]) / (2 * mn), t: `${t}: ${H[i]} ve ${A[i]} maçtır`, tab }); };
+  both(4, 3, "İkisi de 2,5 üst serisinde", "o25"); both(5, 3, "İkisi de 2,5 alt serisinde", "u25"); both(6, 3, "İkisinde de karşılıklı gol var", "bt"); both(7, 3, "İkisinde de karşılıklı gol yok", "nb");
+  if (H[2] >= 3 && A[3] >= 3) out.push({ n: Math.min(H[2], A[3]), sc: (H[2] + A[3]) / 6, t: `${m.home} ${H[2]} maçtır kazanıyor, ${m.away} ${A[3]} maçtır kaybediyor`, tab: "win" });
+  if (A[2] >= 3 && H[3] >= 3) out.push({ n: Math.min(A[2], H[3]), sc: (A[2] + H[3]) / 6, t: `${m.away} ${A[2]} maçtır kazanıyor, ${m.home} ${H[3]} maçtır kaybediyor`, tab: "win" });
+  return out.sort((a, b) => b.sc - a.sc);
+}
+function renderSeries(base) {
+  const el = $("srBody"); if (!el) return;
+  const tabs = `<div class="seg" role="group" aria-label="Seri türü"><button type="button" data-sr="run" aria-pressed="${state.srTab === "run"}">Süren</button><button type="button" data-sr="clash" aria-pressed="${state.srTab === "clash"}">Çarpışma</button></div>`;
+  const has = base.some(m => stk(m, "home") || stk(m, "away"));
+  if (!has) { el.innerHTML = tabs + `<p class="ai-empty">${state.running ? "Maçlar yükleniyor." : "Seri verisi sabah yenilemesiyle gelir. Hemen görmek için Apps Script'te trendYenile işlevini bir kez çalıştır."}</p>`; return; }
+  let L = [];
+  if (state.srTab === "clash") base.forEach(m => clashes(m).slice(0, 1).forEach(x => L.push({ m, x })));
+  else base.forEach(m => ["home", "away"].forEach(sd => teamSeries(m, sd).slice(0, 1).forEach(x => L.push({ m, x }))));
+  L = L.sort((a, b) => b.x.sc - a.x.sc || a.m.kick - b.m.kick).slice(0, state.srTab === "clash" ? 6 : 10);
+  el.innerHTML = tabs + (L.length ? `<ul class="srl">${L.map(({ m, x }) => { const di = dayInfo(m.kick); return `<li><button type="button" data-open="${esc(m.id)}" data-tab="${x.tab}"><b>${x.n}</b><span><span class="srl-t">${esc(x.t)}</span><small>${esc(m.home)} - ${esc(m.away)} · ${esc(di.tag || di.num + " " + di.month.slice(0, 3))} ${esc(fmtTime(m.kick))}</small></span></button></li>`; }).join("")}</ul>` : `<p class="ai-empty">${state.srTab === "clash" ? "Bu aralıkta iki takımın aynı yönde serisi olduğu maç yok." : "Bu aralıkta dikkat çeken seri yok."}</p>`);
+}
+
+// ---------- maç detayında öne çıkanlar: seri, aralarındaki maçlar, puan durumu
+function venueRank(table, tm, key) {
+  if (!table || !table[0] || !table[0][key]) return null;
+  const t = table.filter(r => r[key][0] > 0).slice().sort((a, b) => b[key][6] - a[key][6] || (b[key][4] - b[key][5]) - (a[key][4] - a[key][5]) || b[key][4] - a[key][4]);
+  const i = t.findIndex(r => r.tm === tm);
+  return i < 0 ? null : { pos: i + 1, n: t.length, r: t[i][key] };
+}
+// Türkçe sayı ekleri: 5'i, 6'sı, 3'ü; 5'inde, 6'sında
+const NSUF = n => { const d = n % 10, t = Math.floor(n / 10) % 10; return "'" + (d ? ["", "i", "si", "ü", "ü", "i", "sı", "si", "i", "u"][d] : t ? ["", "u", "si", "u", "ı", "si", "ı", "i", "i", "ı"][t] : "ü"); };
+const NLOC = n => { const p = NSUF(n), v = p.slice(-1); return p + "n" + ("iü".includes(v) ? "de" : "da"); };
+function highlights(m) {
+  const out = [], ti = state.extra.ti[m.id];
+  const sH = teamSeries(m, "home"), sA = teamSeries(m, "away");
+  sH.slice(0, 2).forEach(x => out.push({ sc: x.sc, t: x.t, tab: x.tab })); sA.slice(0, 2).forEach(x => out.push({ sc: x.sc, t: x.t, tab: x.tab }));
+  if (ti && ti.ok) {
+    const S = ti.h2hSum;
+    if (S && S.n >= 4) {
+      const r25 = S.o25 / S.n, rbt = S.bt / S.n;
+      if (r25 >= 0.75) out.push({ sc: 1.4 + r25, t: `Aralarındaki son ${S.n} maçın ${S.o25}${NSUF(S.o25)} 2,5 üst bitti`, tab: "o25" });
+      else if (r25 <= 0.25) out.push({ sc: 1.4 + (1 - r25), t: `Aralarındaki son ${S.n} maçın ${S.o25 ? `yalnızca ${S.o25}${NSUF(S.o25)}` : "hiçbiri"} 2,5 üst bitti`, tab: "u25" });
+      if (rbt >= 0.75) out.push({ sc: 1.3 + rbt, t: `Aralarındaki son ${S.n} maçın ${S.bt}${NLOC(S.bt)} karşılıklı gol oldu`, tab: "bt" });
+      if (S.aw === 0 && S.hw >= 2) out.push({ sc: 1.5, t: `${m.home}, ${m.away} karşısında son ${S.n} maçta kaybetmedi`, tab: "1x" });
+      else if (S.hw === 0 && S.aw >= 2) out.push({ sc: 1.5, t: `${m.away}, ${m.home} karşısında son ${S.n} maçta kaybetmedi`, tab: "x2" });
+    }
+    if (ti.home && ti.away && Math.abs(ti.home.pos - ti.away.pos) >= Math.max(6, Math.round(ti.n / 2.5))) out.push({ sc: 1.2, t: `Sıralama farkı büyük: ${m.home} ${ti.home.pos}., ${m.away} ${ti.away.pos}. (${ti.n} takım)`, tab: "win" });
+    const vh = venueRank(ti.table, m.hraw, "hs"), va = venueRank(ti.table, m.araw, "as");
+    if (vh && va && vh.r[0] >= 3 && va.r[0] >= 3 && (vh.pos <= 3 || va.pos <= 3 || vh.pos > vh.n - 3 || va.pos > va.n - 3))
+      out.push({ sc: 1.1, t: `İç saha tablosunda ${m.home} ${vh.pos}. (${vh.r[1]}G ${vh.r[2]}B ${vh.r[3]}M), deplasman tablosunda ${m.away} ${va.pos}. (${va.r[1]}G ${va.r[2]}B ${va.r[3]}M)`, tab: "win" });
+  }
+  return out.sort((a, b) => b.sc - a.sc).slice(0, 5);
+}
+function highlightsHTML(m) {
+  const L = highlights(m), ti = state.extra.ti[m.id];
+  if (!L.length) return (!ti && state.detLoading) ? `<p class="dt-line">Seriler ve aralarındaki maçlar alınıyor…</p>` : "";
+  return `<ul class="hl">${L.map(x => `<li><button type="button" class="hl-b" data-pk="${x.tab}">${esc(x.t)}</button></li>`).join("")}</ul>`;
+}
+
+// ---------- benzer oranlı geçmiş maçlar (football-data.co.uk, 22 Avrupa ligi, 2020/21-2025/26, kapanış oranları)
+const OH = {"n":46396,"s":"2020/21-2025/26","w":0.025,"g":[[0,34,1,0,0,1,1,1,1],[0,37,1,0,0,1,1,1,0],[1,32,1,0,0,1,0,0,0],[1,33,5,1,0,4,4,4,0],[1,34,6,0,1,5,4,3,3],[1,35,6,0,1,5,5,4,3],[1,36,2,0,1,2,2,2,2],[2,22,1,0,0,1,1,1,1],[2,28,1,0,0,0,0,0,0],[2,29,3,0,0,3,2,1,0],[2,30,15,0,0,8,5,3,3],[2,31,47,3,6,41,29,17,22],[2,32,64,5,8,59,43,26,28],[2,33,25,2,2,21,18,13,12],[2,34,2,0,0,2,1,1,1],[3,27,5,0,1,5,3,3,4],[3,28,51,3,5,44,28,14,15],[3,29,118,13,23,92,67,47,59],[3,30,137,3,17,114,81,50,63],[3,31,45,7,2,40,33,20,26],[3,32,1,1,0,1,1,1,1],[4,25,12,0,2,9,7,2,7],[4,26,71,9,15,58,39,28,36],[4,27,144,10,30,118,87,40,77],[4,28,157,11,26,125,96,61,76],[4,29,64,6,8,56,49,35,39],[4,30,7,0,2,7,6,4,7],[5,22,3,1,0,2,1,1,1],[5,23,15,2,5,11,7,3,8],[5,24,70,8,10,49,30,9,30],[5,25,157,18,46,124,94,50,87],[5,26,238,26,45,198,145,89,133],[5,27,78,10,14,63,44,32,39],[5,28,13,3,1,13,12,8,10],[6,21,11,1,2,8,5,0,3],[6,22,58,4,19,39,24,11,29],[6,23,169,24,46,110,68,38,73],[6,24,278,26,61,218,154,91,143],[6,25,165,21,31,130,100,58,89],[6,26,26,3,5,24,17,10,15],[6,27,2,0,1,2,2,1,1],[7,18,1,1,0,0,0,0,0],[7,19,7,1,2,5,2,2,3],[7,20,37,10,10,17,13,4,12],[7,21,160,37,40,118,81,41,83],[7,22,335,53,85,240,155,88,163],[7,23,300,55,59,245,182,118,168],[7,24,83,6,17,66,47,29,45],[7,25,11,1,4,10,7,6,8],[8,17,4,2,0,3,3,2,2],[8,18,29,8,9,11,8,5,9],[8,19,121,25,41,77,43,23,54],[8,20,275,60,66,196,122,52,119],[8,21,444,107,105,354,244,138,240],[8,22,215,45,48,178,134,83,131],[8,23,30,4,6,27,24,16,18],[8,24,1,0,1,1,0,0,1],[9,16,10,2,4,6,4,2,4],[9,17,66,11,17,36,22,6,25],[9,18,273,55,87,182,99,51,119],[9,19,462,86,114,326,228,112,217],[9,20,452,113,123,360,246,120,265],[9,21,136,29,32,110,80,44,82],[9,22,9,0,3,8,5,5,5],[10,14,7,4,0,5,3,0,1],[10,15,32,6,11,19,7,3,10],[10,16,158,39,46,98,65,29,74],[10,17,473,137,134,314,182,94,225],[10,18,606,147,170,457,302,180,336],[10,19,373,91,97,292,202,117,214],[10,20,69,13,14,54,39,26,38],[10,21,3,2,1,2,1,0,2],[11,12,1,0,0,1,0,0,0],[11,13,14,5,5,4,1,0,3],[11,14,68,19,19,44,21,9,30],[11,15,307,83,100,206,123,53,146],[11,16,675,183,193,477,290,151,334],[11,17,774,204,205,580,407,222,418],[11,18,327,81,85,254,188,119,184],[11,19,52,13,12,46,36,18,40],[11,20,3,1,1,3,3,3,3],[12,12,17,7,7,6,3,1,5],[12,13,133,34,55,87,52,29,70],[12,14,432,139,157,281,154,81,206],[12,15,823,242,244,583,370,186,440],[12,16,848,273,217,643,445,246,484],[12,17,291,88,82,248,185,123,187],[12,18,20,11,2,15,10,7,11],[12,19,1,1,0,1,1,1,0],[13,9,1,1,0,0,0,0,0],[13,11,19,12,5,10,4,1,3],[13,12,135,44,45,79,38,20,50],[13,13,538,171,183,346,216,110,245],[13,14,951,326,278,687,426,225,504],[13,15,774,256,207,598,397,228,453],[13,16,211,67,67,184,130,88,135],[13,17,18,5,3,18,16,11,14],[14,9,2,0,1,2,1,0,2],[14,10,19,9,8,7,4,1,6],[14,11,134,48,41,85,49,17,61],[14,12,571,208,185,398,220,106,297],[14,13,1033,370,319,733,481,238,554],[14,14,845,314,218,661,448,250,500],[14,15,216,82,53,186,128,91,141],[14,16,5,1,2,4,3,2,3],[14,17,1,0,0,1,1,0,1],[15,9,6,3,2,5,2,0,4],[15,10,107,39,43,70,35,15,50],[15,11,620,229,205,392,227,102,293],[15,12,1165,446,369,852,520,276,636],[15,13,898,322,261,695,447,272,522],[15,14,211,81,57,184,135,89,146],[15,15,12,3,3,12,8,4,7],[16,8,2,0,1,0,0,0,0],[16,9,71,33,20,42,22,6,31],[16,10,495,223,162,332,191,95,225],[16,11,1243,535,385,848,525,286,614],[16,12,1110,484,286,825,558,298,591],[16,13,242,99,56,182,136,90,130],[16,14,11,6,2,10,8,8,7],[16,15,1,0,0,1,1,0,1],[17,7,1,0,0,0,0,0,0],[17,8,23,12,10,12,7,3,10],[17,9,327,150,89,216,140,68,164],[17,10,1075,468,351,761,474,234,561],[17,11,1248,539,348,928,648,348,707],[17,12,375,155,99,295,215,131,213],[17,13,19,4,6,15,13,9,13],[17,14,1,0,0,1,0,0,0],[18,7,12,7,4,10,8,4,10],[18,8,200,94,68,131,77,30,94],[18,9,908,425,277,618,368,179,456],[18,10,1277,569,386,940,601,339,686],[18,11,474,213,127,386,273,169,288],[18,12,27,14,4,24,20,11,20],[19,7,66,28,22,38,19,5,25],[19,8,564,273,178,375,228,124,275],[19,9,1184,595,311,859,562,309,600],[19,10,586,276,166,488,344,214,369],[19,11,37,17,8,31,23,15,25],[19,12,1,0,0,1,1,1,1],[20,6,19,8,8,7,5,4,7],[20,7,287,132,102,194,107,51,133],[20,8,1114,561,328,803,514,288,568],[20,9,848,457,198,663,478,285,506],[20,10,104,57,20,83,58,36,62],[21,6,80,44,22,57,34,16,40],[21,7,712,372,199,498,322,171,337],[21,8,984,539,252,767,516,270,536],[21,9,183,100,38,152,112,69,108],[21,10,3,1,2,3,1,1,3],[22,5,29,21,3,22,15,8,13],[22,6,351,214,74,244,145,68,147],[22,7,983,549,244,743,518,285,514],[22,8,404,242,97,340,253,147,247],[22,9,11,6,2,10,5,3,6],[23,5,94,57,22,62,44,21,41],[23,6,702,419,170,540,361,175,348],[23,7,656,383,152,533,379,229,379],[23,8,35,17,8,32,24,14,21],[24,4,11,8,2,5,3,2,1],[24,5,273,178,56,190,127,59,114],[24,6,745,478,166,596,427,247,393],[24,7,141,101,20,118,95,67,87],[25,4,42,36,5,30,21,8,17],[25,5,563,363,121,409,283,158,246],[25,6,362,225,65,291,216,143,199],[25,7,10,3,3,9,8,6,7],[26,3,1,1,0,1,1,0,0],[26,4,202,139,37,149,107,59,93],[26,5,559,390,101,464,335,203,296],[26,6,49,36,10,43,31,20,29],[27,3,29,25,4,22,20,15,12],[27,4,510,358,97,388,264,160,234],[27,5,231,168,33,189,154,105,122],[27,6,1,1,0,1,1,1,1],[28,2,2,2,0,2,1,1,1],[28,3,127,101,18,105,76,29,48],[28,4,471,351,83,386,294,186,245],[28,5,25,12,6,23,17,12,19],[29,2,4,3,1,3,3,3,1],[29,3,329,249,62,255,202,128,160],[29,4,148,112,29,134,104,71,88],[30,2,51,40,10,40,20,11,25],[30,3,358,279,51,308,244,153,174],[30,4,5,4,1,4,4,2,4],[31,2,237,195,30,204,152,94,104],[31,3,141,116,18,133,103,58,86],[31,4,1,1,0,1,1,1,1],[32,1,13,10,3,9,7,5,3],[32,2,294,241,40,259,198,125,142],[32,3,8,5,2,7,5,3,5],[33,1,79,71,4,70,56,37,34],[33,2,147,125,17,131,104,67,69],[34,1,165,149,12,152,127,88,78],[34,2,21,20,0,21,17,12,10],[35,1,78,69,7,70,57,49,36],[36,0,6,5,1,3,3,3,1],[36,1,34,33,1,31,27,20,9],[37,0,8,8,0,8,8,8,5],[37,1,1,1,0,1,1,0,0]],"o":[[9,10,6,2,1,6],[10,45,24,8,3,16],[11,134,77,44,14,53],[12,434,251,136,49,180],[13,902,551,293,115,369],[14,1629,1042,600,256,738],[15,2527,1654,976,466,1171],[16,3786,2588,1560,807,1865],[17,4510,3167,1983,1049,2238],[18,4843,3433,2176,1140,2427],[19,5107,3772,2530,1313,2671],[20,5371,4061,2747,1494,2894],[21,4329,3401,2384,1391,2420],[22,3706,2977,2051,1218,2045],[23,2842,2320,1695,1057,1617],[24,2165,1826,1381,859,1270],[25,1463,1239,937,596,856],[26,957,841,657,438,556],[27,678,603,481,313,401],[28,520,469,382,277,299],[29,206,193,157,110,121],[30,99,88,81,58,56],[31,65,59,47,35,30],[32,40,36,33,30,24],[33,21,21,20,16,11],[34,7,7,7,5,5]]};
+const OHG = new Map(OH.g.map(c => [c[0] * 40 + c[1], c])), OHO = new Map(OH.o.map(c => [c[0], c]));
+function simQuery(ph, pa, po) {
+  const W = OH.w, out = {};
+  if (typeof ph === "number" && typeof pa === "number") {
+    const ci = Math.min(39, Math.floor(ph / W)), cj = Math.min(39, Math.floor(pa / W));
+    for (const rad of [1, 2, 3]) {
+      const t = [0, 0, 0, 0, 0, 0, 0];
+      for (let i = ci - rad; i <= ci + rad; i++) for (let j = cj - rad; j <= cj + rad; j++) { const c = OHG.get(i * 40 + j); if (c) for (let k = 0; k < 7; k++) t[k] += c[k + 2]; }
+      if (t[0] >= 300 || rad === 3) { if (t[0] >= 100) out.r = { n: t[0], h: t[1] / t[0], d: t[2] / t[0], a: (t[0] - t[1] - t[2]) / t[0], o25: t[4] / t[0], bt: t[6] / t[0], rad }; break; }
+    }
+  }
+  if (typeof po === "number") {
+    const ci = Math.min(39, Math.floor(po / W));
+    for (const rad of [0, 1, 2]) {
+      const t = [0, 0, 0, 0, 0];
+      for (let i = ci - rad; i <= ci + rad; i++) { const c = OHO.get(i); if (c) for (let k = 0; k < 5; k++) t[k] += c[k + 1]; }
+      if (t[0] >= 300 || rad === 2) { if (t[0] >= 100) out.g = { n: t[0], o15: t[1] / t[0], o25: t[2] / t[0], o35: t[3] / t[0], bt: t[4] / t[0] }; break; }
+    }
+  }
+  return out;
+}
+const nfmt = n => n.toLocaleString("tr-TR");
+function simBlock(m) {
+  const r = MR(m.id);
+  if (!r || r.miss) return `<p class="dt-line">${!r && state.detLoading ? "Oranlar alınıyor…" : "Bu maçın oranı yok, benzer maç aranamadı."}</p>`;
+  const Q = simQuery(r.h, r.a, r.o);
+  if (!Q.r && !Q.g) return `<p class="dt-line">Bu maçın oranı yok ya da çok uç, benzer maç bulunamadı.</p>`;
+  const cell = (l, v, mod) => `<div><span>${l}</span><b>%${pn(v)}</b>${typeof mod === "number" ? ` <small>model %${pn(mod)}</small>` : ""}</div>`;
+  return `${Q.r ? `<p class="mk-sub">1X2 oranı benzer ${nfmt(Q.r.n)} maçta</p><div class="gx">${cell("Ev kazandı", Q.r.h, m.pH)}${cell("Beraberlik", Q.r.d, m.pD)}${cell("Deplasman kazandı", Q.r.a, m.pA)}${Q.g ? "" : cell("2,5 üst", Q.r.o25, m.o25) + cell("KG var", Q.r.bt, m.bt)}</div>` : ""}
+    ${Q.g ? `<p class="mk-sub">2,5 üst oranı benzer ${nfmt(Q.g.n)} maçta</p><div class="gx">${cell("1,5 üst", Q.g.o15, m.o15)}${cell("2,5 üst", Q.g.o25, m.o25)}${cell("3,5 üst", Q.g.o35, m.o35)}${cell("KG var", Q.g.bt, m.bt)}</div>` : ""}
+    <p class="sh-note">${nfmt(OH.n)} maçlık arşivden (22 Avrupa ligi, ${OH.s}): bu maçın oranlarına yakın oranla oynanmış maçlarda ne olduğu. Piyasa genelde iyi ayarlı olduğu için sonuç çoğunlukla piyasa olasılığına yakındır; model buradan çok ayrışıyorsa dikkat. <button type="button" class="lnk" data-info="sim">Ayrıntı</button></p>`;
+}
 function buildCoupon(pool, style, n, seed) {
   const S = STYLES[style], OD = state.home.odd || "", minOdd = OD[0] === "m" ? +OD.slice(1) : 0, tgt = OD[0] === "t" ? +OD.slice(1) : 0;
   if (tgt) n = 10;
@@ -1887,6 +2094,12 @@ function buildHome() {
         <p class="hint">Maç listesi (takımlar ve olasılıklar) seçtiğin sağlayıcıya gönderilir. Anahtarlar Script özelliklerinde saklanır (GEMINI_API_KEY, GROQ_API_KEY, ANTHROPIC_API_KEY), bu sayfada görünmez. Seçtiğin sağlayıcı hata verirse anahtarı tanımlı diğerlerine sırayla geçilir. Model adı sağlayıcıda değiştiyse buradan güncelle.</p>
       </details>
     </section>
+    <section class="card" style="margin-top:20px" aria-labelledby="srT">
+      <div class="card-h"><h2 id="srT">Seriler</h2><span class="muted">bu sezon lig maçları, en yeni maçtan geriye</span></div>
+      <div id="srBody"></div><p class="tk-note">Seri sürüyor diye devam edeceği anlamına gelmez; olasılıkların yanında kendi kontrolün içindir. <button type="button" class="lnk" data-info="sr">Ayrıntı</button></p></section>
+    <section class="card" style="margin-top:20px" aria-labelledby="bdT">
+      <div class="card-h"><h2 id="bdT">Cesur seçimler</h2><span class="muted">yüksek oran, model ve piyasa uyumlu</span></div>
+      <div class="sg" id="bdBody"></div><p class="tk-note">Bu seçimler yaklaşık yarı yarıya tutar. Tek başına oynanır, kupona birden fazlası girerse risk hızla büyür. <button type="button" class="lnk" data-info="lv">Ayrıntı</button></p></section>
     <section class="card" style="margin-top:20px" aria-labelledby="scT" id="scC">
       <div class="card-h"><h2 id="scT">Skor tahminleri</h2><span class="muted">istatistiğe göre en olası skor, kupon değil</span></div>
       <div id="scBody"></div></section>
@@ -1910,8 +2123,8 @@ function buildHome() {
 function renderAnaliz() {
   buildHome();
   const { base } = homePool(), loading = (state.running || !state.leagues.length) && !base.length;
-  $("anSub").textContent = `Yapay zeka, skor tahminleri ve korner. Anasayfadaki süreye göre: önümüzdeki ${state.home.hours} saat, ${base.length} maç.`;
-  renderAI(); renderScores(base, loading); renderCorners(base); ensureMkt(base);
+  $("anSub").textContent = `Yapay zeka, seriler, cesur seçimler, skor tahminleri ve korner. Anasayfadaki süreye göre: önümüzdeki ${state.home.hours} saat, ${base.length} maç.`;
+  renderAI(); renderSeries(base); renderBold(base); renderScores(base, loading); renderCorners(base); ensureMkt(base);
   return `Analiz: ${base.length} maç.`;
 }
 // Anasayfanın tepesindeki "Bugün" özeti: tek bakışta ne oluyor
@@ -2125,6 +2338,8 @@ function homeClick(e) {
   const dt = e.target.closest("[data-day]");
   if (dt) { state.days.tab = dt.dataset.day; state.days.all = false; renderDays(); return; }
   if (e.target.closest("[data-dmore]")) { state.days.all = !state.days.all; renderDays(); return; }
+  const sr = e.target.closest("[data-sr]");
+  if (sr) { state.srTab = sr.dataset.sr; renderSeries(homePool().base); buzz(); return; }
   if (e.target.closest("[data-scall]")) { state.scAll = !state.scAll; render(); return; }
   const op = e.target.closest("[data-open]");
   if (op) { openDetail(op.dataset.open, op.dataset.tab); return; }
@@ -2727,6 +2942,7 @@ $("shBody").addEventListener("click", e => {
     }
     if (a.dataset.act === "openmy") openSheet("slip", "my");
     if (a.dataset.act === "tbl") { state.detTable = !state.detTable; syncSheet(); }
+    if (a.dataset.act === "tblm") { state.detTblMode = a.dataset.m; syncSheet(); }
     if (a.dataset.act === "favt") { const k = m.lk + "|" + a.dataset.team, on = !state.favT.has(k); if (on) state.favT.add(k); else state.favT.delete(k); lsSet("banko2:favt", JSON.stringify([...state.favT].slice(0, 40))); buzz(); toast(on ? "Favori takımlara eklendi" : "Favorilerden çıkarıldı"); syncSheet(); render(); }
     if (a.dataset.act === "more") { state.detMore = !state.detMore; syncSheet(); }
     if (a.dataset.act === "ai") runMatchAI(m.id);
@@ -2742,6 +2958,9 @@ $("shBody").addEventListener("click", e => {
     const a = e.target.closest("[data-act]");
     if (a && state.slipTab === "my") {
       const k = a.dataset.act, R = resolveMy(), cp = { picks: R.live.map(x => ({ m: x.m, pk: x.pk })), comb: R.comb };
+      const docOne = (id, mk, side) => { const m = findMatch(id); if (!m) return false; const p = pickP(m, mk, side); if (typeof p !== "number") return false; addMy(m, { market: mk, side: mk === "win" ? side : null, p }, true); return true; };
+      if (k === "doc") { if (docOne(a.dataset.id, a.dataset.mk, a.dataset.side)) { toast("Seçim değiştirildi"); render(); } return; }
+      if (k === "docall") { let n = 0; R.live.forEach(x => { const d = doctor(x.m, x.pk); if (d && d.pk && docOne(x.m.id, d.pk.market, d.pk.side)) n++; }); toast(`${n} seçim değiştirildi`); render(); return; }
       if (k === "import") { if (state.lastCoupon && state.lastCoupon.picks.length) importToMy(state.lastCoupon.picks); else toast("Günün kuponunda aktarılacak seçim yok"); }
       else if (k === "mysave" && cp.picks.length) trackSave(a, "main", "Kendi kuponum", cp);
       else if (k === "mycopy" && cp.picks.length) copyText(couponText(cp.picks, cp.comb, "Kuponum"), a, "Kopyala");
