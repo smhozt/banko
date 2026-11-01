@@ -298,10 +298,11 @@
   .st.lv.ht i, .st.lv.ft i { animation:none; background:var(--muted); }
   @keyframes lvP { 50% { opacity:.25; } }
   /* Bugün özeti */
-  .today { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .today { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; position:relative; z-index:1; }
   .today:empty { display:none; }
   .td-c { display:inline-flex; align-items:center; gap:7px; min-height:38px; padding:6px 13px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font:600 14px/1.2 var(--f); cursor:pointer; }
-  .td-c.live { border-color:color-mix(in srgb, var(--err) 45%, var(--line)); }
+  .td-c { flex:none; }
+  .td-c.td-live { border-color:color-mix(in srgb, var(--err) 45%, var(--line)); }
   .td-c.good { border-color:var(--t2); background:color-mix(in srgb, var(--t2) 14%, var(--surface)); }
   .td-c small { color:var(--muted); font-weight:500; }
   /* Maçlar: takım arama ve trendler */
@@ -1918,7 +1919,7 @@ function renderToday() {
   const el = $("today"); if (!el) return;
   const out = [], now = Date.now();
   const ln = liveCount();
-  if (ln) out.push(`<button type="button" class="td-c live" data-go="live"><span class="lv-dot" aria-hidden="true"></span>${ln} maçın oynanıyor</button>`);
+  if (ln) out.push(`<button type="button" class="td-c td-live" data-go="live"><span class="lv-dot" aria-hidden="true"></span>${ln} maçın oynanıyor</button>`);
   const T = state.track.data;
   if (state.badgeN) out.push(`<button type="button" class="td-c good" data-go="track">${state.badgeN} kupon sonuçlandı <small>bak</small></button>`);
   else if (T) { const p = T.coupons.filter(c => c.state === "pending").length; if (p) out.push(`<button type="button" class="td-c" data-go="track">${p} kupon bekliyor</button>`); }
@@ -2039,7 +2040,7 @@ function ensureElo(base) {
   gs("getElo", pool.map(m => ({ id: m.id, h: m.hraw, a: m.araw })))
     .then(r => { E.res = (r && r.res) || {}; E.status = "done"; })
     .catch(() => { E.status = "error"; })
-    .finally(() => { if (state.view === "home") render(); });
+    .finally(() => { if (state.view === "home" || state.view === "analiz") render(); });
 }
 function eloInfo(m, pk) {
   const r = ER(m.id);
@@ -2074,7 +2075,7 @@ function renderCorners(base) {
     gs("getCorners", pool.map(m => ({ id: m.id, lk: m.lk, h: m.hraw, a: m.araw })))
       .then(r => { C.res = (r && r.res) || {}; C.status = "done"; })
       .catch(e => { C.status = "error"; C.err = String(e.message || e); })
-      .finally(() => { if (state.view === "home") renderCorners(homePool().base); });
+      .finally(() => { if (state.view === "home" || state.view === "analiz") renderCorners(homePool().base); });
   }
   if (!pool.length) { body.innerHTML = `<p class="ai-empty">${state.running ? "Maçlar yükleniyor." : "Bu aralıkta korner verisi olan lig maçı yok."}</p>`; note.textContent = ""; return; }
   if (C.status === "error") { body.innerHTML = `<p class="ai-empty">Korner verisi alınamadı: ${esc(C.err)}</p>`; note.textContent = ""; return; }
