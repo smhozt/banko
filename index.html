@@ -323,13 +323,12 @@
   .cp-odd { height:40px; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; padding:0 10px; font:600 14px var(--f); max-width:100%; }
   .step.auto output { color:var(--muted); }
   /* ilk açılış tanıtımı */
-  .intro-ov { position:fixed; inset:0; z-index:90; background:rgba(5,14,10,.55); display:flex; align-items:flex-end; justify-content:center; padding:16px; }
-  @media (min-width:721px) { .intro-ov { align-items:center; } }
+
   .intro-c { background:var(--surface); color:var(--ink); border-radius:22px; padding:22px 22px 18px; max-width:460px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.3); margin-bottom:env(safe-area-inset-bottom); }
   .intro-c h2 { font:700 24px/1.15 var(--fc); margin:6px 0 8px; }
   .intro-c p { margin:0 0 10px; color:var(--muted); font-size:15px; line-height:1.5; }
   .intro-c ul { margin:0 0 6px; padding-left:18px; font-size:15px; line-height:1.55; }
-  .intro-dots { display:flex; gap:6px; } .intro-dots i { width:7px; height:7px; border-radius:50%; background:var(--line); } .intro-dots i.on { background:var(--t2); }
+
   .intro-b { display:flex; justify-content:space-between; align-items:center; margin-top:14px; gap:10px; }
   /* okunabilirlik: ikincil yazılar biraz büyüdü */
   .tk-note, .sh-note, .hint, .sg-d, .pk-n, .pst-n, .ai-win { font-size:14px; line-height:1.5; }
@@ -790,6 +789,61 @@
   .shr-b { width:min(440px,100%); max-height:100%; overflow:auto; background:var(--raised); border:1px solid var(--line); border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:12px; }
   .shr-b img { width:100%; height:auto; max-height:62vh; object-fit:contain; border-radius:12px; display:block; }
   .shr-b .sh-btns { margin:0; }
+  /* ---------- tanıtım (tam ekran, adım adım) */
+  .intro-ov { position:fixed; inset:0; z-index:95; background:linear-gradient(180deg, #050B08 38%, color-mix(in srgb, var(--ac, #6BF0B2) 26%, #050B08) 100%); color:#E8F2EC; display:flex; justify-content:center; transition:background .5s; }
+  .iv { width:min(480px,100%); height:100%; display:flex; flex-direction:column; padding:calc(env(safe-area-inset-top) + 12px) 22px calc(env(safe-area-inset-bottom) + 16px); }
+  .iv-top { display:flex; justify-content:flex-end; min-height:44px; }
+  .iv-skip { background:transparent; border:0; color:#B9CCC2; font:600 16px var(--f); padding:8px 4px; cursor:pointer; }
+  .iv-demo { flex:1; display:flex; align-items:center; justify-content:center; min-height:0; padding:10px 0; }
+  .iv-txt { text-align:center; margin-top:8px; }
+  .iv-e { margin:0 0 8px; font:700 15px var(--fc); letter-spacing:.32em; color:var(--ac); }
+  .iv-txt h2 { margin:0 0 10px; font:700 34px/1.08 var(--fc); }
+  .iv-b { margin:0 auto; max-width:380px; color:#B9CCC2; font-size:16px; line-height:1.5; }
+  .intro-ov .intro-dots { display:flex; justify-content:center; gap:7px; margin:22px 0 16px; }
+  .intro-ov .intro-dots button { width:8px; height:8px; border-radius:8px; border:0; padding:0; background:rgba(232,242,236,.28); cursor:pointer; transition:width .3s, background .3s; }
+  .intro-ov .intro-dots button.on { width:30px; background:#E8F2EC; }
+  .iv-go { height:54px; border-radius:16px; border:0; background:var(--ac); color:#07120D; font:700 18px var(--f); cursor:pointer; box-shadow:0 10px 30px -10px var(--ac); }
+  .iv-legal { margin:12px 0 0; text-align:center; font-size:12.5px; color:#7F988B; }
+  .iv-card { position:relative; width:100%; background:#101C17; border:1px solid #1F3329; border-radius:20px; padding:18px 18px 14px; box-shadow:0 24px 60px -24px rgba(0,0,0,.8); }
+  .iv-tag { position:absolute; top:-11px; left:18px; font:600 11.5px var(--f); letter-spacing:.04em; padding:3px 9px; border-radius:999px; background:var(--ac); color:#07120D; }
+  .iv-m { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; margin:4px 0 14px; }
+  .iv-m > span { display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; min-width:0; } .iv-m b { font-weight:600; font-size:15px; }
+  .iv-m small { color:#86A093; font-size:13px; white-space:nowrap; }
+  .iv-bar { display:grid; grid-template-columns:1fr auto; gap:4px 10px; margin-top:10px; }
+  .iv-bar span { font-size:14.5px; } .iv-bar b { font:700 18px var(--fc); }
+  .iv-bar i { grid-column:1 / -1; height:7px; border-radius:7px; background:#1F3329; overflow:hidden; }
+  .iv-bar u { display:block; height:100%; width:var(--w); border-radius:7px; background:var(--ac); animation:ivW 1s cubic-bezier(.3,.8,.3,1) both; animation-delay:var(--d); }
+  .iv-foot { margin:14px 0 0; font-size:12.5px; color:#86A093; }
+  .iv-sr { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .iv-sr li, .iv-pk, .iv-sum, .iv-doc, .iv-ai, .iv-live, .iv-stamp { animation:ivUp .5s cubic-bezier(.2,.8,.2,1) both; animation-delay:var(--d); }
+  .iv-sr li { display:grid; grid-template-columns:40px 1fr; gap:10px; align-items:center; background:#0B1511; border-radius:12px; padding:9px 12px; }
+  .iv-sr b { font:700 26px/1 var(--fc); color:var(--ac); text-align:center; } .iv-sr span { font-size:14.5px; }
+  .iv-ai { margin-top:12px; display:flex; align-items:center; gap:8px; border:1px solid #2A4236; border-radius:12px; padding:10px 12px; font-size:14px; color:#B9CCC2; }
+  .iv-ai i { width:2px; height:18px; background:var(--ac); animation:ivBlink 1s step-end infinite; }
+  .iv-pk { display:grid; grid-template-columns:48px 1fr auto; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid #1F3329; }
+  .iv-pk .t { font:700 18px var(--fc); } .iv-pk .m { display:flex; flex-direction:column; min-width:0; } .iv-pk .m b { font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .iv-pk .m small { color:var(--ac); font-weight:600; font-size:13px; } .iv-pk .p { font:700 22px var(--fc); }
+  .iv-sum { display:flex; justify-content:space-between; align-items:baseline; margin-top:10px; color:#86A093; font-size:14px; } .iv-sum b { font:700 34px/1 var(--fc); color:#E8F2EC; } .iv-sum small { font-size:18px; }
+  .iv-doc { margin:10px 0 0; padding:9px 11px; border-radius:12px; background:color-mix(in srgb, var(--ac) 16%, transparent); font-size:13.5px; line-height:1.4; }
+  .iv-live { display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center; background:#0B1511; border-radius:12px; padding:11px 12px; margin-top:8px; font-size:14.5px; }
+  .iv-live:first-of-type { margin-top:4px; } .iv-live b { font:700 20px var(--fc); margin:0 4px; }
+  .iv-min { display:inline-flex; align-items:center; gap:6px; font:700 14px var(--f); color:#FF8A80; } .iv-min i { width:7px; height:7px; border-radius:50%; background:#FF8A80; animation:lvP 1.2s infinite; } .iv-min.fin { color:#86A093; }
+  .iv-ok { font:700 12px var(--f); padding:4px 9px; border-radius:999px; background:color-mix(in srgb, #6BF0B2 18%, transparent); color:#6BF0B2; } .iv-ok.won { background:#6BF0B2; color:#07120D; }
+  .iv-stamp { margin:16px auto 2px; width:max-content; padding:6px 22px; border:4px solid #6BF0B2; border-radius:8px; color:#6BF0B2; font:800 34px/1 var(--fc); letter-spacing:.06em; transform:rotate(-6deg); animation-name:ivStamp; animation-duration:.5s; }
+  .iv-logo { display:flex; flex-direction:column; align-items:center; gap:14px; color:var(--ac); }
+  .iv-logo svg { width:132px; height:132px; } .iv-logo svg > * { stroke-dasharray:100; stroke-dashoffset:100; animation:spDraw 1s cubic-bezier(.6,0,.3,1) forwards; } .iv-logo svg circle { animation-delay:.2s; } .iv-logo .ck { animation-delay:.55s; }
+  .iv-logo b { font:700 52px var(--fc); color:#E8F2EC; animation:ivUp .5s .5s both; }
+  .iv-demo.fwd > *, .iv-txt.fwd { animation:ivIn .45s cubic-bezier(.2,.8,.2,1) both; }
+  .iv-demo.back > *, .iv-txt.back { animation:ivBack .45s cubic-bezier(.2,.8,.2,1) both; }
+  .iv-txt { animation-delay:.05s !important; }
+  @keyframes ivIn { from { opacity:0; transform:translateX(40px); } }
+  @keyframes ivBack { from { opacity:0; transform:translateX(-40px); } }
+  @keyframes ivUp { from { opacity:0; transform:translateY(12px); } }
+  @keyframes ivW { from { width:0; } }
+  @keyframes ivBlink { 50% { opacity:0; } }
+  @keyframes ivStamp { from { opacity:0; transform:rotate(-6deg) scale(1.8); } }
+  @media (min-width:721px) { .iv { padding-top:28px; padding-bottom:28px; } .iv-txt h2 { font-size:38px; } }
+  @media (max-height:700px) { .iv-txt h2 { font-size:28px; } .iv-b { font-size:14.5px; } .iv-card { padding:14px 14px 10px; } .iv-logo svg { width:96px; height:96px; } .intro-ov .intro-dots { margin:14px 0 10px; } }
+  @media (prefers-reduced-motion: reduce) { .intro-ov *, .intro-ov *::before { animation:none !important; } .iv-logo svg > * { stroke-dashoffset:0; } }
   /* ---------- açılış ekranı ve animasyonlar */
   #splash { position:fixed; inset:0; z-index:200; display:grid; place-items:center; background:#0D2219; color:#6BF0B2; transition:opacity .4s ease, visibility .4s; }
   #splash.out { opacity:0; visibility:hidden; }
@@ -1711,7 +1765,7 @@ function detailBody() {
     <div class="sh-btns" style="margin-top:18px">${sel ? (() => { const ex = myOf(m.id), same = sameSel(ex, sel), full = !ex && state.my.length >= MY_MAX;
       const fl = state.detFlash && state.detFlash.until > Date.now() ? state.detFlash.text : "";
       const cls = fl ? "ghost solid done pop" : same ? "ghost in-my" : "ghost solid";
-      return `<button type="button" class="${cls}" data-act="my" ${full ? "disabled" : ""} aria-pressed="${same}">${fl ? "✓ " + esc(fl) : same ? `✓ Kuponda: ${esc(pickLabel(m, sel))} · <u>Çıkar</u>` : `${ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}`}</button><button type="button" class="ghost" data-act="trk">Tek seçim takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button></div>
+      return `<button type="button" class="${cls}" data-act="my" ${full ? "disabled" : ""} aria-pressed="${same}">${fl ? "✓ " + esc(fl) : same ? `✓ Kuponda: ${esc(pickLabel(m, sel))} · <u>Çıkar</u>` : `${ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}`}</button><button type="button" class="ghost" data-act="trk">Tek seçim takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button><button type="button" class="ghost" data-act="mshr">Görsel olarak paylaş</button></div>
     ${state.my.length ? (() => { const R = resolveMy(), co = R.live.length ? combOdds(R.live.map(x => ({ m: x.m, pk: x.pk }))) : null;
       return `<div class="dt-foot${state.myPulse && state.myPulse > Date.now() - 900 ? " pop" : ""}" role="status" aria-live="polite"><span class="slip-n">${state.my.length}</span><span class="ft"><b>Kuponum</b><small>${R.live.length ? `${R.live.length} seçim, birlikte %${pn(R.comb)}${co ? ` · oran ${fo(co)}` : ""}` : "hesaplanacak seçim yok"}</small></span><button type="button" class="ghost" data-act="openmy">Kuponu aç</button></div>`; })() : ""}
     <p class="sh-note">Oran: Bet365, yoksa bahisçi ortalaması; 1,5 / 3,5 üst ve KG var için konsensüs.${(r => r && r.pin ? " Piyasa olasılığı Pinnacle'dan (en isabetli bahisçi)." : "")(MR(m.id))} <button type="button" class="lnk" data-info="odds">Ayrıntı</button></p>`;
@@ -2349,16 +2403,65 @@ async function copyText(text, btn, label) {
   setTimeout(() => { btn.textContent = label; }, 1800);
 }
 const INTRO = [
-  { t: "Banko'ya hoş geldin", b: `<p>Maçların istatistik modeline göre olasılıklarını gösterir. Kesinlik yoktur; amaç hangi maçın daha olası olduğunu görmek.</p><ul><li><b>Anasayfa</b>: Bugün özeti ve günün kuponu. Tarz, süre ve oranı buradan ayarlarsın.</li><li><b>Maçlar</b>: Bütün maçlar olasılığa göre. Takım ara, trend filtrelerini kullan.</li></ul>` },
-  { t: "Analiz ve Canlı", b: `<ul><li><b>Analiz</b>: Yapay zekaya soru sor ("önümüzdeki 3 saat için 3 maç"), skor tahminleri ve korner.</li><li><b>Canlı</b>: Takibe aldığın ve Kuponum'daki maçlar oynanırken skor, dakika ve "şu an tutuyor mu".</li><li>Maç detayında takımı <b>☆ Favorile</b>: maçları Maçlar'ın en üstünde ve Bugün özetinde çıkar.</li></ul>` },
-  { t: "Takip: model ne kadar tutuyor?", b: `<p>Kuponu "Takibe al" dersen sonuç kendiliğinden işlenir. Takip sekmesinde tutma oranını ve isabet grafiğini görürsün: model %70 dediğinde gerçekte ne kadar tuttuğu.</p><p>İstatistiktir, bahis tavsiyesi değildir. 18+</p>` }];
-function showIntro(i) {
+  { e: "BANKO", t: "Kuponu yapmadan önce buraya bak", b: "Maçların olasılığı, piyasanın görüşü ve geçmiş veriler tek yerde.", c: "#6BF0B2" },
+  { e: "OLASILIK", t: "Her maçın olasılığı", b: "Model, piyasa ve benzer oranlı geçmiş maçlar yan yana. Maça dokun, güvenli, ikinci ve cesur seçimi gör.", c: "#7F9BFF" },
+  { e: "ANALİZ", t: "Seriler, cesur seçimler, yapay zeka", b: "Süren serileri ve model ile piyasanın uyuştuğu cesur seçimleri gör. Yapay zekaya \"önümüzdeki 3 saat\" diye sor.", c: "#C38BFF" },
+  { e: "KUPON", t: "Kuponu kur, doktor düzeltsin", b: "Günün kuponu hazır gelir. Kendi kuponunu yaparsan Kupon Doktoru aynı maçta daha mantıklı seçimi önerir.", c: "#F2C25B" },
+  { e: "CANLI VE TAKİP", t: "Maçı izle, sonucu paylaş", b: "Takibe aldığın kupon canlı skorla işlenir. Bitince sonuç görselini tek dokunuşla paylaşırsın.", c: "#FF8A80" }];
+const IV_SAMPLE = { id: "", lk: "x", hraw: "Porto", araw: "Benfica", home: "Porto", away: "Benfica", league: "Liga Portugal", kick: new Date(Date.now() + 5 * 36e5), pH: 0.52, pD: 0.26, pA: 0.22, o15: 0.78, o25: 0.55, bt: 0.53 };
+function ivMatch() { const now = Date.now(); return flatten().filter(m => m.trusted && m.kick.getTime() > now).sort((a, b) => maxP(b) - maxP(a))[0] || null; }
+const ivBar = (l, p, d) => `<div class="iv-bar" style="--d:${d}s"><span>${esc(l)}</span><b>%${pn(p)}</b><i><u style="--w:${pn(p)}%"></u></i></div>`;
+const ivTag = real => `<span class="iv-tag">${real ? "bugünün verisi" : "örnek"}</span>`;
+function ivDemo(i) {
+  const real = ivMatch(), m = real || IV_SAMPLE, di = dayInfo(m.kick), fav = m.pH >= m.pA;
+  if (i === 0) return `<div class="iv-logo"><svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="24" height="18" rx="2.5"/><path d="M14 5v4.2M14 18.8V23"/><circle cx="14" cy="14" r="4.8"/><path class="ck" d="M12 14.1l1.4 1.4 2.7-2.8"/></svg><b>Banko</b></div>`;
+  if (i === 1) {
+    const r = real ? MR(m.id) : null, Q = r && !r.miss ? simQuery(r.h, r.a, r.o) : {};
+    return `<div class="iv-card iv-in">${ivTag(real)}<div class="iv-m"><span>${crest(m.lk, m.hraw, m.home, 30)}<b>${esc(m.home)}</b></span><small>${esc(di.tag || di.num + " " + di.month.slice(0, 3))} ${esc(fmtTime(m.kick))}</small><span>${crest(m.lk, m.araw, m.away, 30)}<b>${esc(m.away)}</b></span></div>
+      ${ivBar((fav ? m.home : m.away) + " kazanır", fav ? m.pH : m.pA, .25)}${ivBar("1,5 üst", m.o15, .4)}${ivBar("KG var", m.bt, .55)}
+      <p class="iv-foot">${Q.r ? `Benzer oranlı ${nfmt(Q.r.n)} maçta ev %${pn(Q.r.h)} · beraberlik %${pn(Q.r.d)} · deplasman %${pn(Q.r.a)}` : `${esc(m.league)} · 46 bin maçlık oran arşivi`}</p></div>`;
+  }
+  if (i === 2) {
+    const pool = flatten().filter(x => x.kick.getTime() > Date.now());
+    let L = []; pool.forEach(x => ["home", "away"].forEach(sd => teamSeries(x, sd).slice(0, 1).forEach(y => L.push(y))));
+    L = L.sort((a, b) => b.sc - a.sc).slice(0, 3);
+    const ok = L.length >= 2;
+    if (!ok) L = [{ n: 7, t: "Porto: evinde 7 maçtır yenilmiyor" }, { n: 5, t: "Benfica: 5 maçtır 2,5 üst bitiyor" }, { n: 4, t: "Braga: 4 maçtır gol yemiyor" }];
+    return `<div class="iv-card iv-in">${ivTag(ok)}<ul class="iv-sr">${L.map((x, j) => `<li style="--d:${.2 + j * .15}s"><b>${x.n}</b><span>${esc(x.t)}</span></li>`).join("")}</ul><div class="iv-ai" style="--d:.75s"><span>Önümüzdeki 3 saat için 3 banko maç</span><i></i></div></div>`;
+  }
+  if (i === 3) {
+    const cp = state.lastCoupon, ok = cp && cp.picks.length >= 2, rows = ok ? cp.picks.slice(0, 3) : [{ m: IV_SAMPLE, pk: { market: "o15", p: 0.78 } }, { m: { ...IV_SAMPLE, home: "Ajax", away: "Twente", kick: new Date(Date.now() + 7 * 36e5) }, pk: { market: "win", side: "home", p: 0.71 } }];
+    const comb = rows.reduce((a, c) => a * c.pk.p, 1), d = ok ? rows.map(c => doctor(c.m, c.pk)).find(x => x && x.pk) : null;
+    return `<div class="iv-card iv-in">${ivTag(ok)}${rows.map((c, j) => `<div class="iv-pk" style="--d:${.2 + j * .15}s"><span class="t">${esc(fmtTime(c.m.kick))}</span><span class="m"><b>${esc(c.m.home)} - ${esc(c.m.away)}</b><small>${esc(pickLabel(c.m, c.pk))}</small></span><b class="p">%${pn(c.pk.p)}</b></div>`).join("")}
+      <div class="iv-sum" style="--d:.7s"><span>${rows.length} seçim birlikte</span><b data-cu="${pn(comb)}">${pn(comb)}<small>%</small></b></div>
+      <p class="iv-doc" style="--d:.95s"><b>Kupon doktoru:</b> ${esc(d ? d.txt : "Aynı maçta daha güvenli: 1,5 üst %80 · 1,22")}</p></div>`;
+  }
+  return `<div class="iv-card iv-in">${ivTag(false)}<div class="iv-live" style="--d:.2s"><span class="iv-min"><i></i>67'</span><span class="m">Porto <b>2 - 1</b> Benfica</span><span class="iv-ok">Tutuyor</span></div>
+    <div class="iv-live" style="--d:.35s"><span class="iv-min fin">MS</span><span class="m">Ajax <b>3 - 0</b> Twente</span><span class="iv-ok won">Tuttu</span></div>
+    <div class="iv-stamp" style="--d:.7s">TUTTU</div></div>`;
+}
+function showIntro(i, dir) {
   let ov = $("introOv");
-  if (!ov) { ov = document.createElement("div"); ov.id = "introOv"; ov.className = "intro-ov"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); document.body.appendChild(ov);
-    ov.addEventListener("click", e => { const b = e.target.closest("[data-in]"); if (e.target === ov || (b && b.dataset.in === "x")) { closeIntro(); return; } if (b) showIntro(+b.dataset.in); }); }
-  const s = INTRO[i], last = i === INTRO.length - 1;
-  ov.innerHTML = `<div class="intro-c" aria-labelledby="inT"><div class="intro-dots">${INTRO.map((_, j) => `<i class="${j === i ? "on" : ""}"></i>`).join("")}</div><h2 id="inT">${s.t}</h2>${s.b}<div class="intro-b"><button type="button" class="ghost" data-in="x">${last ? "Kapat" : "Geç"}</button>${last ? `<button type="button" class="ghost solid" data-in="x">Başla</button>` : `<button type="button" class="ghost solid" data-in="${i + 1}">İleri</button>`}</div></div>`;
-  const f = ov.querySelector(".solid"); if (f) f.focus();
+  if (!ov) {
+    ov = document.createElement("div"); ov.id = "introOv"; ov.className = "intro-ov"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-labelledby", "inT"); document.body.appendChild(ov);
+    ov.addEventListener("click", e => { const b = e.target.closest("[data-in]"); if (!b) return; if (b.dataset.in === "x") { closeIntro(); return; } const n = +b.dataset.in; showIntro(n, n > +ov.dataset.i ? 1 : -1); buzz(); });
+    let x0 = null, y0 = 0;
+    ov.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    ov.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0, cur = +ov.dataset.i; x0 = null;
+      if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+      if (dx < 0 && cur < INTRO.length - 1) showIntro(cur + 1, 1); else if (dx > 0 && cur > 0) showIntro(cur - 1, -1); });
+  }
+  ov.dataset.i = i;
+  const S = INTRO[i], last = i === INTRO.length - 1;
+  ov.style.setProperty("--ac", S.c);
+  ov.innerHTML = `<div class="iv"><div class="iv-top"><button type="button" class="iv-skip" data-in="x">${last ? "Kapat" : "Atla"}</button></div>
+    <div class="iv-demo ${dir < 0 ? "back" : "fwd"}">${ivDemo(i)}</div>
+    <div class="iv-txt ${dir < 0 ? "back" : "fwd"}"><p class="iv-e">${S.e}</p><h2 id="inT">${S.t}</h2><p class="iv-b">${S.b}</p></div>
+    <div class="intro-dots" role="tablist" aria-label="Adımlar">${INTRO.map((_, j) => `<button type="button" class="${j === i ? "on" : ""}" data-in="${j}" aria-label="${j + 1}. adım" aria-current="${j === i}"></button>`).join("")}</div>
+    <button type="button" class="iv-go solid" data-in="${last ? "x" : i + 1}">${last ? "Başla" : "Devam"}</button>
+    <p class="iv-legal">İstatistiktir, bahis tavsiyesi değildir. 18+</p></div>`;
+  const cu = ov.querySelector("[data-cu]"); if (cu) setTimeout(() => countUp(cu, +cu.dataset.cu, 700), 700);
+  ov.querySelector(".iv-go").focus({ preventScroll: true });
 }
 function closeIntro() { const ov = $("introOv"); if (ov) ov.remove(); lsSet("banko2:intro", "1"); }
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("introOv")) closeIntro(); });
@@ -2481,8 +2584,10 @@ async function openShare(spec) {
 }
 function drawShare() {
   const spec = shrSpec; if (!spec) return;
-  const fmt = SHR_FMT.some(f => f[0] === lsGet("banko2:shrfmt")) ? lsGet("banko2:shrfmt") : "list";
-  $("shrFmt").innerHTML = SHR_FMT.map(([k, l]) => `<button type="button" data-fmt="${k}" aria-pressed="${k === fmt}">${l}</button>`).join("");
+  const FM = spec.kind === "match" ? SHR_FMT.slice(1) : SHR_FMT, saved = lsGet("banko2:shrfmt");
+  const fmt = FM.some(f => f[0] === saved) ? saved : FM[0][0];
+  $("shrFmt").innerHTML = FM.map(([k, l]) => `<button type="button" data-fmt="${k}" aria-pressed="${k === fmt}">${l}</button>`).join("");
+  if (spec.kind === "match") { const cvm = drawMatch(spec, fmt); if (cvm) showCanvas(cvm); return; }
   const rows = spec.rows, n = rows.length, R = spec.result;
   const W = 1080, story = fmt === "story", sq = fmt === "square";
   const HEAD = story ? 420 : 250, FOOT = story ? 420 : 270;
@@ -2546,6 +2651,71 @@ function drawShare() {
     if (spec.co) { g.textAlign = "right"; g.fillStyle = "#8DAD9E"; g.font = F(500, 30); g.fillText("kupon oranı", W - 64, fy + 20); g.fillStyle = "#6BF0B2"; g.font = F(700, 96, true); g.fillText(fo(spec.co), W - 64, fy + 120); g.textAlign = "left"; }
   }
   g.fillStyle = "#5F7D6F"; g.font = F(500, 26); g.fillText(fit("İstatistiktir, bahis tavsiyesi değildir. 18+ · Data by football-charts.com", W - 128), 64, H - (story ? 90 : 56));
+  showCanvas(cv);
+}
+// Maç kartı: 1X2, üç seçim, öne çıkanlar ve benzer oranlı maçlar
+function drawMatch(spec, fmt) {
+  const m = findMatch(spec.id); if (!m) { toast("Maç artık listede yok"); return null; }
+  const story = fmt === "story", W = 1080, H = story ? 1920 : 1080;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const g = cv.getContext("2d"), F = (w, px, cond) => `${w} ${Math.round(px)}px ${cond ? '"Barlow Condensed", "Arial Narrow"' : '"Barlow", "Segoe UI"'}, sans-serif`;
+  const fit = (t, max) => { t = String(t); if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
+  const rr = (x, y, w, h, r, fill) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); g.fillStyle = fill; g.fill(); };
+  const wrap = (t, max, lh, x, y, lines) => { const w = String(t).split(" "); let line = "", n = 0; for (const word of w) { const tt = line ? line + " " + word : word; if (g.measureText(tt).width > max && line) { if (n === lines - 1) { g.fillText(fit(line + " " + word, max), x, y + n * lh); return n + 1; } g.fillText(line, x, y + n * lh); n++; line = word; } else line = tt; } if (line) { g.fillText(line, x, y + n * lh); n++; } return n; };
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#10291F"); bg.addColorStop(1, "#08150F"); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  const rg = g.createRadialGradient(W * .85, 0, 20, W * .85, 0, W * .9); rg.addColorStop(0, "rgba(107,240,178,.16)"); rg.addColorStop(1, "rgba(107,240,178,0)"); g.fillStyle = rg; g.fillRect(0, 0, W, H);
+  let y = story ? 120 : 64;
+  g.strokeStyle = "#6BF0B2"; g.lineWidth = 5; g.strokeRect(64, y, 72, 52); g.beginPath(); g.moveTo(100, y); g.lineTo(100, y + 52); g.stroke(); g.beginPath(); g.arc(100, y + 26, 12, 0, 7); g.stroke();
+  g.fillStyle = "#E8F2EC"; g.font = F(700, 60, true); g.fillText("Banko", 160, y + 46);
+  g.textAlign = "right"; g.fillStyle = "#8DAD9E"; g.font = F(500, 28); g.fillText(fit(spec.title, 560), W - 64, y + 20); g.fillText(fit(spec.sub, 560), W - 64, y + 56); g.textAlign = "left";
+  // takımlar
+  y += story ? 220 : 190;
+  g.textAlign = "center"; g.fillStyle = "#E8F2EC"; g.font = F(700, story ? 84 : 64, true);
+  g.fillText(fit(m.home, 430), W * .27, y); g.fillText(fit(m.away, 430), W * .73, y);
+  g.fillStyle = "#5F7D6F"; g.fillText("-", W / 2, y); g.textAlign = "left";
+  // 1X2
+  y += story ? 70 : 50;
+  const r = MR(m.id), mp = k => r && !r.miss && typeof r[k] === "number" ? r[k] : null, cw = (W - 128 - 32) / 3;
+  [["Ev", m.pH, mp("h")], ["Beraberlik", m.pD, mp("d")], ["Deplasman", m.pA, mp("a")]].forEach(([l, p, q], j) => {
+    const x = 64 + j * (cw + 16), hh = story ? 230 : 170; rr(x, y, cw, hh, 22, "#132B21");
+    g.fillStyle = "#8DAD9E"; g.font = F(500, 26); g.fillText(l, x + 24, y + 42);
+    g.fillStyle = "#E8F2EC"; g.font = F(700, story ? 88 : 64, true); g.fillText("%" + pn(p), x + 24, y + (story ? 140 : 110));
+    const by = y + hh - (story ? 28 : 34); rr(x + 24, by, cw - 48, 8, 4, "#1F3D30"); rr(x + 24, by, Math.max(8, (cw - 48) * p), 8, 4, "#6BF0B2");
+    if (q !== null) { g.fillStyle = "#8DAD9E"; if (story) { g.font = F(500, 26); g.fillText("piyasa %" + pn(q), x + 24, y + 182); } else { g.font = F(500, 22); g.textAlign = "right"; g.fillText("piyasa %" + pn(q), x + cw - 24, y + 110); g.textAlign = "left"; } }
+  });
+  y += story ? 230 + 80 : 170 + 50;
+  // üç seçim
+  const L = levels(m), lv = [["GÜVENLİ", "#6BF0B2", L.safe], ["İKİNCİ", "#7F9BFF", L.second], ["CESUR", "#F2C25B", L.bold]].filter(x => x[2]);
+  g.fillStyle = "#8DAD9E"; g.font = F(600, 28); g.fillText("Bu maçta üç seçim", 64, y); y += 22;
+  const RH = story ? 140 : 116;
+  lv.forEach(([t, c, x]) => {
+    rr(64, y, W - 128, RH - 14, 20, "#132B21");
+    const mid = y + (RH - 14) / 2;
+    g.font = F(700, 24); const tw = g.measureText(t).width + 30; rr(88, mid - 22, tw, 44, 22, "rgba(255,255,255,.06)"); g.fillStyle = c; g.fillText(t, 103, mid + 9);
+    g.fillStyle = "#E8F2EC"; g.font = F(600, story ? 36 : 32); g.fillText(fit(pickLabel(m, x), W - 128 - tw - 340), 88 + tw + 24, mid + 12);
+    g.textAlign = "right"; g.font = F(700, story ? 54 : 48, true); g.fillText("%" + pn(x.p), W - 210, mid + 18);
+    g.fillStyle = "#8DAD9E"; g.font = F(600, 28); g.fillText(x.od ? fo(x.od) : x.est ? "~" + fo(x.est) : "–", W - 88, mid + 12); g.textAlign = "left";
+    y += RH;
+  });
+  // hikâyede: öne çıkanlar ve benzer oranlar
+  if (story) {
+    const hl = highlights(m).slice(0, 3);
+    if (hl.length) {
+      y += 50; g.fillStyle = "#8DAD9E"; g.font = F(600, 28); g.fillText("Öne çıkanlar", 64, y); y += 56;
+      hl.forEach(h => { g.fillStyle = "#6BF0B2"; g.beginPath(); g.arc(76, y - 11, 7, 0, 7); g.fill(); g.fillStyle = "#E8F2EC"; g.font = F(500, 34); const n = wrap(h.t, W - 170, 46, 100, y, 2); y += n * 46 + 24; });
+    }
+    const Q = r && !r.miss ? simQuery(r.h, r.a, r.o) : {};
+    if (Q.r && y + 190 < H - 130) {
+      y += 40; rr(64, y, W - 128, 150, 22, "#132B21");
+      g.fillStyle = "#8DAD9E"; g.font = F(500, 26); g.fillText(`Benzer oranlı ${nfmt(Q.r.n)} geçmiş maçta`, 92, y + 48);
+      g.fillStyle = "#E8F2EC"; g.font = F(700, 44, true); g.fillText(`Ev %${pn(Q.r.h)}   Ber. %${pn(Q.r.d)}   Dep. %${pn(Q.r.a)}${Q.g ? `   2,5Ü %${pn(Q.g.o25)}` : ""}`, 92, y + 110);
+      y += 150;
+    }
+  }
+  g.fillStyle = "#5F7D6F"; g.font = F(500, 24); g.fillText(fit("İstatistiktir, bahis tavsiyesi değildir. 18+ · Data by football-charts.com", W - 128), 64, H - (story ? 90 : 48));
+  return cv;
+}
+function showCanvas(cv) {
   cv.toBlob(b => {
     if (!b) { toast("Resim oluşturulamadı"); return; }
     shrBlob = b;
@@ -3082,6 +3252,7 @@ $("shBody").addEventListener("click", e => {
       render();
     }
     if (a.dataset.act === "openmy") openSheet("slip", "my");
+    if (a.dataset.act === "mshr") { const di = dayInfo(m.kick); openShare({ kind: "match", id: m.id, title: `${trc(m.country)} ${m.league}`, sub: `${di.tag || di.wd} ${di.num} ${di.month}, ${fmtTime(m.kick)}` }); return; }
     if (a.dataset.act === "tbl") { state.detTable = !state.detTable; syncSheet(); }
     if (a.dataset.act === "tblm") { state.detTblMode = a.dataset.m; syncSheet(); }
     if (a.dataset.act === "favt") { const k = m.lk + "|" + a.dataset.team, on = !state.favT.has(k); if (on) state.favT.add(k); else state.favT.delete(k); lsSet("banko2:favt", JSON.stringify([...state.favT].slice(0, 40))); buzz(); toast(on ? "Favori takımlara eklendi" : "Favorilerden çıkarıldı"); syncSheet(); render(); }
