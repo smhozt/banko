@@ -1,15 +1,21 @@
 // Banko servis çalışanı: arayüz dosyalarını önbelleğe alır (hızlı açılış, çevrimdışıyken kabuk görünür).
 // Veri çağrıları (sunucu) hiç önbelleğe alınmaz. Sayfanın kendisi önce ağdan istenir, böylece güncelleme hemen gelir;
 // internet yoksa önbellekteki sürüm açılır. Sürüm adı derleme sırasında içerikten üretilir.
-const CACHE = "banko-shell-088e52fad9";
+const CACHE = "banko-shell-d477776c7d";
 const SHELL = ["./", "./index.html", "./config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
+const IMG = "banko-img-1", IMG_HOSTS = ["media.api-sports.io", "flagcdn.com", "footballcharts-backend.onrender.com"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== IMG).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 const put = (req, r) => { if (r && r.ok) { const cp = r.clone(); caches.open(CACHE).then(c => c.put(req, cp)); } return r; };
 self.addEventListener("fetch", e => {
   const req = e.request, u = new URL(req.url);
+  if (req.method === "GET" && IMG_HOSTS.includes(u.hostname)) {
+    // logolar ve bayraklar: bir kez indirilir, sonra telefondan gelir (çevrimdışıyken de görünür)
+    e.respondWith(caches.open(IMG).then(c => c.match(req.url).then(hit => hit || fetch(req.url, { mode: "cors", credentials: "omit" }).then(r => { if (r.ok) c.put(req.url, r.clone()); return r; }).catch(() => fetch(req)))));
+    return;
+  }
   if (req.method !== "GET" || u.origin !== location.origin) return;
   const page = req.mode === "navigate" || u.pathname.endsWith("/") || u.pathname.endsWith("/index.html") || u.pathname.endsWith("/config.js");
   if (page) {

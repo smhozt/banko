@@ -16,6 +16,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://media.api-sports.io" crossorigin>
+<link rel="preconnect" href="https://flagcdn.com" crossorigin>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -69,7 +71,7 @@
 
   /* ---------- öne çıkan maç ---------- */
   .hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,380px); gap:36px; align-items:center; padding:34px 0 26px; }
-  .hero-when { color:var(--muted); font-size:15px; margin:0 0 6px; }
+  .hero-when { color:var(--muted); font-size:15px; margin:0 0 6px; display:flex; align-items:center; gap:8px; }
   .hero-pick { font:700 clamp(40px,7vw,84px)/.95 var(--fc); letter-spacing:-.5px; margin:0; overflow-wrap:anywhere; }
   .hero-vs { margin:10px 0 0; font-size:17px; color:var(--muted); }
   .hero-vs b { color:var(--ink); font-weight:600; }
@@ -224,6 +226,29 @@
   .crest { --s:24px; flex:none; width:var(--s); height:var(--s); border-radius:7px; position:relative; display:inline-flex; align-items:center; justify-content:center; font:700 calc(var(--s) * .42)/1 var(--fc); color:var(--muted); background:var(--sunk); overflow:hidden; }
   .crest img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:2px; box-sizing:border-box; }
   .crest.ok { background:transparent; } .crest.ok .ini { display:none; }
+  .crest.lgc { border-radius:6px; } .crest.lgc .ini { font-size:calc(var(--s) * .36); }
+  .crest.lgc.nf img { object-fit:cover; padding:0; inset:18% 0; height:64%; border-radius:3px; }
+  .cc.fl { position:relative; overflow:hidden; }
+  .cc.fl img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; }
+  .cc.fl.ok { min-width:0; width:21px; height:15px; padding:0; border-radius:3px; border-color:transparent; box-shadow:0 0 0 1px var(--line); }
+  .cc.fl.ok img { opacity:1; } .cc.fl.ok .ct { visibility:hidden; }
+  .lgh .ln small .cc { display:inline-flex; vertical-align:-2px; margin-right:5px; font-size:11px; padding:0 3px; min-width:0; }
+  .lgh .ln small .cc.fl.ok { width:18px; height:13px; padding:0; }
+  .where .crest { --s:20px; } .where .cc.fl.ok { width:20px; height:14px; }
+  .acc-l { display:flex; align-items:center; gap:8px; min-width:0; } .acc-l span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ctry-h .cc { margin:0 2px 0 4px; vertical-align:-2px; display:inline-flex; }
+  .lgi label { display:inline-flex; align-items:center; gap:8px; }
+  .cmp { margin-top:6px; }
+  .cmp-t { display:flex; justify-content:space-between; gap:10px; font:600 14px var(--f); color:var(--ink); margin-bottom:6px; }
+  .cmp-t span { display:flex; align-items:center; gap:6px; min-width:0; } .cmp-t span:last-child { flex-direction:row-reverse; text-align:right; }
+  .cmp-r { display:grid; grid-template-columns:46px 1fr 46px; align-items:center; column-gap:8px; row-gap:4px; padding:7px 0; border-top:1px solid var(--line); }
+  .cmp-r b { font:700 16px var(--fc); color:var(--muted); } .cmp-r b:last-of-type { text-align:right; } .cmp-r b.w { color:var(--ink); }
+  .cmp-l { text-align:center; font-size:13px; color:var(--muted); }
+  .cmp-b { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+  .cmp-b i { display:block; height:6px; border-radius:3px; background:var(--sunk); position:relative; overflow:hidden; }
+  .cmp-b i::after { content:""; position:absolute; top:0; bottom:0; width:var(--w); border-radius:3px; background:color-mix(in srgb, var(--muted) 55%, transparent); }
+  .cmp-b i:first-child::after { right:0; } .cmp-b i:last-child::after { left:0; }
+  .cmp-b i.w::after { background:var(--home); } .cmp-b i.w:last-child::after { background:var(--away); }
   :root[data-theme="dark"] .crest.ok { background:rgba(255,255,255,.92); }
   .hero-cr { display:flex; align-items:center; gap:14px; margin:16px 0 0; }
   .hero-cr .hv { color:var(--muted); font:600 28px var(--fc); }
@@ -1224,6 +1249,23 @@ const LOGOS = {"austria1":{"SK Rapid":781,"Salzburg":571,"LASK":1026,"Sturm Graz
 const LOGO_API = "https://media.api-sports.io/football/teams/", LOGO_BE = "https://footballcharts-backend.onrender.com/static/team-logos-organized/";
 function crestUrl(lk, raw) { const v = LOGOS[lk] && LOGOS[lk][raw]; if (v === undefined) return null; return typeof v === "number" ? LOGO_API + v + ".png" : LOGO_BE + v; }
 function initials(name) { const w = String(name).replace(/[^\p{L}\p{N} ]/gu, "").split(/\s+/).filter(Boolean); return ((w[0] || "?")[0] + (w.length > 1 ? w[1][0] : "")).toUpperCase(); }
+// lig logosu (yoksa ülke bayrağı) ve ülke bayrağı; resim gelmezse kısa ülke kodu görünür
+const LGL = {"austria1":218,"austria2":219,"azer":419,"belgium1":144,"belgium2":145,"bulgaria1":172,"premier":39,"cha":40,"eng1":41,"eng2":42,"national":43,"north":50,"south":51,"czech1":345,"czech2":346,"denmark1":119,"denmark2":120,"estonia":329,"finland1":244,"finland2":245,"france1":61,"france2":62,"france3":63,"germany1":78,"germany2":79,"germany3":80,"germany-north":84,"greece1":197,"greece2":494,"holland1":88,"holland2":89,"hungary1":271,"hungary2":272,"ireland1":357,"ireland2":358,"italy1":135,"italy2":136,"italy3a":138,"italy3b":138,"latvia":365,"lithuania":362,"norway":103,"poland1":106,"poland2":107,"portugal1":94,"portugal2":95,"primera1":435,"primera2":435,"romania1":283,"russia":235,"scot-premier":179,"scot-champ":180,"scot1":183,"scot2":184,"segunda1":875,"segunda2":875,"segunda3":875,"segunda4":875,"segunda5":875,"serbia1":286,"slovakia1":332,"slovakia2":506,"slovenia1":373,"spain1":140,"spain2":141,"sweden1":113,"sweden2":114,"swiss1":207,"swiss2":208,"turkey1":203,"turkey2":204}, LOGO_LG = "https://media.api-sports.io/football/leagues/";
+const FLG = {"Austria":"at","Azerbaijan":"az","Belgium":"be","Bulgaria":"bg","Czech Republic":"cz","Denmark":"dk","England":"gb-eng","Estonia":"ee","Finland":"fi","France":"fr","Germany":"de","Greece":"gr","Netherlands":"nl","Hungary":"hu","Ireland":"ie","Italy":"it","Latvia":"lv","Lithuania":"lt","Norway":"no","Poland":"pl","Portugal":"pt","Romania":"ro","Russia":"ru","Scotland":"gb-sct","Serbia":"rs","Slovakia":"sk","Slovenia":"si","Spain":"es","Sweden":"se","Switzerland":"ch","Turkey":"tr","Ukraine":"ua","Wales":"gb-wls","Croatia":"hr","Cyprus":"cy","Iceland":"is","Israel":"il","Northern Ireland":"gb-nir","Belarus":"by","Georgia":"ge","Bosnia":"ba","Albania":"al","Moldova":"md","Armenia":"am","Kazakhstan":"kz","Luxembourg":"lu","North Macedonia":"mk","Montenegro":"me","Malta":"mt","Faroe Islands":"fo","Andorra":"ad"}, FLAG = "https://flagcdn.com/w40/";
+const ccOf = c => CC[c] || String(c || "").slice(0, 3).toUpperCase();
+const lgUrl = lk => LGL[lk] ? LOGO_LG + LGL[lk] + ".png" : null;
+const flagUrl = c => FLG[c] ? FLAG + FLG[c] + ".png" : null;
+const IMG_OK = "onload=\"this.parentNode.classList.add('ok')\" onerror=\"this.remove()\"";
+function flagI(country) {
+  const u = flagUrl(country);
+  return `<span class="cc${u ? " fl" : ""}" title="${esc(trc(country))}">${u ? `<img src="${u}" alt="" loading="lazy" decoding="async" ${IMG_OK}>` : ""}<span class="ct">${esc(ccOf(country))}</span></span>`;
+}
+function lgLogo(lk, country, size) {
+  const u = lgUrl(lk) || flagUrl(country);
+  return `<span class="crest lgc${lgUrl(lk) ? "" : " nf"}" style="--s:${size}px" aria-hidden="true"><span class="ini">${esc(ccOf(country))}</span>${u ? `<img src="${u}" alt="" loading="lazy" decoding="async" ${IMG_OK}>` : ""}</span>`;
+}
+const lgShort = lk => { const L = state.leagues.find(l => l.key === lk); return L ? (LGL[lk] ? L.name : trc(L.country) + " " + L.name) : lk; };
+const lgCountry = lk => { const L = state.leagues.find(l => l.key === lk); return L ? L.country : ""; };
 function crest(lk, raw, shown, size) {
   const u = crestUrl(lk, raw);
   return `<span class="crest" style="--s:${size}px"><span class="ini">${esc(initials(shown))}</span>${u ? `<img src="${u}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="this.parentNode.classList.add('ok')" onerror="this.remove()">` : ""}</span>`;
@@ -1327,7 +1369,7 @@ function renderHero(top, tabDef, pinned) {
   const sub = t === "win" ? `<b>${esc(top.home)}</b> ile <b>${esc(top.away)}</b>` : `${esc(tabDef.label)} için en yüksek olasılık`;
   el.innerHTML = `<div class="hero ${state.introDone ? "" : "intro"}">
     <div>
-      <p class="hero-when">${esc(d.tag ? d.tag + ", " : "")}${esc(d.wd)} ${esc(fmtTime(top.kick))}, ${esc(trc(top.country))} ${esc(top.league)}</p>
+      <p class="hero-when">${lgLogo(top.lk, top.country, 22)}<span>${esc(d.tag ? d.tag + ", " : "")}${esc(d.wd)} ${esc(fmtTime(top.kick))}, ${esc(trc(top.country))} ${esc(top.league)}</span></p>
       <h1 class="hero-pick">${esc(headline)}</h1>
       <div class="hero-cr">${crest(top.lk, top.hraw, top.home, 52)}<span class="hv">-</span>${crest(top.lk, top.araw, top.away, 52)}</div>
       <p class="hero-vs">${sub}</p>
@@ -1353,7 +1395,7 @@ function rowHTML(m, tab) {
   return `<li class="row tier${tier}${isSel ? " sel" : ""}" data-id="${esc(m.id)}" style="--pick:${pick}">
     <div class="time">${esc(fmtTime(m.kick))}</div>
     <button type="button" class="match" aria-pressed="${isSel}" aria-label="${esc(m.home)} ile ${esc(m.away)} maçının ayrıntısını aç"><span class="tm ${win ? (fav ? "fav" : "dim") : ""}">${crest(m.lk, m.hraw, m.home, 24)}${esc(m.home)}${state.favT.has(m.lk + "|" + m.hraw) ? '<span class="st-f" aria-label="Favori takım">★</span>' : ""}</span><span class="tm ${win ? (!fav ? "fav" : "dim") : ""}">${crest(m.lk, m.araw, m.away, 24)}${esc(m.away)}${state.favT.has(m.lk + "|" + m.araw) ? '<span class="st-f" aria-label="Favori takım">★</span>' : ""}</span>${flags.length ? `<div class="flags">${flags.join("")}</div>` : ""}</button>
-    <div class="where"><span class="cc" title="${esc(trc(m.country))}">${esc(CC[m.country] || m.country.slice(0, 3).toUpperCase())}</span>${state.fav.has(m.lk) ? '<span class="fv" aria-label="Favori lig">★</span>' : ""}<span class="ln">${esc(m.league)}</span></div>
+    <div class="where">${flagI(m.country)}${lgLogo(m.lk, m.country, 20)}${state.fav.has(m.lk) ? '<span class="fv" aria-label="Favori lig">★</span>' : ""}<span class="ln">${esc(m.league)}</span></div>
     <div class="split" role="img" aria-label="Ev ${pct(m.pH)}, beraberlik ${pct(m.pD)}, deplasman ${pct(m.pA)}">
       <div class="sb"><i class="h" style="flex:${m.pH}"></i><i class="d" style="flex:${m.pD}"></i><i class="a" style="flex:${m.pA}"></i></div>
       <div class="sn"><span>${pn(m.pH)}</span><span>${pn(m.pD)}</span><span>${pn(m.pA)}</span></div></div>
@@ -1450,7 +1492,7 @@ function renderMatches() {
       if (grp && m.lk !== curL) {
         curL = m.lk;
         const open = !state.collapsed.has(m.lk);
-        html += `<li class="lgli"><button type="button" class="lgh" data-lg="${esc(m.lk)}" aria-expanded="${open}"><span class="cc">${esc(CC[m.country] || m.country.slice(0, 3).toUpperCase())}</span><span class="ln">${state.fav.has(m.lk) ? '<span class="fv" aria-label="Favori lig">★ </span>' : ""}${esc(m.league)}<small>${esc(trc(m.country))}</small></span><span class="k">${cnt[di.key + "|" + m.lk]}</span>${CHEV}</button></li>`;
+        html += `<li class="lgli"><button type="button" class="lgh" data-lg="${esc(m.lk)}" aria-expanded="${open}">${lgLogo(m.lk, m.country, 28)}<span class="ln">${state.fav.has(m.lk) ? '<span class="fv" aria-label="Favori lig">★ </span>' : ""}${esc(m.league)}<small>${flagI(m.country)}${esc(trc(m.country))}</small></span><span class="k">${cnt[di.key + "|" + m.lk]}</span>${CHEV}</button></li>`;
       }
       if (grp && state.collapsed.has(m.lk)) continue;
       html += rowHTML(m, tab);
@@ -1661,8 +1703,19 @@ function teamBlock(m) {
     if (c !== null && r.of >= 4 && c <= 0.15) return `${name} çok pozisyon üretiyor ama az gol atıyor; goller gelebilir.`;
     return ""; };
   const pnotes = [conv(ti.stH, m.home), conv(ti.stA, m.away)].filter(Boolean);
+  const cmpBars = (m, H, A) => {
+    H = H || {}; A = A || {};
+    const it = [["Attığı şut", "sf", 1], ["İsabetli şut", "of", 1], ["Topla oynama", "pos", 1, "%"], ["Korner", "cf", 1], ["Rakibe izin verdiği şut", "sa", -1], ["Rakibin isabetli şutu", "oa", -1]]
+      .filter(([, k]) => typeof H[k] === "number" || typeof A[k] === "number");
+    const fv = (v, u) => typeof v !== "number" ? "–" : u ? "%" + Math.round(v) : f1(v);
+    return `<div class="pst cmp"><div class="cmp-t"><span>${crest(m.lk, m.hraw, m.home, 20)}${esc(m.home)}</span><span>${crest(m.lk, m.araw, m.away, 20)}${esc(m.away)}</span></div>${it.map(([l, k, dir, u]) => {
+      const h = H[k], a = A[k], mx = Math.max(h || 0, a || 0) || 1;
+      const hw = typeof h === "number" && typeof a === "number" && (dir > 0 ? h > a : h < a), aw = typeof h === "number" && typeof a === "number" && (dir > 0 ? a > h : a < h);
+      return `<div class="cmp-r"><b class="${hw ? "w" : ""}">${fv(h, u)}</b><span class="cmp-l">${l}</span><b class="${aw ? "w" : ""}">${fv(a, u)}</b><div class="cmp-b" aria-hidden="true"><i class="${hw ? "w" : ""}" style="--w:${Math.round((h || 0) / mx * 100)}%"></i><i class="${aw ? "w" : ""}" style="--w:${Math.round((a || 0) / mx * 100)}%"></i></div></div>`;
+    }).join("")}</div>`;
+  };
   const play = ti.stH || ti.stA ? `<h3 style="margin:14px 0 4px;font:600 16px var(--fc)">Son maçlarda oyun <span class="muted" style="font:400 13px var(--f)">son ${Math.max((ti.stH || {}).n || 0, (ti.stA || {}).n || 0)} maç ortalaması</span></h3>
-    <table class="pst"><thead><tr><th></th><th>Şut <small>at/yen</small></th><th>İsabetli</th><th>Topla</th><th>Korner</th></tr></thead><tbody>${prow(ti.stH, m.home)}${prow(ti.stA, m.away)}</tbody></table>${pnotes.map(t => `<p class="pst-n">${esc(t)}</p>`).join("")}` : "";
+    ${cmpBars(m, ti.stH, ti.stA)}${pnotes.map(t => `<p class="pst-n">${esc(t)}</p>`).join("")}` : "";
   const S = ti.h2hSum, nS = S && S.seasons > 1 ? S.seasons : 1;
   const h2s = S && S.n ? `<div class="h2s"><span>${esc(tn(m.hraw))} <b>${S.hw}</b> G</span><span>Beraberlik <b>${S.d}</b></span><span>${esc(tn(m.araw))} <b>${S.aw}</b> G</span><span>Maç başı <b>${dc1(S.g / S.n)}</b> gol</span><span>2,5 üst <b>${S.o25}/${S.n}</b></span><span>KG var <b>${S.bt}/${S.n}</b></span></div>` : "";
   const h2h = ti.h2h.length ? `${h2s}<ul class="h2h">${ti.h2h.map(x => `<li><span class="muted">${esc(fmDate(x.t))}</span><span>${esc(tn(x.h))} <b>${esc(x.s)}</b> ${esc(tn(x.a))}</span></li>`).join("")}</ul>` : `<p class="muted" style="margin:10px 0 0">${nS > 1 ? `Son ${nS} sezonda` : "Bu sezon"} aralarında maç yok.</p>`;
@@ -1758,7 +1811,7 @@ function detailBody() {
   const c = CR(m.id);
   const cor = c && typeof c.e === "number" ? `<p class="dt-line"><b>${dc(c.e)} korner</b> bekleniyor. 8,5 üst %${pn(c.p85)}, 9,5 üst %${pn(c.p95)}, 10,5 üst %${pn(c.p105)} (son ${c.n[0]} ev, ${c.n[1]} deplasman maçı).</p>`
     : `<p class="dt-line">${!CORNER_LEAGUES.has(m.lk) ? "Bu lig için korner verisi yok." : state.detLoading && !c ? "Korner geçmişi alınıyor…" : "Takımlar için yeterli korner verisi bulunamadı."}</p>`;
-  return `<div class="dt-meta"><span class="cc">${esc(CC[m.country] || m.country.slice(0, 3).toUpperCase())}</span>${state.fav.has(m.lk) ? '<span class="fv">★</span>' : ""}<span>${esc(trc(m.country))} ${esc(m.league)}</span><span>·</span><span>${esc(di.tag || di.wd)} ${esc(di.num)} ${esc(di.month)}, ${esc(fmtTime(m.kick))}</span></div>
+  return `<div class="dt-meta">${lgLogo(m.lk, m.country, 24)}${flagI(m.country)}${state.fav.has(m.lk) ? '<span class="fv">★</span>' : ""}<span>${esc(trc(m.country))} ${esc(m.league)}</span><span>·</span><span>${esc(di.tag || di.wd)} ${esc(di.num)} ${esc(di.month)}, ${esc(fmtTime(m.kick))}</span></div>
     <div class="dt-teams"><div class="dt-team">${crest(m.lk, m.hraw, m.home, 44)}${esc(m.home)}${favBtn(m.lk, m.hraw)}</div><span class="dt-vs">-</span><div class="dt-team">${crest(m.lk, m.araw, m.away, 44)}${esc(m.away)}${favBtn(m.lk, m.araw)}</div></div>
     ${flags.length ? `<div class="dt-flags">${flags.join("")}</div>` : ""}
     ${state.detLoading ? '<p class="muted" style="margin:10px 0 0"><span class="spin"></span>Piyasa, Elo ve korner verisi alınıyor…</p>' : ""}
@@ -1990,7 +2043,7 @@ function accCard() {
   const seg = `<div class="seg" role="group" aria-label="Pazar">${[["win", "Sonuç"], ["o15", "1,5 üst"], ["o25", "2,5 üst"], ["bt", "KG var"]].map(([k, l]) => `<button type="button" data-acc="${k}" aria-pressed="${k === mk}">${l}</button>`).join("")}</div>`;
   if (!rows.length) return seg + `<p class="ai-empty">Veri birikiyor. Sunucu her sabah bütün maçların tahminini kaydedip biten maçlarla karşılaştırıyor${tot ? `; şimdiye kadar ${tot} maç değerlendirildi` : ""}. Bir ligde en az 10 tahmin birikince burada görünür, anlamlı sonuç için 2-3 hafta gerekir.</p>`;
   const show = state.accAll ? rows : rows.slice(0, 12);
-  return seg + `<table class="mt acc"><thead><tr><th>Lig</th><th>Maç</th><th>Model</th><th>Gerçek</th><th>Fark</th></tr></thead><tbody>${show.map(({ lk, s }) => { const d = Math.round(s.d * 100), cls = s.n < ACC_MIN ? "" : d <= -8 ? "bad" : d >= 5 ? "good" : ""; return `<tr class="${cls}"><td>${esc(lgName(lk))}</td><td>${s.n}</td><td>%${pn(s.p)}</td><td>%${pn(s.hit)}</td><td>${d > 0 ? "+" : ""}${d}</td></tr>`; }).join("")}</tbody></table>
+  return seg + `<table class="mt acc"><thead><tr><th>Lig</th><th>Maç</th><th>Model</th><th>Gerçek</th><th>Fark</th></tr></thead><tbody>${show.map(({ lk, s }) => { const d = Math.round(s.d * 100), cls = s.n < ACC_MIN ? "" : d <= -8 ? "bad" : d >= 5 ? "good" : ""; return `<tr class="${cls}"><td><span class="acc-l" title="${esc(lgName(lk))}">${lgLogo(lk, lgCountry(lk), 18)}<span>${esc(lgShort(lk))}</span></span></td><td>${s.n}</td><td>%${pn(s.p)}</td><td>%${pn(s.hit)}</td><td>${d > 0 ? "+" : ""}${d}</td></tr>`; }).join("")}</tbody></table>
     ${rows.length > 12 ? `<div class="sh-btns"><button type="button" class="ghost" data-accall="1">${state.accAll ? "Daha az göster" : `Tümü (${rows.length} lig)`}</button></div>` : ""}
     <p class="tk-note">Model %60 ve üstü dediği tahminler. "Model" düzeltilmiş olasılıkların ortalaması, "Gerçek" tutma oranı. En az ${ACC_MIN} tahminde 8 puandan fazla eksik kalan lig zayıf sayılır${state.accOn ? " ve o pazarda kupona alınmaz" : ""}. Toplam ${tot} maç değerlendirildi.</p>`;
 }
@@ -2716,7 +2769,13 @@ function drawShare() {
   const FM = spec.kind === "match" ? SHR_FMT.slice(1) : SHR_FMT, saved = lsGet("banko2:shrfmt");
   const fmt = FM.some(f => f[0] === saved) ? saved : FM[0][0];
   $("shrFmt").innerHTML = FM.map(([k, l]) => `<button type="button" data-fmt="${k}" aria-pressed="${k === fmt}">${l}</button>`).join("");
-  if (spec.kind === "match") { const cvm = drawMatch(spec, fmt); if (cvm) showCanvas(cvm); return; }
+  if (spec.kind === "match") {
+    const m = findMatch(spec.id);
+    const go = im => { const cvm = drawMatch(spec, fmt, im); if (cvm) showCanvas(cvm); };
+    if (!m) { go({}); return; }
+    Promise.all([crestUrl(m.lk, m.hraw), crestUrl(m.lk, m.araw), lgUrl(m.lk) || flagUrl(m.country)].map(loadImg)).then(([h, a, lg]) => go({ h, a, lg }));
+    return;
+  }
   const rows = spec.rows, n = rows.length, R = spec.result;
   const W = 1080, story = fmt === "story", sq = fmt === "square";
   const HEAD = story ? 420 : 250, FOOT = story ? 420 : 270;
@@ -2783,7 +2842,17 @@ function drawShare() {
   showCanvas(cv);
 }
 // Maç kartı: 1X2, üç seçim, öne çıkanlar ve benzer oranlı maçlar
-function drawMatch(spec, fmt) {
+// paylaşım görseli için resim: CORS ile yüklenir, 2,5 sn içinde gelmezse armasız çizilir
+const IMGC = new Map();
+function loadImg(u) {
+  if (!u) return Promise.resolve(null);
+  if (IMGC.has(u)) return IMGC.get(u);
+  const p = new Promise(res => { const im = new Image(); im.crossOrigin = "anonymous"; im.referrerPolicy = "no-referrer"; const t = setTimeout(() => res(null), 2500);
+    im.onload = () => { clearTimeout(t); res(im.naturalWidth ? im : null); }; im.onerror = () => { clearTimeout(t); IMGC.delete(u); res(null); }; im.src = u; });
+  IMGC.set(u, p); return p;
+}
+function drawMatch(spec, fmt, im) {
+  im = im || {};
   const m = findMatch(spec.id); if (!m) { toast("Maç artık listede yok"); return null; }
   const story = fmt === "story", W = 1080, H = story ? 1920 : 1080;
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
@@ -2796,9 +2865,17 @@ function drawMatch(spec, fmt) {
   let y = story ? 120 : 64;
   g.strokeStyle = "#6BF0B2"; g.lineWidth = 5; g.strokeRect(64, y, 72, 52); g.beginPath(); g.moveTo(100, y); g.lineTo(100, y + 52); g.stroke(); g.beginPath(); g.arc(100, y + 26, 12, 0, 7); g.stroke();
   g.fillStyle = "#E8F2EC"; g.font = F(700, 60, true); g.fillText("Banko", 160, y + 46);
-  g.textAlign = "right"; g.fillStyle = "#8DAD9E"; g.font = F(500, 28); g.fillText(fit(spec.title, 560), W - 64, y + 20); g.fillText(fit(spec.sub, 560), W - 64, y + 56); g.textAlign = "left";
+  g.textAlign = "right"; g.fillStyle = "#8DAD9E"; g.font = F(500, 28); const t1 = fit(spec.title, 560), t2 = fit(spec.sub, 560); g.fillText(t1, W - 64, y + 20); g.fillText(t2, W - 64, y + 56); g.textAlign = "left";
+  const pic = (img, cx, cy, sz, ini, rad) => {
+    rr(cx - sz / 2, cy - sz / 2, sz, sz, rad, img ? "rgba(255,255,255,.94)" : "#132B21");
+    if (img) { const k = Math.min(sz * .74 / img.naturalWidth, sz * .74 / img.naturalHeight), w = img.naturalWidth * k, h = img.naturalHeight * k; try { g.drawImage(img, cx - w / 2, cy - h / 2, w, h); } catch (e) {} }
+    else if (ini) { g.textAlign = "center"; g.fillStyle = "#8DAD9E"; g.font = F(700, sz * .36, true); g.fillText(ini, cx, cy + sz * .13); g.textAlign = "left"; }
+  };
+  if (im.lg) { g.font = F(500, 28); const tw = Math.max(g.measureText(t1).width, g.measureText(t2).width); pic(im.lg, W - 64 - tw - 44, y + 28, 60, "", 12); }
   // takımlar
-  y += story ? 220 : 190;
+  const CS = story ? 150 : 104;
+  y += story ? 110 : 78; pic(im.h, W * .27, y + CS / 2, CS, initials(m.home), CS / 2); pic(im.a, W * .73, y + CS / 2, CS, initials(m.away), CS / 2);
+  y += CS + (story ? 100 : 76);
   g.textAlign = "center"; g.fillStyle = "#E8F2EC"; g.font = F(700, story ? 84 : 64, true);
   g.fillText(fit(m.home, 430), W * .27, y); g.fillText(fit(m.away, 430), W * .73, y);
   g.fillStyle = "#5F7D6F"; g.fillText("-", W / 2, y); g.textAlign = "left";
@@ -3310,8 +3387,8 @@ function renderLeaguePicker() {
     (byC[l.country] = byC[l.country] || []).push(l);
   });
   const countries = Object.keys(byC).sort((a, b) => trc(a).localeCompare(trc(b), "tr"));
-  $("leagues").innerHTML = countries.length ? countries.map(c => `<div class="ctry"><label class="ctry-h"><input type="checkbox" data-c="${esc(c)}" ${byC[c].every(l => state.sel.has(l.key)) ? "checked" : ""}> ${esc(trc(c))}</label>
-    <div class="lg-list">${byC[c].map(l => `<span class="lgi"><label><input type="checkbox" data-k="${esc(l.key)}" ${state.sel.has(l.key) ? "checked" : ""}> ${esc(l.name)}</label><button type="button" class="star" data-fav="${esc(l.key)}" aria-pressed="${state.fav.has(l.key)}" aria-label="${esc(l.name)} favori">${state.fav.has(l.key) ? "★" : "☆"}</button></span>`).join("")}</div></div>`).join("")
+  $("leagues").innerHTML = countries.length ? countries.map(c => `<div class="ctry"><label class="ctry-h"><input type="checkbox" data-c="${esc(c)}" ${byC[c].every(l => state.sel.has(l.key)) ? "checked" : ""}> ${flagI(c)}${esc(trc(c))}</label>
+    <div class="lg-list">${byC[c].map(l => `<span class="lgi"><label><input type="checkbox" data-k="${esc(l.key)}" ${state.sel.has(l.key) ? "checked" : ""}>${lgLogo(l.key, c, 20)}${esc(l.name)}</label><button type="button" class="star" data-fav="${esc(l.key)}" aria-pressed="${state.fav.has(l.key)}" aria-label="${esc(l.name)} favori">${state.fav.has(l.key) ? "★" : "☆"}</button></span>`).join("")}</div></div>`).join("")
     : '<p class="hint">Eşleşen lig yok.</p>';
 }
 function saveSel() { lsSet("banko2:sel", JSON.stringify([...state.sel])); }
