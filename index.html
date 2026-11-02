@@ -1088,7 +1088,7 @@ const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", r
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
 // ---------- sunucu bağlantısı ve tercihler (Apps Script)
-// ---------- sunucu bağlantısı: PIN korumalı Apps Script API (arayüz ayrı bir yerde barınır)
+// ---------- sunucu bağlantısı: PIN korumalı API (Cloudflare Worker ya da Apps Script; arayüz ayrı bir yerde barınır)
 const BCFG = window.BANKO_CONFIG || {};
 const TOKEN_KEY = "banko:token";
 const tkGet = () => { try { return localStorage.getItem(TOKEN_KEY) || ""; } catch (e) { return ""; } };
@@ -1099,7 +1099,7 @@ async function rawCall(fn, args, token) {
   try { r = await fetch(BCFG.api, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ fn, args, token }), redirect: "follow" }); }
   catch (e) { throw new Error("Sunucuya ulaşılamadı. İnternet bağlantını ya da config.js adresini kontrol et."); }
   try { return await r.json(); }
-  catch (e) { throw new Error("Sunucu yanıtı okunamadı (HTTP " + r.status + "). Apps Script dağıtımı 'Herkes' erişiminde ve yeni sürüm yayınlanmış olmalı."); }
+  catch (e) { throw new Error("Sunucu yanıtı okunamadı (HTTP " + r.status + "). config.js içindeki sunucu adresini kontrol et."); }
 }
 let pinPromise = null;
 function askPin() {
