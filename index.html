@@ -405,6 +405,13 @@
   @media (prefers-reduced-motion: reduce) { .st.lv i { animation:none; } }
   .tk-pk { display:grid; grid-template-columns:62px minmax(0,1fr) auto; gap:12px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--line); }
   .tk-pk:last-child { border-bottom:0; }
+  .tk-pk[data-past] { cursor:pointer; transition:background .15s; } .tk-pk[data-past]:hover { background:var(--sunk); } .tk-pk[data-past]:focus-visible { outline:2px solid var(--accent, var(--home)); outline-offset:-2px; }
+  .pst-hd { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; text-align:center; padding:6px 0 4px; }
+  .pst-tm { display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0; } .pst-tm b { font:600 15px var(--f); overflow-wrap:anywhere; }
+  .pst-sc { display:flex; flex-direction:column; align-items:center; gap:2px; } .pst-sc .big { font:700 34px var(--fc); letter-spacing:.02em; } .pst-sc small { color:var(--muted); font-size:13px; }
+  .pst-meta { text-align:center; color:var(--muted); font-size:13px; margin:4px 0 8px; }
+  .pst-pk { display:flex; justify-content:space-between; align-items:center; gap:12px; background:var(--sunk); border-radius:12px; padding:12px 14px; }
+  .pst-pk span:first-child { display:flex; flex-direction:column; gap:3px; min-width:0; } .pst-pk b { font:600 16px var(--f); } .pst-pk small { color:var(--muted); font-size:13px; }
   .tk-pk .pk-m b { white-space:normal; }
   .tk-r { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px; font-size:13px; color:var(--muted); }
   .tk-r .sc { font:700 22px/1 var(--fc); color:var(--ink); }
@@ -1169,7 +1176,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, stale: {}, fcUsed: null, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, mom: {}, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, mom: {}, past: null, pastInfo: {}, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -2016,6 +2023,11 @@ function setBody() {
 function syncSheet() {
   const k = state.sheet;
   if (!k || k === "info") return;
+  if (k === "past") {
+    const p = state.past, I = p && state.pastInfo[liveKey(p)] || {}, sig = [p && liveKey(p), JSON.stringify(I).length, I.bi ? ((state.mom[I.bi] || {}).at || 0) : 0, p && JSON.stringify(state.live[liveKey(p)] || null)].join("|");
+    if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = pastBody(); $("shBody").scrollTop = y; }
+    return;
+  }
   if (k === "match") {
     const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.lu[state.detId] || null).length, (state.mom[detBi()] || {}).t || 0, JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
     if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y; }
@@ -2044,7 +2056,7 @@ function openSheet(kind, arg) {
   if (!state.sheet) sheetOpener = document.activeElement;
   state.sheet = kind; state.slipSig = "";
   if (kind === "slip") state.slipTab = arg === "auto" || arg === "my" ? arg : (state.my.length ? "my" : "auto");
-  $("shT").textContent = { slip: "Günün kuponu", set: "Ayarlar", match: "Maç detayı", info: "Nasıl hesaplanıyor?" }[kind];
+  $("shT").textContent = { slip: "Günün kuponu", set: "Ayarlar", match: "Maç detayı", past: "Maç detayı", info: "Nasıl hesaplanıyor?" }[kind];
   $("shBody").innerHTML = kind === "set" ? setBody() : kind === "info" ? infoBody() : "";
   if (kind === "set") pushInit();
   $("shBody").scrollTop = 0;
@@ -3400,11 +3412,52 @@ function liveBit(p, L) {
   const min = fin ? "MS" : L.st === "ht" ? "İY" : L.m ? L.m + "'" : "";
   return `<span class="sc lvs${state.goalAt[liveKey(p)] > Date.now() ? " goal" : ""}">${min ? `<small>${esc(min)}</small>` : ""}${h} - ${a}</span><span class="st ${cls}">${cls.startsWith("lv") ? "<i></i>" : ""}${txt}</span>`;
 }
+const PASTREG = new Map();
+function openPast(key) {
+  const p = PASTREG.get(key); if (!p) return;
+  const id = p.id || [p.lk, p.h, p.a, p.d].join("|"), m = findMatch(id);
+  if (m) { openDetail(id, MK[p.mk] ? p.mk : "win"); return; }
+  state.past = p; openSheet("past"); ensurePast(p);
+}
+function ensurePast(p) {
+  const k = liveKey(p), I = state.pastInfo[k], t = new Date(p.d).getTime(), done = Date.now() > t + 2.3 * 36e5;
+  const mom = bi => { if (bi && t < Date.now()) ensureMom(bi, done).then(() => { if (state.sheet === "past") syncSheet(); }); };
+  if (I && !I.err && (I.loading || done || Date.now() - (I.at || 0) < 6e4)) { mom(I.bi); return; }
+  state.pastInfo[k] = { loading: 1 };
+  gs("getPastInfo", { lk: p.lk, h: p.h, a: p.a, d: p.d })
+    .then(r => { state.pastInfo[k] = Object.assign(r || { none: 1 }, { at: Date.now() }); mom(state.pastInfo[k].bi); })
+    .catch(e => { state.pastInfo[k] = { err: String(e.message || e), at: Date.now() }; })
+    .finally(() => { if (state.sheet === "past") syncSheet(); });
+}
+function pastBody() {
+  const p = state.past; if (!p) return "";
+  const k = liveKey(p), I = state.pastInfo[k] || { loading: 1 }, L = state.live[k], kick = new Date(p.d), di = dayInfo(kick);
+  const s = p.ok === true ? "won" : p.ok === false ? "lost" : p.ok === "void" ? "void" : "pending";
+  const g = p.s ? p.s.split(":").map(Number) : (L && L.g) || I.g || null;
+  const lbl = p.mk === "win" ? (p.side === "away" ? tn(p.a) : tn(p.h)) + " kazanır" : MK[p.mk];
+  const st = L && (L.st === "live" || L.st === "ht") ? (L.st === "ht" ? "Devre arası" : (typeof L.m === "number" ? L.m + "'" : "Oynanıyor")) : g && s !== "pending" ? "Maç sonucu" : I.st === "ft" ? "Maç sonucu" : kick > Date.now() ? "Başlamadı" : "Sonuç bekleniyor";
+  const bp = I.bp, H = tn(p.h), A = tn(p.a);
+  const bpP = bp ? (p.mk === "win" ? (p.side === "away" ? bp.a : bp.h) : p.mk === "o15" ? bp.o15 : p.mk === "o25" ? bp.o25 : p.mk === "o35" ? bp.o35 : p.mk === "bt" ? bp.b : null) : null;
+  const M = I.bi ? state.mom[I.bi] : null;
+  return `<div class="pst-hd">
+      <div class="pst-tm">${crest(p.lk, p.h, H, 40)}<b>${esc(H)}</b></div>
+      <div class="pst-sc"><span class="big">${g ? g[0] + " - " + g[1] : "–"}</span><small>${esc(st)}</small></div>
+      <div class="pst-tm">${crest(p.lk, p.a, A, 40)}<b>${esc(A)}</b></div>
+    </div>
+    <p class="pst-meta">${esc((p.c ? trc(p.c) + " " : "") + (p.lg || ""))}${p.lg ? " · " : ""}${di.num} ${di.month} ${di.wd}, ${fmtTime(kick)}</p>
+    <div class="dt-sec"><h3>Seçim</h3>
+      <div class="pst-pk"><span><b>${esc(lbl)}</b><small>Model tahmini %${pn(p.p)}${typeof bpP === "number" ? ` · Bzzoiro %${pn(bpP)}` : ""}${p.mv ? ` · piyasa %${pn(p.mv[0])} → %${pn(p.mv[1])}` : ""}</small></span><span class="st ${s}">${stLabel[s]}</span></div>
+      ${bp && bp.s ? `<p class="dt-line">Bzzoiro'nun maç öncesi en olası skoru <b>${esc(String(bp.s))}</b>${typeof bp.eh === "number" ? `, beklenen gol ${d1(bp.eh)} - ${d1(bp.ea)}` : ""}.</p>` : ""}
+      ${bp ? `<p class="dt-line">Bzzoiro maç öncesi: ev %${pn(bp.h)}, beraberlik %${pn(bp.d)}, deplasman %${pn(bp.a)} · 2,5 üst %${pn(bp.o25)} · KG var %${pn(bp.b)}</p>` : ""}
+    </div>
+    <div class="dt-sec"><h3>Baskı ve istatistik</h3>${I.loading ? `<p class="dt-line">Maç kaydı aranıyor…</p>` : I.err ? `<p class="dt-line">Okunamadı: ${esc(I.err)}</p>` : !I.bi ? `<p class="dt-line">Bu maç Bzzoiro'da bulunamadı, istatistik yok.</p>` : kick > Date.now() ? `<p class="dt-line">Maç başlayınca burada görünür.</p>` : momBlock(M, H, A, L && L.m)}</div>`;
+}
 function trackPick(p, extra) {
   const kick = new Date(p.d), di = dayInfo(kick);
   const lbl = p.mk === "win" ? (p.side === "away" ? tn(p.a) : tn(p.h)) + " kazanır" : MK[p.mk];
   const s = p.ok === true ? "won" : p.ok === false ? "lost" : p.ok === "void" ? "void" : "pending";
-  return `<li class="tk-pk"><span class="pk-t">${esc(fmtTime(kick))}<small>${esc(di.tag || di.num + " " + di.month.slice(0, 3))}</small></span>
+  const pkey = liveKey(p) + "|" + p.mk + "|" + (p.side || ""); PASTREG.set(pkey, p);
+  return `<li class="tk-pk" data-past="${esc(pkey)}" role="button" tabindex="0" aria-label="${esc(tn(p.h) + " - " + tn(p.a))}, ayrıntı"><span class="pk-t">${esc(fmtTime(kick))}<small>${esc(di.tag || di.num + " " + di.month.slice(0, 3))}</small></span>
     <span class="pk-m"><b>${crest(p.lk, p.h, tn(p.h), 22)}${crest(p.lk, p.a, tn(p.a), 22)}<span class="nm">${esc(tn(p.h))} - ${esc(tn(p.a))}</span></b><span class="pk-l">${esc(lbl)}, tahmin %${pn(p.p)}${p.mv ? ` <span class="clv ${p.mv[1] > p.mv[0] + 0.005 ? "up" : p.mv[1] < p.mv[0] - 0.005 ? "dn" : ""}" title="Piyasa olasılığı: ilk kayıt → kapanış">piyasa %${pn(p.mv[0])}→%${pn(p.mv[1])}</span>` : ""}${typeof extra === "string" && extra ? `<span class="lv-src">${esc(extra)}</span>` : ""}</span></span>
     <span class="tk-r">${s === "pending" && state.live[liveKey(p)] ? liveBit(p, state.live[liveKey(p)]) : `${p.s ? `<span class="sc">${esc(p.s.replace(":", " - "))}</span>` : ""}<span class="st ${s}">${stLabel[s]}</span>`}</span></li>`;
 }
@@ -3730,7 +3783,9 @@ $("slip").addEventListener("click", () => openSheet("slip"));
 $("openSet").addEventListener("click", () => openSheet("set"));
 $("openFilt").addEventListener("click", () => openSheet("set"));
 $("shClose").addEventListener("click", () => closeSheet());
-document.addEventListener("click", e => { const i = e.target.closest("[data-info]"); if (i) openSheet("info", i.dataset.info); });
+document.addEventListener("click", e => { const i = e.target.closest("[data-info]"); if (i) { openSheet("info", i.dataset.info); return; }
+  const ps = e.target.closest("[data-past]"); if (ps && !e.target.closest("button, a")) { buzz(); openPast(ps.dataset.past); } });
+document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const ps = e.target.closest && e.target.closest("[data-past]"); if (ps && e.target === ps) { e.preventDefault(); openPast(ps.dataset.past); } });
 $("shBody").addEventListener("click", e => {
   if (state.sheet === "match") {
     const r = e.target.closest("[data-pk]");
