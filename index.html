@@ -848,7 +848,7 @@
   @media (min-width:721px) { body.sopen .toast { bottom:28px; } }
   .my-pk .pk-x { width:42px; }
   .my-pk .pk-m { overflow:hidden; }
-  @media (max-width:440px) { .my-pk .pk-m b .crest { display:none; } .my-pk .pk-m b .nm { margin-left:0; } .my-pk .chip2 small { display:none; } }
+  @media (max-width:440px) { .my-pk .pk-m b, #dayBody .tk-pk .pk-m b { display:flex; flex-wrap:wrap; align-items:center; gap:2px 4px; } .my-pk .pk-m b .crest, #dayBody .tk-pk .pk-m b .crest { --s:18px !important; } .my-pk .pk-m b .nm, #dayBody .tk-pk .pk-m b .nm { flex:1 0 100%; margin-left:0; white-space:normal; overflow:visible; overflow-wrap:break-word; } .my-pk .chip2 small { display:none; } }
   /* ---------- Dün / Bugün kartı ---------- */
   .day-h { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
   .day-h .seg button { height:36px; }
@@ -860,7 +860,7 @@
   .day-cp { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:12px 0 0; padding:10px 12px; background:var(--sunk); border-radius:12px; font-size:14px; }
   .day-cp b { font-weight:600; }
   @media (max-width:720px) { .day-h .seg button { height:40px; } .day-sum .big { font-size:38px; } }
-  @media (max-width:440px) { #dayBody .tk-pk .crest { display:none; } #dayBody .tk-pk .pk-m b .nm { margin-left:0; } #dayBody .tk-pk { gap:10px; padding:10px 12px; } }
+  @media (max-width:440px) { #dayBody .tk-pk { gap:10px; padding:10px 12px; } }
   /* ---------- form ve puan durumu ---------- */
   .tf { display:grid; grid-template-columns:34px minmax(0,1fr) auto; gap:4px 10px; align-items:center; padding:10px 12px; background:var(--sunk); border-radius:12px; }
   .tf + .tf { margin-top:8px; }
