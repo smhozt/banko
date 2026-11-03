@@ -290,6 +290,19 @@
   .chip2.warn { background:var(--warn-bg); color:var(--warn-fg); } .chip2.warn::before { background:var(--warn-fg); } .chip2.warn small { color:var(--warn-fg); opacity:.85; }
   .chip2.bad { box-shadow:inset 0 0 0 1px var(--err); color:var(--err); background:transparent; } .chip2.bad::before { background:var(--err); } .chip2.bad small { color:var(--err); opacity:.85; }
   .chip2.na { background:transparent; box-shadow:inset 0 0 0 1px var(--line); color:var(--muted); font-weight:500; }
+  .chip2.val { background:color-mix(in srgb, #F2C25B 22%, transparent); color:var(--ink); } .chip2.val::before { background:#E0A92E; }
+  .lu { display:grid; gap:8px; }
+  .lu-r { display:grid; grid-template-columns:auto 1fr; column-gap:10px; row-gap:2px; align-items:center; background:var(--sunk); border-radius:12px; padding:10px 12px; }
+  .lu-r .crest { grid-row:span 2; }
+  .lu-r b { font-weight:600; } .lu-r small { color:var(--muted); font-size:13px; }
+  .lu-c { display:inline-block; margin-left:6px; font:600 12px/1 var(--f); padding:3px 8px; border-radius:999px; background:var(--card); box-shadow:inset 0 0 0 1px var(--line); vertical-align:1px; }
+  .lu-c.p2, .lu-c.p1 { background:var(--warn-bg); color:var(--warn-fg); box-shadow:none; }
+  .lu-c.n1, .lu-c.n2 { background:color-mix(in srgb, var(--t2) 20%, transparent); box-shadow:none; }
+  .fbx { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .fbx > div { background:var(--sunk); border-radius:12px; padding:10px 12px; }
+  .fbx span { display:block; color:var(--muted); font-size:12px; }
+  .fbx b { font:700 22px/1.1 var(--fc); } .fbx small { display:block; color:var(--muted); font-size:12px; }
+  .sg-c .sg-t .dn { color:var(--t1); }
   .sett { display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:12px; }
   .pk-n { color:var(--muted); font-size:13px; margin-top:6px; font-style:normal; }
   .pk-p { text-align:right; }
@@ -1117,7 +1130,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, stale: {}, fcUsed: null, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, fbOn: false, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -1179,7 +1192,7 @@ function schedulePrefs() {
 function lsGet(k) { return k in MEM ? MEM[k] : null; }
 function lsSet(k, v) { MEM[k] = String(v); if (PERSIST.includes(k)) schedulePrefs(); }
 function lsDel(k) { delete MEM[k]; if (PERSIST.includes(k)) schedulePrefs(); }
-function saveUI() { lsSet("banko2:ui", JSON.stringify({ tab: state.tab, range: state.range, sort: state.sort, trusted: state.trusted, calib: state.calib, mktOn: state.mktOn, autoSave: state.autoSave, thr: state.thr, view: state.view, home: { n: state.home.n, style: state.home.style, hours: state.home.hours, odd: state.home.odd || "" }, trend: state.trend, accOn: state.accOn, aiMorning: state.aiMorning, ai: { provider: state.ai.provider, models: state.ai.models } })); }
+function saveUI() { lsSet("banko2:ui", JSON.stringify({ tab: state.tab, range: state.range, sort: state.sort, trusted: state.trusted, calib: state.calib, mktOn: state.mktOn, autoSave: state.autoSave, thr: state.thr, view: state.view, home: { n: state.home.n, style: state.home.style, hours: state.home.hours, odd: state.home.odd || "" }, trend: state.trend, accOn: state.accOn, fbOn: state.fbOn, aiMorning: state.aiMorning, ai: { provider: state.ai.provider, models: state.ai.models } })); }
 function loadUI() {
   try {
     const u = JSON.parse(lsGet("banko2:ui") || "null");
@@ -1192,6 +1205,7 @@ function loadUI() {
     if (typeof u.mktOn === "boolean") state.mktOn = u.mktOn;
     if (typeof u.autoSave === "boolean") state.autoSave = u.autoSave;
     if (typeof u.accOn === "boolean") state.accOn = u.accOn;
+    if (typeof u.fbOn === "boolean") state.fbOn = u.fbOn;
     if (typeof u.aiMorning === "boolean") state.aiMorning = u.aiMorning;
     if (u.thr) TABS.forEach(t => { const v = +u.thr[t.id]; if (v >= 40 && v <= 95) state.thr[t.id] = v; });
     if (["home", "matches", "track", "live", "analiz"].includes(u.view)) state.view = u.view;
@@ -1519,6 +1533,7 @@ function chromeTop() {
   if ($("calib")) $("calib").checked = state.calib;
   if ($("calibH")) $("calibH").checked = state.calib;
   if ($("mktH")) $("mktH").checked = state.mktOn;
+  if ($("fbH")) $("fbH").checked = state.fbOn;
   if ($("accH")) $("accH").checked = state.accOn;
   $("selN").textContent = state.sel.size;
   const pr = state.progress;
@@ -1650,7 +1665,7 @@ function detPicks(m) {
 }
 function openDetail(id, tab) {
   state.detTable = false; state.detTblMode = "all"; state.detMore = EXTRA_MK.includes(tab);
-  state.detId = id; state.detPick = MK[tab] ? tab : (MK[state.tab] ? state.tab : "win"); ensureAcc();
+  state.detId = id; state.detPick = MK[tab] ? tab : (MK[state.tab] ? state.tab : "win"); ensureAcc(); ensureLuck();
   openSheet("match");
   ensureDetail(id);
 }
@@ -1705,9 +1720,9 @@ function teamBlock(m) {
   const pnotes = [conv(ti.stH, m.home), conv(ti.stA, m.away)].filter(Boolean);
   const cmpBars = (m, H, A) => {
     H = H || {}; A = A || {};
-    const it = [["Attığı şut", "sf", 1], ["İsabetli şut", "of", 1], ["Topla oynama", "pos", 1, "%"], ["Korner", "cf", 1], ["Rakibe izin verdiği şut", "sa", -1], ["Rakibin isabetli şutu", "oa", -1]]
+    const it = [["xG (beklenen gol)", "xf", 1, "x"], ["Attığı şut", "sf", 1], ["İsabetli şut", "of", 1], ["Topla oynama", "pos", 1, "%"], ["Korner", "cf", 1], ["Rakibe verdiği xG", "xa", -1, "x"], ["Rakibe izin verdiği şut", "sa", -1], ["Rakibin isabetli şutu", "oa", -1]]
       .filter(([, k]) => typeof H[k] === "number" || typeof A[k] === "number");
-    const fv = (v, u) => typeof v !== "number" ? "–" : u ? "%" + Math.round(v) : f1(v);
+    const fv = (v, u) => typeof v !== "number" ? "–" : u === "x" ? d2(v) : u ? "%" + Math.round(v) : f1(v);
     return `<div class="pst cmp"><div class="cmp-t"><span>${crest(m.lk, m.hraw, m.home, 20)}${esc(m.home)}</span><span>${crest(m.lk, m.araw, m.away, 20)}${esc(m.away)}</span></div>${it.map(([l, k, dir, u]) => {
       const h = H[k], a = A[k], mx = Math.max(h || 0, a || 0) || 1;
       const hw = typeof h === "number" && typeof a === "number" && (dir > 0 ? h > a : h < a), aw = typeof h === "number" && typeof a === "number" && (dir > 0 ? a > h : a < h);
@@ -1760,6 +1775,8 @@ async function runMatchAI(id) {
     aralarinda: ti && ti.ok ? ti.h2h.map(x => x.h + " " + x.s + " " + x.a) : [],
     benzer_oran: (Q => Q.r || Q.g ? { mac: Q.r ? Q.r.n : Q.g.n, ev: Q.r ? pn(Q.r.h) : null, ber: Q.r ? pn(Q.r.d) : null, dep: Q.r ? pn(Q.r.a) : null, u25: Q.g ? pn(Q.g.o25) : Q.r ? pn(Q.r.o25) : null, kg: Q.g ? pn(Q.g.bt) : Q.r ? pn(Q.r.bt) : null, not: "bu oranlarla oynanmış geçmiş maçlarda gerçekleşen yüzde" } : null)(r ? simQuery(r.h, r.a, r.o) : {}),
     seriler: highlights(m).map(x => x.t),
+    sans: (L => L.some(Boolean) ? L.map(x => x && { puan: x.pts, beklenen_puan: x.xp, durum: LUCK_TXT[x.c] || null, mac_basi_xg: x.xf, rakibe_xg: x.xa }) : null)([luckOf(m.lk, m.hraw), luckOf(m.lk, m.araw)]),
+    forebet: (f => f ? { ev: pn(f.h), ber: pn(f.d), dep: pn(f.a), u25: typeof f.o === "number" ? pn(f.o) : null, kg: typeof f.b === "number" ? pn(f.b) : null, skor: f.s || null, not: "ayrı bir istatistik sitesinin tahmini" } : null)(FB(m.id)),
     oyun: ti && ti.ok && (ti.stH || ti.stA) ? { ev: ti.stH, dep: ti.stA, not: "son maçların ortalaması: sf/sa atılan/yenen şut, of/oa isabetli şut, pos topa sahip olma %, cf korner, gf/ga gol" } : null, dusuk_guven: !m.trusted };
   try {
     const res = await gs("callAI", { order, models: A.models, system: AI_MATCH, prompt: "Bu maçı yorumla. Veriler (yüzde):\n" + JSON.stringify(data) });
@@ -1802,7 +1819,7 @@ function detailBody() {
     const mi = marketInfo(m, pk), od = pickOdds(m, pk), mp = mktProb(m, pk.market, pk.side);
     const inMy = sameSel(myOf(m.id), pk);
     const at = accTag(m.lk, pk.market);
-    return `<li><button type="button" class="mk-row" data-pk="${pk.market}" aria-pressed="${pk.market === state.detPick}"><span class="mk-l"><b>${esc(pickLabel(m, pk))}</b>${inMy ? '<span class="chip2 in">Kuponunda</span>' : ""}${mi && mi.cls !== "na" ? `<span class="chip2 ${mi.cls}">${esc(mi.tag)}</span>` : ""}${at === "weak" ? '<span class="chip2 bad">Bu ligde zayıf</span>' : at === "good" ? '<span class="chip2 ok">Bu ligde isabetli</span>' : ""}</span><span class="mk-v"><b>${pn(pk.p)}</b><small>%</small></span><span class="mk-v mk-m">${mp !== null ? "%" + pn(mp) : "–"}</span><span class="mk-v mk-o">${od ? fo(od.v) : "–"}</span></button></li>`;
+    return `<li><button type="button" class="mk-row" data-pk="${pk.market}" aria-pressed="${pk.market === state.detPick}"><span class="mk-l"><b>${esc(pickLabel(m, pk))}</b>${inMy ? '<span class="chip2 in">Kuponunda</span>' : ""}${mi && mi.cls !== "na" ? `<span class="chip2 ${mi.cls}">${esc(mi.tag)}</span>` : ""}${(v => v ? `<span class="chip2 val" title="Model %${pn(v.p)} × oran ${fo(v.od)}">Değerli +%${Math.round(v.ev * 100)}</span>` : "")(valueOf(m, pk))}${at === "weak" ? '<span class="chip2 bad">Bu ligde zayıf</span>' : at === "good" ? '<span class="chip2 ok">Bu ligde isabetli</span>' : ""}</span><span class="mk-v"><b>${pn(pk.p)}</b><small>%</small></span><span class="mk-v mk-m">${mp !== null ? "%" + pn(mp) : "–"}</span><span class="mk-v mk-o">${od ? fo(od.v) : "–"}</span></button></li>`;
   };
   const rows = pks.filter(p => !p.x).map(rowOf).join(""), rowsX = pks.filter(p => p.x).map(rowOf).join("");
   const ei = eloInfo(m, { market: "win", side }), er = ER(m.id);
@@ -1818,11 +1835,13 @@ function detailBody() {
     ${(h => h ? `<div class="dt-sec"><h3>Öne çıkanlar</h3>${h}</div>` : "")(highlightsHTML(m))}
     <div class="dt-sec"><h3>Bu maçta üç seçim</h3>${levelsHTML(m)}</div>
     <div class="dt-sec"><h3>Maç sonucu</h3><div class="x3">${x3}</div>${moveLine(m)}</div>
+    <div class="dt-sec"><h3>İkinci görüş: Forebet</h3>${fbBlock(m)}</div>
     <div class="dt-sec"><h3>Pazarlar <span class="muted">seçmek için dokun</span></h3><ul class="mk-list"><li class="mk-head" aria-hidden="true"><span>Seçim</span><span>Model</span><span>Piyasa</span><span>Oran</span></li>${rows}</ul>
       ${sel && ACC_MK.includes(sel.market) ? (a => a ? `<p class="sh-note acc-n">Bu ligde model ${esc(MK[sel.market])} için %60 ve üstü dediğinde ortalama %${pn(a.p)} dedi, %${pn(a.hit)} tuttu (${a.n} tahmin${a.n < ACC_MIN ? ", henüz az" : ""}).</p>` : state.acc ? `<p class="sh-note acc-n">Bu lig için isabet verisi birikiyor.</p>` : "")(accStat(m.lk, sel.market)) : ""}
       ${rowsX ? `<div class="sh-btns" style="margin-top:10px"><button type="button" class="ghost" data-act="more" aria-expanded="${state.detMore}">${state.detMore ? "Diğer pazarları gizle" : `Diğer pazarlar (${pks.filter(p => p.x).length})`}</button></div>
       ${state.detMore ? `<p class="mk-sub">Alt / üst, KG yok, beraberlik, çifte şans</p><ul class="mk-list"><li class="mk-head" aria-hidden="true"><span>Seçim</span><span>Model</span><span>Piyasa</span><span>Oran</span></li>${rowsX}</ul><p class="sh-note">Altlar üstlerin, çifte şans karşı tarafın tersidir. ≈ işaretli oranlar 1X2 oranlarından yaklaşık hesaplanır. 0,5 ve 4,5 çizgileri düzeltilmemiş model değeridir.</p>` : ""}` : ""}</div>
     <div class="dt-sec"><h3>Gol beklentisi <span class="muted">bilgi amaçlı</span></h3>${goalBlock(m)}</div>
+    <div class="dt-sec"><h3>Şans ve xG <span class="muted">hak edilen puan</span></h3>${luckBlock(m)}</div>
     <div class="dt-sec"><h3>Puan durumu ve form</h3>${teamBlock(m)}</div>
     <div class="dt-sec" id="aiSec"><h3>Yapay zeka yorumu</h3>${aiBlock(m)}</div>
     <div class="dt-sec"><h3>Benzer oranlı maçlar <span class="muted">geçmişte ne oldu</span></h3>${simBlock(m)}</div>
@@ -1853,6 +1872,10 @@ function infoBody() {
     <h3 id="inf-sr">Seriler</h3><p>Sunucu her sabah her takımın bu sezonki lig maçlarından süren serileri hesaplar: galibiyet, yenilmezlik, mağlubiyet, 2,5 üst/alt, karşılıklı gol, gol yememe ve gol atamama; iç saha ve deplasman ayrı. <b>Çarpışma</b>, iki takımın serisinin aynı yönde olduğu maçlardır (ikisi de 2,5 üst serisinde gibi). Yalnızca lig maçları sayılır, kupa maçları girmez.</p>
     <h3 id="inf-sim">Benzer oranlı maçlar</h3><p><b>football-data.co.uk</b> arşivinden 22 Avrupa liginin 2020/21–2025/26 sezonları (${nfmt(OH.n)} maç). Her maçın kapanış oranından (Pinnacle, yoksa ortalama) bahisçi marjı çıkarılmış olasılık hesaplanır. Bu maçın piyasa olasılığına en fazla birkaç puan uzak maçlar toplanır ve sonuçları sayılır; en az 300 maç olana kadar pencere genişler. Gol pazarları 2,5 üst oranı benzer maçlardan gelir.</p>
     <h3 id="inf-acc">Lig bazında isabet</h3><p>Sunucu her sabah önümüzdeki 3 günün bütün maç tahminlerini kaydeder, maçlar bitince sonuçla karşılaştırır. Takip sekmesinde her lig için modelin %60 ve üstü dediği tahminlerin ortalaması ile gerçekte tutma oranı yan yana görünür. En az 25 tahminde 8 puandan fazla eksik kalan lig o pazarda zayıf sayılır; "Zayıf ligleri ele" açıksa kupona girmez.</p>
+    <h3 id="inf-luck">Şans ve xG</h3><p>Beklenen puan ve şans durumu <b>football-charts.com</b>'un şans tablosundan gelir: takımın maçlarda ürettiği ve verdiği pozisyonlara göre hak ettiği puan hesaplanır, gerçek puanla farkı şans sayılır. Puanı beklenenin 4 ve üstü üstünde olan takım "şanslı" görünür; bu tür farklar genelde zamanla kapanır ama kesin değildir. xG (beklenen gol), kaynak maç istatistiğinde veriyorsa bu sezonun maçlarından takım başına ortalanır. Veri her sabah güncellenir.</p>
+    <h3 id="inf-val">Değerli seçimler</h3><p>Seçimin düzeltilmiş olasılığı ile bahisçi oranı çarpıldığında 1,05'in üstündeyse (yani model haklıysa uzun vadede %5 ve üstü getiri) "değerli" sayılır. Model ile piyasa arasındaki fark 10 puandan büyükse bu çoğunlukla model hatasıdır, listeye alınmaz; düşük güvenli maçlar ve modelin zayıf kaldığı lig ve pazarlar da alınmaz. Testte bahisçi oranları modelden daha isabetli çıktığı için bu seçimler fırsat garantisi değildir. Forebet de piyasadan iyimserse ✓ işareti konur ve o seçimler öne alınır.</p>
+    <h3 id="inf-drop">Düşen oranlar</h3><p>Sunucu saatte bir önümüzdeki 24 saatin oranlarını kaydeder. Maç sonucu ve 2,5 üst oranı ilk kayda göre %8 ve üstü düşen maçlar Analiz'de listelenir. Bildirim açıksa ve "Oran düşüşü" seçiliyse, maça 12 saatten az kala %15 ve üstü düşüşte bir kez uyarı gelir.</p>
+    <h3 id="inf-fb">Forebet</h3><p><b>Forebet.com</b> ayrı bir matematiksel tahmin sitesidir. Sunucu her sabah Apify üzerinden bugünün ve yarının Avrupa maçlarını alır ve takım adlarını eşleştirir; eşleşmeyen maçlarda Forebet satırı görünmez. Maç detayında model ile yan yana gösterilir. Ana sayfadaki "Forebet onayı iste" açıksa kupona yalnızca Forebet'in de aynı yönde gördüğü seçimler girer.</p>
     <h3 id="inf-mv">Oran hareketi ve kapanış</h3><p>Sunucu saatte bir önümüzdeki 24 saatin maç oranlarını kaydeder. Maç detayında ilk kayıttan bu yana oranların nasıl değiştiği, seçimlerde "Piyasa bu yöne kayıyor" etiketi görünür. Takip'te her seçimin ilk kayıt ve kapanış (maçtan önceki son kayıt) piyasa olasılığı yazar. Piyasanın maça kadar senin yönüne kayması, uzun vadede doğru seçimin en güvenilir işaretidir.</p>
     <h3 id="inf-push">Bildirimler</h3><p>Ayarlar'dan açılır. Sunucu her dakika Takip'teki oynanan maçlara bakar: gol olunca, seçim sonuçlanınca ve kupon bitince bildirim gönderir. Sabah 08:30'da günün kuponu ve yapay zeka yorumu hazır olunca da haber verir. Kuponum'daki (takibe alınmamış) seçimler için bildirim gelmez.</p>
     <h3 id="inf-elo">Elo</h3><p>ClubElo puanlarından hesaplanan beklenen puandır, bağımsız ikinci bir görüştür. Testte kupon isabetine ek katkısı görülmedi; bilgi amaçlıdır.</p>
@@ -1896,6 +1919,7 @@ function setBody() {
       <label class="opt"><span><b>Gerçek isabete göre düzelt</b><small>13 bin maçlık geriye dönük teste göre pazar bazında düzeltme.</small></span><input type="checkbox" class="sw" id="calibS"></label>
       <label class="opt"><span><b>Her sabah otomatik kupon</b><small>Günün kuponu kupon ayarlarınla (tarz, maç sayısı, süre) kurulur ve Takip'e "Otomatik kupon" olarak kaydedilir.</small></span><input type="checkbox" class="sw" id="autoS"></label>
       <label class="opt"><span><b>Piyasa onayı iste</b><small>Kupondaki maç sonucu ve 2,5 üst seçiminde bahisçi oranları ters yöndeyse seçim elenir.</small></span><input type="checkbox" class="sw" id="mktS"></label>
+      <label class="opt"><span><b>Forebet onayı iste</b><small>Kupona yalnızca Forebet'in de aynı yönde gördüğü seçimler girer (maç sonucu, 2,5 üst/alt, KG). Forebet verisi olmayan maçlar elenmez.</small></span><input type="checkbox" class="sw" id="fbS"></label>
       <label class="opt"><span><b>Zayıf ligleri kupona alma</b><small>Model bir ligde %60 ve üstü dediğinde en az 25 tahminde 8 puandan fazla az tuttuysa o ligin o pazarı kupona girmez.</small></span><input type="checkbox" class="sw" id="accS"></label></div>
     <div class="sgrp"><h3>Bildirimler ve sabah</h3><div id="pushBox">${pushBoxHTML()}</div>
       <label class="opt"><span><b>Sabah yapay zeka yorumu</b><small>Her sabah 08:30'da günün yorumu sunucuda hazırlanır, açtığında hazır bekler.</small></span><input type="checkbox" class="sw" id="aiMornS"></label></div>
@@ -1908,7 +1932,7 @@ function syncSheet() {
   const k = state.sheet;
   if (!k || k === "info") return;
   if (k === "match") {
-    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
+    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
     if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y; }
     return;
   }
@@ -1926,7 +1950,7 @@ function syncSheet() {
   $("thrSOut").textContent = "%" + thr;
   document.querySelectorAll("#presetsS button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.p === thr)));
   document.querySelectorAll("#sortsS button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === state.sort)));
-  $("trustedS").checked = state.trusted; $("calibS").checked = state.calib; $("mktS").checked = state.mktOn; $("autoS").checked = state.autoSave;
+  $("trustedS").checked = state.trusted; $("calibS").checked = state.calib; $("mktS").checked = state.mktOn; $("fbS").checked = state.fbOn; $("autoS").checked = state.autoSave;
   if ($("accS")) $("accS").checked = state.accOn; if ($("aiMornS")) $("aiMornS").checked = state.aiMorning;
   $("darkS").checked = document.documentElement.dataset.theme === "dark";
 }
@@ -2010,6 +2034,40 @@ function boldList(base) {
   return base.map(m => ({ m, x: levels(m).bold })).filter(o => o.x && o.x.od && typeof o.x.mp === "number")
     .sort((a, b) => (b.x.p + b.x.mp) - (a.x.p + a.x.mp)).slice(0, 5);
 }
+function valueList(base) {
+  const out = [];
+  base.forEach(m => {
+    const sd = m.pH >= m.pA ? "home" : "away", cand = detPicks(m).concat([{ market: "win", side: sd === "home" ? "away" : "home", p: sd === "home" ? m.pA : m.pH }]);
+    let best = null;
+    cand.forEach(pk => { const v = valueOf(m, pk); if (v && (!best || v.ev > best.v.ev)) best = { pk, v }; });
+    if (best) out.push({ m, ...best });
+  });
+  return out.sort((a, b) => (b.v.fbOk === true) - (a.v.fbOk === true) || b.v.ev - a.v.ev).slice(0, 6);
+}
+function renderValue(base) {
+  const el = $("vlBody"); if (!el) return;
+  const L = valueList(base);
+  if (!L.length) { el.innerHTML = `<p class="ai-empty">${state.mkt.status === "loading" || state.running ? "Oranlar alınıyor." : "Bu aralıkta değerli görünen seçim yok."}</p>`; return; }
+  el.innerHTML = L.map(({ m, pk, v }) => { const di = dayInfo(m.kick); return `<button type="button" class="sg-c" data-open="${esc(m.id)}" data-tab="${pk.market}"><span class="sg-t">+%${Math.round(v.ev * 100)} · ${fo(v.od)}${v.fbOk === true ? " ✓" : ""}</span><span class="sg-m">${esc(m.home)} - ${esc(m.away)}: ${esc(pickLabel(m, pk))}</span><span class="sg-d">Model %${pn(v.p)}, piyasa %${pn(v.mp)}${v.fp !== null ? `, Forebet %${pn(v.fp)}` : ""}. ${esc(di.tag || di.num + " " + di.month.slice(0, 3))} ${esc(fmtTime(m.kick))}, ${esc(m.league)}.</span></button>`; }).join("");
+}
+function dropList(base) {
+  const out = [];
+  base.forEach(m => {
+    const r = MR(m.id); if (!r || !r.mv) return;
+    const v = r.mv, it = [["win", "home", v.oh0, r.oh], ["x", null, v.od0, r.od], ["win", "away", v.oa0, r.oa], ["o25", null, v.oo0, r.oo]];
+    let best = null;
+    it.forEach(([mk, side, a, b]) => { if (typeof a === "number" && typeof b === "number" && a > 1 && b > 1) { const d = (a - b) / a; if (d >= 0.08 && (!best || d > best.d)) best = { mk, side, a, b, d }; } });
+    if (best) out.push({ m, ...best, t0: v.t0 });
+  });
+  return out.sort((a, b) => b.d - a.d).slice(0, 8);
+}
+function renderDrops(base) {
+  const el = $("drBody"); if (!el) return;
+  const L = dropList(base);
+  if (!L.length) { el.innerHTML = `<p class="ai-empty">${state.mkt.status === "loading" || state.running ? "Oranlar alınıyor." : "Önümüzdeki maçlarda belirgin oran düşüşü yok. Sunucu oranları saatte bir kaydeder."}</p>`; return; }
+  el.innerHTML = L.map(x => { const m = x.m, di = dayInfo(m.kick), pk = { market: x.mk, side: x.side || undefined }; const lbl = x.mk === "win" ? (x.side === "away" ? m.away : m.home) + " kazanır" : MK[x.mk];
+    return `<button type="button" class="sg-c" data-open="${esc(m.id)}" data-tab="${x.mk}"><span class="sg-t"><span class="dn">−%${Math.round(x.d * 100)}</span> · ${fo(x.a)} → ${fo(x.b)}</span><span class="sg-m">${esc(m.home)} - ${esc(m.away)}: ${esc(lbl)}</span><span class="sg-d">${esc(di.tag || di.num + " " + di.month.slice(0, 3))} ${esc(fmtTime(m.kick))}, ${esc(m.league)}. Model %${pn(x.mk === "win" ? (x.side === "away" ? m.pA : m.pH) : x.mk === "x" ? m.pD : m.o25)}.</span></button>`; }).join("");
+}
 function renderBold(base) {
   const el = $("bdBody"); if (!el) return;
   const L = boldList(base);
@@ -2034,6 +2092,77 @@ function ensureAcc() {
   state.accLoading = true;
   gs("getAccuracy").then(r => { state.acc = r && r.L ? r : { L: {} }; }).catch(() => { state.acc = { L: {}, err: 1 }; })
     .finally(() => { state.accLoading = false; scheduleRender(); if (state.sheet === "match") syncSheet(); });
+}
+// ---------- takım şansı ve xG (sunucu her sabah hazırlar): beklenen puan football-charts'tan, xG maç istatistiklerinden
+function ensureLuck() {
+  if (state.luck || state.luckLoading) return;
+  try { const c = JSON.parse(lsGet("banko2:luck") || "null"); if (c && c.t && Date.now() - c.at < 6 * 36e5 && c.L) { state.luck = c; return; } } catch (e) {}
+  state.luckLoading = true;
+  gs("getLuck").then(r => { state.luck = r && r.L ? r : { L: {} }; try { const txt = JSON.stringify(Object.assign({ at: Date.now() }, state.luck)); if (txt.length < 400000) lsSet("banko2:luck", txt); } catch (e) {} })
+    .catch(() => { state.luck = { L: {}, err: 1 }; })
+    .finally(() => { state.luckLoading = false; if (state.sheet === "match") syncSheet(); });
+}
+function luckOf(lk, raw) {
+  const T = state.luck && state.luck.L && state.luck.L[lk], r = T && T[raw];
+  return r ? { pl: r[0], pts: r[1], xp: r[2], ld: r[3], c: r[4], pos: r[5], xpos: r[6], xf: r[7], xa: r[8], nx: r[9] } : null;
+}
+const LUCK_TXT = { 2: "çok şanslı", 1: "şanslı", 0: "normal", "-1": "şanssız", "-2": "çok şanssız" };
+const LUCK_CLS = { 2: "p2", 1: "p1", 0: "", "-1": "n1", "-2": "n2" };
+const d1 = v => typeof v === "number" ? v.toFixed(1).replace(".", ",") : "–", d1s = v => (v > 0 ? "+" : "") + d1(v);
+const d2 = v => typeof v === "number" ? v.toFixed(2).replace(".", ",") : "–";
+function luckBlock(m) {
+  if (!state.luck) return `<p class="dt-line">${state.luckLoading ? "Şans verisi alınıyor…" : "Şans verisi yok."}</p>`;
+  const H = luckOf(m.lk, m.hraw), A = luckOf(m.lk, m.araw);
+  if (!H && !A) return `<p class="dt-line">Bu lig için beklenen puan ve xG verisi yok.</p>`;
+  const row = (L, name, raw) => {
+    if (!L) return `<div class="lu-r">${crest(m.lk, raw, name, 32)}<b>${esc(name)}</b><small>Veri yok.</small></div>`;
+    const top = typeof L.xp === "number" && typeof L.pts === "number" ? `${L.pts} puan, beklenen ${d1(L.xp)}${typeof L.ld === "number" ? ` (${d1s(L.ld)})` : ""}` : "";
+    const cat = typeof L.c === "number" ? `<span class="lu-c ${LUCK_CLS[L.c]}">${LUCK_TXT[L.c]}</span>` : "";
+    const xg = typeof L.xf === "number" ? `Maç başı xG ${d2(L.xf)}, rakibe verdiği ${d2(L.xa)} (${L.nx} maç)` : "";
+    return `<div class="lu-r">${crest(m.lk, raw, name, 32)}<b>${esc(name)}${cat}</b><small>${[top, xg].filter(Boolean).join(" · ") || "Veri yok."}</small></div>`;
+  };
+  return `<div class="lu">${row(H, m.home, m.hraw)}${row(A, m.away, m.araw)}</div>
+    <p class="sh-note">Beklenen puan, takımın ürettiği ve verdiği pozisyonlara göre hak ettiği puandır. Puanı beklenenin çok üstünde olan takımın sonuçları genelde zamanla geriler, çok altında olanınki toparlanır; kesin değildir. <button type="button" class="lnk" data-info="luck">Ayrıntı</button></p>`;
+}
+// Forebet ikinci görüşü (sunucu her sabah Apify üzerinden alır): maçın piyasa kaydına r.fb olarak gelir
+const FB = id => { const r = MR(id); return r && r.fb && typeof r.fb.h === "number" ? r.fb : null; };
+function fbProb(m, k, side) {
+  const f = FB(m.id); if (!f) return null;
+  const n = v => (typeof v === "number" ? v : null), c = v => (typeof v === "number" ? 1 - v : null);
+  if (k === "win") return side === "away" ? n(f.a) : n(f.h);
+  if (k === "x") return n(f.d); if (k === "1x") return f.h + f.d; if (k === "x2") return f.a + f.d; if (k === "12") return f.h + f.a;
+  if (k === "o25") return n(f.o); if (k === "u25") return c(f.o); if (k === "bt") return n(f.b); if (k === "nb") return c(f.b);
+  return null;
+}
+function fbOK(m, k, side) {
+  if (!state.fbOn) return true;
+  const f = FB(m.id), p = fbProb(m, k, side);
+  if (!f || p === null) return true;            // Forebet verisi yoksa elemez
+  if (k === "win") return (side === "away" ? f.a > f.h : f.h > f.a) && p >= 0.4;
+  return p >= 0.5;
+}
+function fbBlock(m) {
+  const f = FB(m.id);
+  if (!f) return `<p class="dt-line">${state.detLoading ? "Forebet verisi alınıyor…" : "Bu maç için Forebet tahmini yok. Sunucu her sabah bugünün ve yarının maçlarını alır."}</p>`;
+  const cell = (l, fp, mp) => `<div><span>${l}</span><b>%${pn(fp)}</b><small>model %${pn(mp)}</small></div>`;
+  const fs = f.h >= f.a ? "home" : "away", ms = m.pH >= m.pA ? "home" : "away", nm = s => (s === "home" ? m.home : m.away);
+  const agree = fs === ms ? `Forebet de ${esc(nm(fs))} tarafında.` : `Forebet farklı düşünüyor: o ${esc(nm(fs))} tarafında, model ${esc(nm(ms))}.`;
+  const ex = [f.s ? `en olası skor ${esc(f.s)}` : "", typeof f.g === "number" ? `beklenen ${d1(f.g)} gol` : "", typeof f.c === "number" ? `${d1(f.c)} korner` : "", typeof f.k === "number" ? `${d1(f.k)} kart` : ""].filter(Boolean);
+  return `<div class="fbx">${cell("Ev", f.h, m.pH)}${cell("Beraberlik", f.d, m.pD)}${cell("Deplasman", f.a, m.pA)}${typeof f.o === "number" ? cell("2,5 üst", f.o, m.o25) : ""}${typeof f.b === "number" ? cell("KG var", f.b, m.bt) : ""}</div>
+    <p class="dt-line" style="margin-top:8px"><b>${agree}</b>${ex.length ? " Forebet'e göre " + ex.join(", ") + "." : ""}</p>
+    <p class="sh-note">Forebet ayrı bir istatistik modelidir; ikisi aynı yönde olduğunda daha sağlam, ayrıştığında daha dikkatli olmak gerekir. <button type="button" class="lnk" data-info="fb">Ayrıntı</button></p>`;
+}
+// Değerli seçim: modelin olasılığıyla oran çarpımı belirgin şekilde 1'in üstünde (beklenen getiri +%5 ve üstü)
+const VAL_MK = ["win", "x", "o15", "o25", "o35", "u25", "bt", "nb"];
+function valueOf(m, pk) {
+  if (!pk || !VAL_MK.includes(pk.market)) return null;
+  const od = pickOdds(m, pk); if (!od || od.src === "≈" || !(od.v > 1)) return null;
+  const p = pk.market === "win" ? (pk.side === "away" ? m.pA : m.pH) : primary(m, pk.market), mp = mktProb(m, pk.market, pk.side);
+  if (typeof p !== "number" || typeof mp !== "number" || p < 0.3) return null;
+  const ev = p * od.v - 1;
+  if (ev < 0.05 || p - mp > 0.10 || accWeak(m.lk, pk.market) || !m.trusted) return null;   // 10 puandan büyük fark çoğunlukla model hatasıdır
+  const fp = fbProb(m, pk.market, pk.side);
+  return { ev, p, mp, od: od.v, fp, fbOk: fp === null ? null : fp >= mp };
 }
 const lgName = lk => { const L = state.leagues.find(l => l.key === lk); return L ? trc(L.country) + " " + L.name : lk; };
 function accCard() {
@@ -2082,7 +2211,7 @@ async function pushInit() {
   refreshPushBox();
 }
 function pushBoxHTML() {
-  const P = state.push, pr = P.prefs || { goal: true, result: true, morning: true };
+  const P = state.push, pr = P.prefs || { goal: true, result: true, morning: true, drop: false };
   if (P.sup === null) return `<p class="sh-note">Bildirim durumu kontrol ediliyor…</p>`;
   if (!P.sup) return `<p class="sh-note">Bu cihazda bildirim desteklenmiyor. Telefonda Banko'yu ana ekrana ekleyip oradan aç.</p>`;
   if (Notification.permission === "denied") return `<p class="sh-note">Bildirim izni kapatılmış. Tarayıcının site ayarlarından Banko için bildirimlere izin ver, sonra buraya dön.</p>`;
@@ -2090,6 +2219,7 @@ function pushBoxHTML() {
     ${P.on ? `<label class="opt sub"><span><b>Gol</b><small>Takipteki maçta gol olunca, seçimin şu an tutuyor mu</small></span><input type="checkbox" class="sw" data-pp="goal" ${pr.goal ? "checked" : ""}></label>
     <label class="opt sub"><span><b>Sonuç</b><small>Maç bitince seçimin sonucu, kupon bitince kuponun sonucu</small></span><input type="checkbox" class="sw" data-pp="result" ${pr.result ? "checked" : ""}></label>
     <label class="opt sub"><span><b>Sabah kuponu</b><small>Her sabah 08:30'da günün kuponu ve yorumu hazır olunca</small></span><input type="checkbox" class="sw" data-pp="morning" ${pr.morning ? "checked" : ""}></label>
+    <label class="opt sub"><span><b>Oran düşüşü</b><small>Önümüzdeki 12 saatteki bir maçta oran ilk kayda göre %15 ve üstü düşünce (saatte bir bakılır)</small></span><input type="checkbox" class="sw" data-pp="drop" ${pr.drop ? "checked" : ""}></label>
     <div class="sh-btns"><button type="button" class="ghost" data-act="pushtest">Deneme bildirimi gönder</button></div>` : ""}
     ${P.err ? `<p class="ai-err">${esc(P.err)}</p>` : ""}`;
 }
@@ -2115,7 +2245,7 @@ async function pushToggle(on) {
   P.busy = false; refreshPushBox();
 }
 async function pushPref(k, v) {
-  const P = state.push; P.prefs = Object.assign({ goal: true, result: true, morning: true }, P.prefs, { [k]: v });
+  const P = state.push; P.prefs = Object.assign({ goal: true, result: true, morning: true, drop: false }, P.prefs, { [k]: v });
   try { const reg = await navigator.serviceWorker.getRegistration(), sub = reg && await reg.pushManager.getSubscription(); if (sub) await gs("savePush", sub.toJSON(), P.prefs); toast("Bildirim tercihi kaydedildi"); }
   catch (e) { P.err = (e && e.message) || String(e); refreshPushBox(); }
 }
@@ -2212,6 +2342,11 @@ function highlights(m) {
     if (vh && va && vh.r[0] >= 3 && va.r[0] >= 3 && (vh.pos <= 3 || va.pos <= 3 || vh.pos > vh.n - 3 || va.pos > va.n - 3))
       out.push({ sc: 1.1, t: `İç saha tablosunda ${m.home} ${vh.pos}. (${vh.r[1]}G ${vh.r[2]}B ${vh.r[3]}M), deplasman tablosunda ${m.away} ${va.pos}. (${va.r[1]}G ${va.r[2]}B ${va.r[3]}M)`, tab: "win" });
   }
+  [[m.hraw, m.home], [m.araw, m.away]].forEach(([raw, name]) => {
+    const L = luckOf(m.lk, raw);
+    if (!L || typeof L.ld !== "number" || !(L.pl >= 6) || Math.abs(L.ld) < 4) return;
+    out.push({ sc: 1.15 + Math.abs(L.ld) / 20, t: L.ld > 0 ? `${name} puanı beklenenin ${d1(L.ld)} üstünde (${LUCK_TXT[L.c] || "şanslı"}), sonuçları gerileyebilir` : `${name} puanı beklenenin ${d1(-L.ld)} altında (${LUCK_TXT[L.c] || "şanssız"}), toparlanabilir`, tab: "win" });
+  });
   return out.sort((a, b) => b.sc - a.sc).slice(0, 5);
 }
 function highlightsHTML(m) {
@@ -2259,7 +2394,7 @@ function buildCoupon(pool, style, n, seed) {
   if (tgt) n = 10;
   // her maç için izinli pazarlardaki seçenekler (eşiğin üstünde), en yüksek olasılık önde
   let cands = pool.map(m => ({
-    m, opts: S.markets.map(k => { const p = primary(m, k); if (typeof p !== "number" || p < S.min || accWeak(m.lk, k)) return null; const o = { market: k, p }; if (k === "win") o.side = m.pH >= m.pA ? "home" : "away"; if (minOdd && !(estOdd(m, { ...o, p: selP(p) }) >= minOdd)) return null; return mktOK(m, k, o.side, S.min) ? o : null; }).filter(Boolean).sort((a, b) => b.p - a.p)
+    m, opts: S.markets.map(k => { const p = primary(m, k); if (typeof p !== "number" || p < S.min || accWeak(m.lk, k)) return null; const o = { market: k, p }; if (k === "win") o.side = m.pH >= m.pA ? "home" : "away"; if (minOdd && !(estOdd(m, { ...o, p: selP(p) }) >= minOdd)) return null; return mktOK(m, k, o.side, S.min) && fbOK(m, k, o.side) ? o : null; }).filter(Boolean).sort((a, b) => b.p - a.p)
   })).filter(x => x.opts.length).sort((a, b) => b.opts[0].p - a.opts[0].p);
   if (seed > 0) {
     const rnd = mulberry32(seed), k = Math.max(n * 3, n + 3);
@@ -2327,7 +2462,7 @@ function buildHome() {
   if (state.homeBuilt) return;
   state.homeBuilt = true;
   $("vHome").innerHTML = `<div class="home">
-    <div class="home-top">${ILL.deco}<h1 id="hTitle"></h1><p id="hSub"></p><div class="today" id="today"></div><div class="sett"><label class="check" title="football-charts sicil tablosunda yüksek olasılıklar gerçekte daha az tutuyor"><input type="checkbox" id="calibH"> Olasılıkları gerçek isabete göre düzelt</label><label class="check" title="Modelin %60 ve üstü dediği tahminler bir ligde en az 25 maçta 8 puandan fazla az tuttuysa o ligin o pazarı kupona girmez. Veri sunucuda her gün birikir."><input type="checkbox" id="accH"> Zayıf ligleri ele</label><label class="check" title="Bahisçi oranları yaklaşık 12.995 maçlık testte modelden daha iyi çıktı. Kupona giren maç sonucu ve 2,5 üst seçimlerinde piyasa da aynı yönde değilse seçim elenir. Piyasa verisi olmayan maçlar elenmez."><input type="checkbox" id="mktH"> Piyasa onayı iste (veri varsa)</label></div></div>
+    <div class="home-top">${ILL.deco}<h1 id="hTitle"></h1><p id="hSub"></p><div class="today" id="today"></div><div class="sett"><label class="check" title="football-charts sicil tablosunda yüksek olasılıklar gerçekte daha az tutuyor"><input type="checkbox" id="calibH"> Olasılıkları gerçek isabete göre düzelt</label><label class="check" title="Modelin %60 ve üstü dediği tahminler bir ligde en az 25 maçta 8 puandan fazla az tuttuysa o ligin o pazarı kupona girmez. Veri sunucuda her gün birikir."><input type="checkbox" id="accH"> Zayıf ligleri ele</label><label class="check" title="Bahisçi oranları yaklaşık 12.995 maçlık testte modelden daha iyi çıktı. Kupona giren maç sonucu ve 2,5 üst seçimlerinde piyasa da aynı yönde değilse seçim elenir. Piyasa verisi olmayan maçlar elenmez."><input type="checkbox" id="mktH"> Piyasa onayı iste (veri varsa)</label><label class="check" title="Forebet ayrı bir istatistik sitesidir. Açıkken kupona yalnızca Forebet'in de aynı yönde gördüğü seçimler girer (maç sonucu, 2,5 üst/alt, KG). Forebet verisi olmayan maçlar elenmez."><input type="checkbox" id="fbH"> Forebet onayı iste</label></div></div>
     <div class="home-grid">
       <section class="card" aria-labelledby="cpT"><div class="card-h"><h2 id="cpT">Günün kuponu</h2></div><div class="cp-ctl" id="cpCtl"></div><div id="cpBody"></div></section>
       <section class="card" aria-labelledby="sgT"><h2 id="sgT">Günün önerileri</h2><div class="sg" id="sgBody"></div></section>
@@ -2358,6 +2493,12 @@ function buildHome() {
     <section class="card" style="margin-top:20px" aria-labelledby="bdT">
       <div class="card-h"><h2 id="bdT">Cesur seçimler</h2><span class="muted">yüksek oran, model ve piyasa uyumlu</span></div>
       <div class="sg" id="bdBody"></div><p class="tk-note">Bu seçimler yaklaşık yarı yarıya tutar. Tek başına oynanır, kupona birden fazlası girerse risk hızla büyür. <button type="button" class="lnk" data-info="lv">Ayrıntı</button></p></section>
+    <section class="card" style="margin-top:20px" aria-labelledby="vlT">
+      <div class="card-h"><h2 id="vlT">Değerli seçimler</h2><span class="muted">oran, modelin olasılığına göre yüksek</span></div>
+      <div class="sg" id="vlBody"></div><p class="tk-note">Bahisçi oranları genelde modelden daha isabetlidir; bu liste kesin fırsat değil, ipucudur. Forebet'in de piyasadan iyimser olduğu seçimler (✓) daha sağlamdır. <button type="button" class="lnk" data-info="val">Ayrıntı</button></p></section>
+    <section class="card" style="margin-top:20px" aria-labelledby="drT">
+      <div class="card-h"><h2 id="drT">Düşen oranlar</h2><span class="muted">ilk kayıttan bu yana</span></div>
+      <div class="sg" id="drBody"></div><p class="tk-note">Oranın düşmesi piyasanın o tarafa kaydığını gösterir (para oraya gidiyor ya da haber geldi). Ayarlar'daki bildirimlerden büyük düşüşler için uyarı açabilirsin. <button type="button" class="lnk" data-info="drop">Ayrıntı</button></p></section>
     <section class="card" style="margin-top:20px" aria-labelledby="scT" id="scC">
       <div class="card-h"><h2 id="scT">Skor tahminleri</h2><span class="muted">istatistiğe göre en olası skor, kupon değil</span></div>
       <div id="scBody"></div></section>
@@ -2377,13 +2518,14 @@ function buildHome() {
   if ("IntersectionObserver" in window) new IntersectionObserver(es => { const v = es[es.length - 1].isIntersecting; if (v !== state.cpVis) { state.cpVis = v; updateSlip(); } }, { threshold: 0.12 }).observe($("cpT").closest(".card"));
   $("mktH").addEventListener("change", e => { state.mktOn = e.target.checked; state.home.seed = 0; render(); });
   $("accH").addEventListener("change", e => { state.accOn = e.target.checked; state.home.seed = 0; saveUI(); render(); });
+  $("fbH").addEventListener("change", e => { state.fbOn = e.target.checked; state.home.seed = 0; saveUI(); render(); toast(state.fbOn ? "Kuponda Forebet onayı açık" : "Kuponda Forebet onayı kapalı"); });
 }
 
 function renderAnaliz() {
   buildHome();
   const { base } = homePool(), loading = (state.running || !state.leagues.length) && !base.length;
-  $("anSub").textContent = `Yapay zeka, seriler, cesur seçimler, skor tahminleri ve korner. Anasayfadaki süreye göre: önümüzdeki ${state.home.hours} saat, ${base.length} maç.`;
-  renderAI(); renderSeries(base); renderBold(base); renderScores(base, loading); renderCorners(base); ensureMkt(base);
+  $("anSub").textContent = `Yapay zeka, seriler, cesur ve değerli seçimler, düşen oranlar, skor tahminleri ve korner. Anasayfadaki süreye göre: önümüzdeki ${state.home.hours} saat, ${base.length} maç.`;
+  renderAI(); renderSeries(base); renderBold(base); renderValue(base); renderDrops(base); renderScores(base, loading); renderCorners(base); ensureMkt(base);
   return `Analiz: ${base.length} maç.`;
 }
 // Anasayfanın tepesindeki "Bugün" özeti: tek bakışta ne oluyor
@@ -3527,6 +3669,7 @@ $("shBody").addEventListener("change", e => {
   if (id === "trustedS") { state.trusted = v; state.limit = 30; render(); toast(v ? "Düşük güvenli maçlar gizlendi" : "Düşük güvenli maçlar da gösteriliyor"); }
   else if (id === "calibS") { onCalib(e); toast(v ? "Olasılıklar gerçek isabete göre düzeltiliyor" : "Ham model olasılıkları gösteriliyor"); }
   else if (id === "mktS") { state.mktOn = v; state.home.seed = 0; render(); toast(v ? "Kuponda piyasa onayı açık" : "Kuponda piyasa onayı kapalı"); }
+  else if (id === "fbS") { state.fbOn = v; state.home.seed = 0; saveUI(); render(); toast(v ? "Kuponda Forebet onayı açık" : "Kuponda Forebet onayı kapalı"); }
   else if (id === "accS") { state.accOn = v; state.home.seed = 0; saveUI(); render(); toast(v ? "Zayıf ligler kupona alınmayacak" : "Bütün ligler kupona girebilir"); }
   else if (id === "aiMornS") { state.aiMorning = v; saveUI(); toast(v ? "Sabah yorumu her gün hazırlanacak" : "Sabah yorumu kapatıldı"); }
   else if (id === "pushS") { pushToggle(v); }
