@@ -298,6 +298,13 @@
   .lu-c { display:inline-block; margin-left:6px; font:600 12px/1 var(--f); padding:3px 8px; border-radius:999px; background:var(--card); box-shadow:inset 0 0 0 1px var(--line); vertical-align:1px; }
   .lu-c.p2, .lu-c.p1 { background:var(--warn-bg); color:var(--warn-fg); box-shadow:none; }
   .lu-c.n1, .lu-c.n2 { background:color-mix(in srgb, var(--t2) 20%, transparent); box-shadow:none; }
+  .mom-w { background:var(--sunk); border-radius:12px; padding:10px 12px; }
+  .mom { display:block; width:100%; height:auto; margin:6px 0 4px; }
+  .mom-l { display:flex; justify-content:space-between; gap:10px; font-size:13px; font-weight:600; }
+  .mom-l span { display:flex; align-items:center; gap:6px; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .mom-l i { width:10px; height:10px; border-radius:3px; flex:none; }
+  .mom-n { margin:0 0 6px; font-size:12px; color:var(--muted); }
+  .mom-s { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; color:var(--muted); } .mom-s b { color:var(--ink); font:700 15px var(--fc); }
+  .lv-mom { display:grid; gap:10px; margin-top:10px; } .lv-mom h3 { margin:0 0 4px; font:600 15px var(--f); display:flex; justify-content:space-between; gap:8px; } .lv-mom h3 small { color:var(--muted); font-weight:500; }
   .lu2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:8px; }
   .lu-s { background:var(--sunk); border-radius:12px; padding:10px 12px; min-width:0; }
   .lu-s > b { display:block; font-weight:600; } .lu-s > small { color:var(--muted); font-size:12px; }
@@ -1162,7 +1169,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, stale: {}, fcUsed: null, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, mom: {}, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -1745,6 +1752,8 @@ async function ensureDetail(id) {
 }
 function ensureLineup(id) {
   const m = findMatch(id), X = state.extra; if (!m) return;
+  const b0 = (MR(id) && MR(id).bi) || m.bi, t0 = m.kick.getTime();
+  if (b0 && t0 < Date.now()) ensureMom(b0, Date.now() > t0 + 2.3 * 36e5).then(() => syncSheet());
   const bi = (MR(id) && MR(id).bi) || m.bi, L = X.lu[id];
   if (!bi || (L && !L.none && Date.now() - (L.at || 0) < 15 * 6e4) || (L && L.loading)) return;
   X.lu[id] = { loading: 1 }; syncSheet();
@@ -1912,6 +1921,7 @@ function detailBody() {
       ${rowsX ? `<div class="sh-btns" style="margin-top:10px"><button type="button" class="ghost" data-act="more" aria-expanded="${state.detMore}">${state.detMore ? "Diğer pazarları gizle" : `Diğer pazarlar (${pks.filter(p => p.x).length})`}</button></div>
       ${state.detMore ? `<p class="mk-sub">Alt / üst, KG yok, beraberlik, çifte şans</p><ul class="mk-list"><li class="mk-head" aria-hidden="true"><span>Seçim</span><span>Model</span><span>Piyasa</span><span>Oran</span></li>${rowsX}</ul><p class="sh-note">Altlar üstlerin, çifte şans karşı tarafın tersidir. ≈ işaretli oranlar 1X2 oranlarından yaklaşık hesaplanır. 0,5 ve 4,5 çizgileri düzeltilmemiş model değeridir.</p>` : ""}` : ""}</div>
     <div class="dt-sec"><h3>Gol beklentisi <span class="muted">bilgi amaçlı</span></h3>${goalBlock(m)}</div>
+    ${(b => b && m.kick.getTime() < Date.now() ? `<div class="dt-sec"><h3>Baskı ve istatistik</h3>${momBlock(state.mom[b], m.home, m.away, (state.live[m.hraw + "|" + m.araw + "|" + m.kick.toISOString()] || {}).m)}</div>` : "")(detBi())}
     ${(MR(m.id) && MR(m.id).bi) || m.bi ? `<div class="dt-sec"><h3>Kadro</h3>${lineupBlock(m)}</div>` : ""}
     <div class="dt-sec"><h3>Şans ve xG <span class="muted">hak edilen puan</span></h3>${luckBlock(m)}</div>
     <div class="dt-sec"><h3>Puan durumu ve form</h3>${teamBlock(m)}</div>
@@ -2007,7 +2017,7 @@ function syncSheet() {
   const k = state.sheet;
   if (!k || k === "info") return;
   if (k === "match") {
-    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.lu[state.detId] || null).length, JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
+    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.lu[state.detId] || null).length, (state.mom[detBi()] || {}).t || 0, JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
     if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y; }
     return;
   }
@@ -2227,6 +2237,33 @@ function bpBlock(m) {
   return `<div class="fbx">${cell("Ev", f.h, m.pH)}${cell("Beraberlik", f.d, m.pD)}${cell("Deplasman", f.a, m.pA)}${typeof f.o25 === "number" ? cell("2,5 üst", f.o25, m.o25) : ""}${typeof f.b === "number" ? cell("KG var", f.b, m.bt) : ""}${typeof f.o15 === "number" ? cell("1,5 üst", f.o15, m.o15) : ""}</div>
     <p class="dt-line" style="margin-top:8px"><b>${agree}</b>${ex.length ? " " + (t => t[0].toLocaleUpperCase("tr") + t.slice(1))(ex.join(", ")) + "." : ""}</p>
     <p class="sh-note">Bzzoiro'nun gol modeli; bahisçi oranları da modele karışıyor. İkisi aynı yöndeyse daha sağlam, ayrışıyorsa daha dikkatli olmak gerekir. <button type="button" class="lnk" data-info="bp">Ayrıntı</button></p>`;
+}
+// ---------- baskı grafiği: dakika başına -100..100, artı ev sahibi, eksi deplasman
+function detBi() { const m = findMatch(state.detId); if (!m) return null; const r = MR(m.id); return (r && r.bi) || m.bi || null; }
+function ensureMom(bi, done) {
+  if (!bi) return Promise.resolve();
+  const M = state.mom[bi];
+  if (M && (M.busy || (M.done && done) || Date.now() - (M.at || 0) < (done ? 6 * 36e5 : 55e3))) return Promise.resolve();
+  state.mom[bi] = Object.assign({}, M, { busy: 1 });
+  return gs("getMomentum", bi, !!done).then(r => { state.mom[bi] = Object.assign(r || { none: 1 }, { at: Date.now(), done: !!done }); })
+    .catch(() => { state.mom[bi] = Object.assign({}, M, { busy: 0, at: Date.now() }); });
+}
+function momSVG(M, min) {
+  const mo = (M && M.mo) || [];
+  if (!mo.length) return "";
+  const W = 320, H = 84, mid = H / 2, end = Math.max(90, ...mo.map(x => x[0])), X = m => 4 + (W - 8) * Math.min(m, end) / end, bw = Math.max(1.6, (W - 8) / end - 0.8);
+  const bars = mo.map(([m, v]) => { const h = Math.min(Math.abs(v), 100) / 100 * (mid - 4); return `<rect x="${X(m) - bw / 2}" y="${v >= 0 ? mid - h : mid}" width="${bw}" height="${Math.max(h, 0.6)}" rx="0.8" fill="var(--${v >= 0 ? "home" : "away"})" opacity="${Math.abs(v) > 40 ? 1 : 0.7}"/>`; }).join("");
+  const ht = `<line x1="${X(45)}" x2="${X(45)}" y1="4" y2="${H - 4}" stroke="var(--line)" stroke-dasharray="3 3"/>`;
+  const now = typeof min === "number" && min > 0 && min < end ? `<line x1="${X(min)}" x2="${X(min)}" y1="2" y2="${H - 2}" stroke="var(--ink)" stroke-width="1.2"/>` : "";
+  return `<svg class="mom" viewBox="0 0 ${W} ${H}" role="img" aria-label="Baskı grafiği: yukarı ev sahibi, aşağı deplasman"><line x1="4" x2="${W - 4}" y1="${mid}" y2="${mid}" stroke="var(--line)"/>${ht}${bars}${now}</svg>`;
+}
+function momBlock(M, home, away, min) {
+  if (!M || M.busy && !M.mo) return `<p class="dt-line">Baskı verisi alınıyor…</p>`;
+  if (M.none || !(M.mo && M.mo.length)) return `<p class="dt-line">Bu maç için baskı verisi yok.</p>`;
+  const f1 = v => typeof v === "number" ? v.toFixed(v < 10 && v % 1 ? 2 : 0).replace(".", ",") : "–";
+  const row = (l, i, u) => M.h && M.a && (typeof M.h[i] === "number" || typeof M.a[i] === "number") ? `<span>${l} <b>${u ? "%" : ""}${f1(M.h[i])}</b> - <b>${u ? "%" : ""}${f1(M.a[i])}</b></span>` : "";
+  return `<div class="mom-w"><div class="mom-l"><span><i style="background:var(--home)"></i>${esc(home)}</span><span><i style="background:var(--away)"></i>${esc(away)}</span></div>${momSVG(M, min)}<p class="mom-n">Çubuk yukarıdaysa ev sahibi, aşağıdaysa deplasman baskıda. Kesik çizgi devre arası.</p>
+    <div class="mom-s">${row("xG", 0)}${row("Şut", 1)}${row("İsabetli", 2)}${row("Topla", 3, 1)}${row("Korner", 4)}${row("Net fırsat", 5)}</div></div>`;
 }
 function lineupBlock(m) {
   const L = state.extra.lu[m.id];
@@ -3342,6 +3379,8 @@ async function pollLive() {
     Object.keys(nw).forEach(k => { const a = old[k], b = nw[k]; if (a && a.g && b && b.g && b.g[0] + b.g[1] > a.g[0] + a.g[1]) { goals.push(k); state.goalAt[k] = Date.now() + 4000; } });
     if (goals.length) { const k = goals[0], [h, a] = k.split("|"), g_ = nw[k].g; toast(`GOL! ${tn(h)} ${g_[0]} - ${g_[1]} ${tn(a)}`); buzz([80, 60, 80]); }
     state.live = nw; state.liveAt = Date.now();
+    const lb = Object.values(nw).filter(x => x && x.bi && (x.st === "live" || x.st === "ht")).slice(0, 8);
+    if (lb.length) Promise.all(lb.map(x => ensureMom(x.bi, false))).then(() => { if (state.view === "live") renderLive(); if (state.sheet === "match") syncSheet(); });
     // biten maç varsa sunucu sonuçlandırsın: Takip ve Dün kartı yeniden okunur
     const fin = Object.keys(state.live).filter(k => state.live[k].st === "ft" && !state.liveDone[k]);
     fin.forEach(k => state.liveDone[k] = 1);
@@ -3473,7 +3512,11 @@ function renderLive() {
   if (state.my.length && state.my.some(x => new Date(x.d).getTime() <= now)) cps.push(cpSummary("Kuponum", state.my.map(x => Object.assign({ ok: null }, x))));
   let html = "";
   if (cps.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Kuponlarım şu an</h2></div><div class="lv-cps">${cps.join("")}</div></section>`;
-  if (G.live.length) html += `<section class="card lv-grp"><div class="card-h"><h2><span class="lv-dot" aria-hidden="true"></span>Oynanıyor <span class="lv-n">${G.live.length}</span></h2></div>${li(G.live)}</section>`;
+  if (G.live.length) {
+    const seen = new Set(), moms = [];
+    G.live.forEach(r => { const k = liveKey(r.p), L = state.live[k]; if (!L || !L.bi || seen.has(k)) return; seen.add(k); const M = state.mom[L.bi]; if (M && M.mo && M.mo.length) moms.push(`<div><h3><span>${esc(tn(r.p.h))} ${L.g ? L.g[0] + " - " + L.g[1] : ""} ${esc(tn(r.p.a))}</span><small>${typeof L.m === "number" ? L.m + "'" : L.st === "ht" ? "Devre arası" : ""}</small></h3>${momBlock(M, tn(r.p.h), tn(r.p.a), L.m)}</div>`); });
+    html += `<section class="card lv-grp"><div class="card-h"><h2><span class="lv-dot" aria-hidden="true"></span>Oynanıyor <span class="lv-n">${G.live.length}</span></h2></div>${li(G.live)}${moms.length ? `<h3 style="margin:16px 0 0;font:600 16px var(--fc)">Baskı grafiği</h3><div class="lv-mom">${moms.join("")}</div>` : ""}</section>`;
+  }
   if (G.nodata.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Başladı <span class="lv-n">${G.nodata.length}</span></h2><span class="muted">canlı skor bu maçlar için gelmedi, bitince sonuçlanır</span></div>${li(G.nodata)}</section>`;
   if (G.next.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Sıradaki <span class="lv-n">${G.next.length}</span></h2><span class="muted">önümüzdeki 12 saat</span></div>${li(G.next)}</section>`;
   if (G.done.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Biten <span class="lv-n">${G.done.length}</span></h2><span class="muted">son 10 saat</span></div>${li(G.done.slice().reverse())}</section>`;
@@ -3529,14 +3572,24 @@ function aiWindow(q) {
   if (/bug[üu]n/.test(t)) return { label: "bugün", ok: k => dayInfo(new Date(k)).tag === "Bugün" };
   return null;
 }
+// soruda geçen lig/kupa: "CL", "şampiyonlar ligi", "premier lig", "süper lig" gibi
+function aiLeagues(q) {
+  const t = String(q || "").toLocaleLowerCase("tr"), keys = new Set(), lab = [];
+  const R = [[/şampiyonlar|champions|\bcl\b|\bucl\b|\bşl\b/, ["ucl"], "Şampiyonlar Ligi"], [/avrupa lig|europa|\buel\b|\bel\b/, ["uel"], "Avrupa Ligi"], [/konferans|conference|\buecl\b/, ["uecl"], "Konferans Ligi"],
+    [/avrupa kupa|kupa maç|uefa/, ["ucl", "uel", "uecl"], "Avrupa kupaları"], [/süper lig|super lig/, ["turkey1"], "Süper Lig"], [/premier lig|premier league|\bepl\b/, ["premier"], "Premier League"], [/la ?liga/, ["spain1"], "LaLiga"], [/serie a/, ["italy1"], "Serie A"], [/bundesliga/, ["germany1"], "Bundesliga"], [/ligue 1/, ["france1"], "Ligue 1"]];
+  R.forEach(([re, ks, l]) => { if (re.test(t)) { ks.forEach(k => keys.add(k)); lab.push(l); } });
+  return keys.size ? { keys, label: lab.join(", ") + " maçları" } : null;
+}
 async function runAI(kind, question) {
   const A = state.ai;
   const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
   if (!order.length) { A.error = "Hiçbir sağlayıcı için anahtar tanımlı değil. Script özelliklerine GEMINI_API_KEY veya GROQ_API_KEY ekle."; $("aiSet").open = true; renderAI(); return; }
   A.kind = kind; A.q = kind === "ask" ? String(question).slice(0, 300) : ""; A.win = "";
   const W = kind === "ask" ? aiWindow(question) : null, now = Date.now();
-  const base = W ? flatten().filter(m => m.trusted && m.kick.getTime() > now && W.ok(m.kick.getTime())) : homePool().base;
+  let base = W ? flatten().filter(m => m.trusted && m.kick.getTime() > now && W.ok(m.kick.getTime())) : homePool().base;
+  const LQ = kind === "ask" ? aiLeagues(question) : null;
   if (W) A.win = W.label;
+  if (LQ) { const b2 = (W ? base : flatten().filter(m => m.trusted && m.kick.getTime() > now && m.kick.getTime() < now + 72 * 36e5)).filter(m => LQ.keys.has(m.lk)); if (b2.length) { base = b2; A.win = (A.win ? A.win + ", " : "") + LQ.label; } }
   if (!base.length) {
     const nx = flatten().filter(m => m.trusted && m.kick.getTime() > now).sort((a, b) => a.kick - b.kick)[0];
     if (W) { A.result = { ozet: "", cevap: `${W.label[0].toLocaleUpperCase("tr-TR") + W.label.slice(1)} içinde güvenilir veriyle maç yok.${nx ? ` En yakın maç ${dayInfo(nx.kick).tag || dayInfo(nx.kick).num + " " + dayInfo(nx.kick).month} ${fmtTime(nx.kick)}: ${nx.home} - ${nx.away}.` : ""} Süreyi uzatıp tekrar sorabilirsin.`, kupon: { baslik: "", secimler: [] }, oneriler: [] }; A.at = Date.now(); A.usedProv = ""; A.sig = aiSig(); A.error = ""; renderAI(); return; }
@@ -3548,7 +3601,7 @@ async function runAI(kind, question) {
   const H = state.home;
   const ask = kind === "ask" ? "Kullanıcı sorusu: " + String(question).slice(0, 300) : `Günün yorumunu hazırla. ${H.n} maçlık, "${STYLES[H.style].label}" tarzında bir kupon öner ve 3 ile 5 öneri yaz.`;
   const nowTxt = new Date().toLocaleString("tr-TR", { timeZone: TZ, day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
-  const prompt = `${ask}\nŞu an: ${nowTxt} (Sofia saati).${W ? ` Kullanıcı ${W.label} içindeki maçları istedi; listede yalnızca bu aralıktaki ${list.length} maç var. Başka maç önerme; istenen sayıda uygun maç yoksa bunu açıkça söyle.` : ""} Maç listesi (yüzde olarak, saat Sofia):\n${JSON.stringify(list)}`;
+  const prompt = `${ask}\nŞu an: ${nowTxt} (Sofia saati).${W ? ` Kullanıcı ${W.label} içindeki maçları istedi; listede yalnızca bu aralıktaki ${list.length} maç var. Başka maç önerme; istenen sayıda uygun maç yoksa bunu açıkça söyle.` : ""}${LQ && base.some(m => LQ.keys.has(m.lk)) ? ` Kullanıcı ${LQ.label} istedi; listedeki maçlar yalnızca bunlar.` : ""} Maç listesi (yüzde olarak, saat Sofia):\n${JSON.stringify(list)}`;
   A.status = "loading"; A.error = ""; A.note = ""; A.srv = false; renderAI();
   try {
     const res = await gs("callAI", { order, models: A.models, system: AI_SYSTEM, prompt });
