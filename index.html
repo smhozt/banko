@@ -1835,7 +1835,7 @@ function detailBody() {
     ${(h => h ? `<div class="dt-sec"><h3>Öne çıkanlar</h3>${h}</div>` : "")(highlightsHTML(m))}
     <div class="dt-sec"><h3>Bu maçta üç seçim</h3>${levelsHTML(m)}</div>
     <div class="dt-sec"><h3>Maç sonucu</h3><div class="x3">${x3}</div>${moveLine(m)}</div>
-    <div class="dt-sec"><h3>İkinci görüş: Forebet</h3>${fbBlock(m)}</div>
+    ${FB(m.id) ? `<div class="dt-sec"><h3>İkinci görüş: Forebet</h3>${fbBlock(m)}</div>` : ""}
     <div class="dt-sec"><h3>Pazarlar <span class="muted">seçmek için dokun</span></h3><ul class="mk-list"><li class="mk-head" aria-hidden="true"><span>Seçim</span><span>Model</span><span>Piyasa</span><span>Oran</span></li>${rows}</ul>
       ${sel && ACC_MK.includes(sel.market) ? (a => a ? `<p class="sh-note acc-n">Bu ligde model ${esc(MK[sel.market])} için %60 ve üstü dediğinde ortalama %${pn(a.p)} dedi, %${pn(a.hit)} tuttu (${a.n} tahmin${a.n < ACC_MIN ? ", henüz az" : ""}).</p>` : state.acc ? `<p class="sh-note acc-n">Bu lig için isabet verisi birikiyor.</p>` : "")(accStat(m.lk, sel.market)) : ""}
       ${rowsX ? `<div class="sh-btns" style="margin-top:10px"><button type="button" class="ghost" data-act="more" aria-expanded="${state.detMore}">${state.detMore ? "Diğer pazarları gizle" : `Diğer pazarlar (${pks.filter(p => p.x).length})`}</button></div>
