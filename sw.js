@@ -1,7 +1,7 @@
 // Banko servis çalışanı: arayüz dosyalarını önbelleğe alır (hızlı açılış, çevrimdışıyken kabuk görünür).
 // Veri çağrıları (sunucu) hiç önbelleğe alınmaz. Sayfanın kendisi önce ağdan istenir, böylece güncelleme hemen gelir;
 // internet yoksa önbellekteki sürüm açılır. Sürüm adı derleme sırasında içerikten üretilir.
-const CACHE = "banko-shell-39cbcc7541";
+const CACHE = "banko-shell-820b58c345";
 const SHELL = ["./", "./index.html", "./config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 const IMG = "banko-img-1", IMG_HOSTS = ["media.api-sports.io", "flagcdn.com", "footballcharts-backend.onrender.com", "sports.bzzoiro.com"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

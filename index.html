@@ -454,6 +454,24 @@
   .sg-c .sg-d { color:var(--muted); font-size:14px; }
   .ai { margin-top:20px; }
   .ai-sum { margin:14px 0 0; max-width:75ch; }
+  /* günün kuponları */
+  .dk { margin-top:18px; }
+  .dk-t { margin:0 0 10px; font:600 20px var(--fc); display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; } .dk-t .muted { font:400 13px var(--f); }
+  .dk-g { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start; }
+  .dk-c { border:1px solid var(--line); border-radius:18px; padding:14px; background:var(--surface); display:grid; gap:10px; min-width:0;
+    --bot-b:#F3F6F4; --bot-l:color-mix(in srgb, var(--ink) 45%, transparent); --bot-s:#0B1512; --bot-a:var(--home); }
+  .dk-c.web { --bot-a:var(--focus); }
+  .dk-h { display:flex; align-items:center; gap:10px; } .dk-h > div { flex:1; min-width:0; } .dk-h h3 { margin:0; font:600 18px var(--fc); } .dk-h small { color:var(--muted); font-size:12px; }
+  .dk-r { height:34px; padding:0 14px; flex:none; }
+  .dk-sum { margin:0; font-size:14px; line-height:1.5; color:var(--muted); }
+  .dk-empty, .dk-note { margin:0; color:var(--muted); font-size:14px; } .dk-note { font-size:12px; }
+  .dk-meta { font-size:12px; color:var(--muted); }
+  .dk-odd { margin:0; font-size:14px; color:var(--muted); } .dk-odd b { color:var(--ink); font:700 20px var(--fc); }
+  .dk-wait { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:14px; padding:6px 0; } .dk-wait .dots i { background:var(--home); }
+  .dk-c .wk li { background:var(--sunk); border-color:transparent; } .dk-c .wk-o { color:var(--home); } .dk-c .wk .lnk { color:var(--ink); }
+  .dk-c .wsrc a { color:var(--ink); border-color:var(--line); }
+  @media (max-width:860px) { .dk-g { grid-template-columns:1fr; } }
+  @media (max-width:520px) { .dk-c { padding:12px 10px; border-radius:16px; } .dk-c .pk-m b { flex-wrap:wrap; gap:2px 4px; } .dk-c .pk-m b .nm { flex:1 0 100%; margin-left:0; white-space:normal; overflow:visible; } .dk-c .pk { gap:8px; padding:12px 10px; } }
   /* Banko AI sohbet paneli */
   .aic { position:relative; overflow:hidden; border-radius:22px; padding:16px 16px 14px; color:var(--top-ink);
     background:radial-gradient(90% 60% at 0% 0%, color-mix(in srgb, var(--top-ac) 18%, transparent), transparent 60%), radial-gradient(70% 50% at 100% 100%, color-mix(in srgb, var(--top-focus) 14%, transparent), transparent 60%), var(--top-bg);
@@ -1312,7 +1330,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, stale: {}, fcUsed: null, pinned: null, backY: null, keys: {},
   elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {}, aq: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, aqDraft: "", mom: {}, past: null, pastInfo: {}, venue: {}, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
-  ai: { mode: "data", web: { status: "idle", q: "", res: null, src: [], prov: "", at: 0, err: "" }, provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
+  ai: { mode: "data", auto: true, daily: null, dstatus: "idle", derr: "", dTried: false, web: { status: "idle", q: "", res: null, src: [], prov: "", at: 0, err: "", daily: null, dstatus: "idle", derr: "", dTried: false }, provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
 // ---------- sunucu bağlantısı ve tercihler (Apps Script)
@@ -2832,13 +2850,15 @@ function buildHome() {
           <div class="seg aic-mode" role="group" aria-label="Yapay zeka modu"><button type="button" data-aimode="data">Banko verisi</button><button type="button" data-aimode="web">İnternet</button></div></div>
         <p class="aic-hint" id="aiHint"></p>
         <div class="aic-log" id="aiBody" aria-live="polite"></div>
-        <div class="aic-chips"><button type="button" class="aic-chip run" id="aiRun">Günün yorumunu hazırla</button><span id="aiChips"></span></div>
+        <div class="aic-chips"><button type="button" class="aic-chip run" id="aiRun" hidden>Günün yorumunu hazırla</button><span id="aiChips"></span></div>
         <form class="aic-in" id="aiActs"><label class="sr" for="aiQ">Yapay zekaya sor</label><input id="aiQ" type="text" maxlength="300" autocomplete="off" enterkeyhint="send" placeholder="Bir şey sor…"><button class="aic-send" id="aiAsk" type="submit" aria-label="Gönder">${SEND}</button></form>
       </div>
       <div id="aiRes"></div>
+      <div class="dk" id="aiDaily"></div>
       <details class="ai-set" id="aiSet"><summary>Yapay zeka ayarları</summary>
         <div class="row2"><label for="aiProv" class="muted">Sağlayıcı</label><select id="aiProv"><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="claude">Claude</option></select>
           <label for="aiModel" class="muted">Model</label><input id="aiModel" type="text" autocomplete="off"></div>
+        <label class="opt" style="margin:8px 0"><span><b>Analiz açılınca günün kuponlarını hazırla</b><small>Banko verisiyle ve internetten iki kupon, günde bir kez.</small></span><input type="checkbox" class="sw" id="aiAutoS"></label>
         <p class="hint" id="aiKeyState"></p>
         <p class="hint">Maç listesi (takımlar ve olasılıklar) seçtiğin sağlayıcıya gönderilir. Anahtarlar Script özelliklerinde saklanır (GEMINI_API_KEY, GROQ_API_KEY, ANTHROPIC_API_KEY), bu sayfada görünmez. Seçtiğin sağlayıcı hata verirse anahtarı tanımlı diğerlerine sırayla geçilir. Model adı sağlayıcıda değiştiyse buradan güncelle.</p>
       </details>
@@ -3171,6 +3191,11 @@ function homeClick(e) {
   if (e.target.closest("#cpNew")) { state.home.seed = (state.home.seed || 0) + 1; state.cpFresh = true; render(); state.cpFresh = false; toast("Farklı bir kupon kuruldu"); buzz(); return; }
   const cc = e.target.closest("#cpCopy");
   if (cc && state.lastCoupon) { copyText(couponText(state.lastCoupon.picks, state.lastCoupon.comb, "Günün kuponu"), cc, "Kuponu kopyala"); return; }
+  if (e.target.closest("#dkRun")) { runDailyAI(); return; }
+  if (e.target.closest("#dkWeb")) { runWebDaily(); return; }
+  const dc_ = e.target.closest("#dkCopy"); if (dc_ && state.aiDaily) { copyText(couponText(state.aiDaily.picks, state.aiDaily.comb, "Yapay zeka günün kuponu"), dc_, "Kopyala"); return; }
+  if (e.target.closest("#dkToMy") && state.aiDaily && state.aiDaily.picks.length) { importToMy(state.aiDaily.picks.map(c => ({ m: c.m, pk: { ...c.pk, p: pickP(c.m, c.pk.market, c.pk.side) } }))); return; }
+  const ds_ = e.target.closest("#dkSave"); if (ds_ && state.aiDaily && state.aiDaily.picks.length) { trackSave(ds_, "ai", "Yapay zeka günün kuponu", state.aiDaily); return; }
   const ac = e.target.closest("#aiCopy");
   if (ac && state.aiCoupon) { copyText(couponText(state.aiCoupon.picks, state.aiCoupon.comb, "Yapay zeka kuponu"), ac, "Kuponu kopyala"); return; }
   if (e.target.closest("#cpToMy") && state.lastCoupon && state.lastCoupon.picks.length) { importToMy(state.lastCoupon.picks); return; }
@@ -3917,7 +3942,64 @@ function aiNamed(q) {
   const both = L.filter(m => (hit(m.home) || hit(m.hraw)) && (hit(m.away) || hit(m.araw)));
   return (both.length ? both : L).sort((a, b) => a.kick - b.kick).slice(0, 6);
 }
+function aiList(ranked) {
+  const idMap = {};
+  const list = ranked.map((m, i) => { const id = "m" + (i + 1); idMap[id] = m; const sg = typeof m.eh === "number" ? scoreGrid(m.eh, m.ea) : null; return { id, xg: sg ? [Math.round(m.eh * 10) / 10, Math.round(m.ea * 10) / 10] : undefined, skor: sg ? sg[0].i + "-" + sg[0].j : undefined, lig: trc(m.country) + " " + m.league, mac: m.home + " - " + m.away, saat: dayInfo(m.kick).num + " " + dayInfo(m.kick).month + " " + fmtTime(m.kick), ev: pn(m.pH), ber: pn(m.pD), dep: pn(m.pA), u15: pn(m.o15), u25: pn(m.o25), u35: pn(m.o35), kg: pn(m.bt) }; });
+  return { list, idMap };
+}
+// günün kuponu (Banko verisi): sohbetten ayrı tutulur, sabah sunucunun hazırladığıyla aynı yerde saklanır
+async function runDailyAI() {
+  const A = state.ai; if (A.dstatus === "loading") return;
+  const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
+  if (!order.length) { A.derr = "Yapay zeka anahtarı tanımlı değil."; renderAI(); return; }
+  const base = homePool().base;
+  if (!base.length) { A.derr = "Anasayfadaki süre içinde güvenilir veriyle maç yok. Süreyi uzat ya da lig ekle."; renderAI(); return; }
+  const { list, idMap } = aiList(base.slice().sort((a, b) => maxP(b) - maxP(a)).slice(0, 40)), H = state.home;
+  const nowTxt = new Date().toLocaleString("tr-TR", { timeZone: TZ, day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+  const prompt = `Günün yorumunu hazırla. ${H.n} maçlık, "${STYLES[H.style].label}" tarzında bir kupon öner ve 3 ile 5 öneri yaz.\nŞu an: ${nowTxt} (Sofia saati). Maç listesi (yüzde olarak, saat Sofia):\n${JSON.stringify(list)}`;
+  A.dstatus = "loading"; A.derr = ""; renderAI();
+  try {
+    const res = await gs("callAI", { order, models: A.models, system: AI_SYSTEM, prompt });
+    if (res && res.ok) {
+      A.daily = { result: normalizeAI(res.json, idMap), at: Date.now(), used: AI_NAMES[res.prov] + " / " + res.model, sig: aiSig(), srv: false };
+      lsSet("banko2:ai", JSON.stringify({ day: dayKey(new Date()), result: A.daily.result, at: A.daily.at, used: A.daily.used, note: "", sig: A.daily.sig, kind: "daily", q: "", win: "" }));
+    } else A.derr = ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi.";
+  } catch (e) { A.derr = (e && e.message) || String(e); }
+  A.dstatus = "idle"; renderAI();
+}
+// günün kuponu (internet): yapay zeka güncel haber ve oranlara bakarak kendisi seçer
+async function runWebDaily() {
+  const A = state.ai, W = A.web; if (W.dstatus === "loading") return;
+  const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
+  if (!order.length) { W.derr = "Yapay zeka anahtarı tanımlı değil."; renderAI(); return; }
+  const H = state.home, nowTxt = new Date().toLocaleString("tr-TR", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const q = `Şu andan itibaren ${H.hours} saat içinde başlayacak futbol maçları için güncel bilgilere (sakatlık, ceza, muhtemel kadro, form, oranlar) dayanarak ${H.n} maçlık, "${STYLES[H.style].label}" tarzında "Günün kuponu" hazırla. Bilinen liglerden ve kupalardan seç, her seçim için güncel oranı ve kısa gerekçesini yaz. Cevapta kuponun genel mantığını 2-3 cümleyle anlat.`;
+  W.dstatus = "loading"; W.derr = ""; renderAI();
+  try {
+    const res = await gs("callAI", { order, models: A.models, system: AI_WEB, prompt: `Şu an: ${nowTxt} (Sofia saati, UTC+2).\nİstek: ${q}`, web: true });
+    if (res && res.ok) {
+      W.daily = { res: webNorm(res.json), src: (res.src || []).filter(x => x && /^https?:\/\//.test(x.u)).slice(0, 8), prov: AI_NAMES[res.prov] + " / " + res.model + " · web araması", at: Date.now() };
+      if (!W.daily.res.kupon.length) W.derr = "Yapay zeka kupon çıkaramadı, Yenile ile tekrar dene.";
+      lsSet("banko2:aiwebday", JSON.stringify(Object.assign({ day: dayKey(new Date()) }, W.daily)));
+    } else W.derr = ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi.";
+  } catch (e) { W.derr = (e && e.message) || String(e); }
+  W.dstatus = "idle"; renderAI();
+}
+function webNorm(j) {
+  j = j || {}; const str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+  const sk = str(j.skor, 8).replace(/\s/g, "").replace(":", "-");
+  return { cevap: str(j.cevap, 2000), skor: /^\d{1,2}-\d{1,2}$/.test(sk) ? sk : "", kupon: (Array.isArray(j.kupon) ? j.kupon : []).slice(0, 8).map(k => ({ mac: str(k && k.mac, 90), tarih: str(k && k.tarih, 40), secim: str(k && k.secim, 80), oran: str(k && String(k.oran || ""), 12), neden: str(k && k.neden, 220) })).filter(k => k.mac && k.secim) };
+}
+// Analiz açıldığında, anahtar varsa ve bugün için hazır değilse iki kuponu da kendiliğinden hazırla (oturumda bir kez dener)
+function ensureDailyAI() {
+  const A = state.ai, W = A.web;
+  if (!A.auto || state.view !== "analiz" || !["gemini", "groq", "claude"].some(p => aiKey(p))) return;
+  if (state.running || !state.leagues.length || !flatten().length) return;
+  if (!A.daily && A.dstatus !== "loading" && !A.dTried) { A.dTried = true; runDailyAI(); }
+  if (!W.daily && W.dstatus !== "loading" && !W.dTried) { W.dTried = true; setTimeout(runWebDaily, 400); }
+}
 async function runAI(kind, question) {
+  if (kind === "daily") return runDailyAI();
   const A = state.ai;
   const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
   if (!order.length) { A.error = "Hiçbir sağlayıcı için anahtar tanımlı değil. Script özelliklerine GEMINI_API_KEY veya GROQ_API_KEY ekle."; $("aiSet").open = true; renderAI(); return; }
@@ -3935,8 +4017,7 @@ async function runAI(kind, question) {
     A.error = "Seçili aralıkta güvenilir veriyle maç yok. Süreyi uzat ya da lig ekle."; renderAI(); return;
   }
   const ranked = base.slice().sort((a, b) => maxP(b) - maxP(a)).slice(0, 40);
-  const idMap = {};
-  const list = ranked.map((m, i) => { const id = "m" + (i + 1); idMap[id] = m; const sg = typeof m.eh === "number" ? scoreGrid(m.eh, m.ea) : null; return { id, xg: sg ? [Math.round(m.eh * 10) / 10, Math.round(m.ea * 10) / 10] : undefined, skor: sg ? sg[0].i + "-" + sg[0].j : undefined, lig: trc(m.country) + " " + m.league, mac: m.home + " - " + m.away, saat: dayInfo(m.kick).num + " " + dayInfo(m.kick).month + " " + fmtTime(m.kick), ev: pn(m.pH), ber: pn(m.pD), dep: pn(m.pA), u15: pn(m.o15), u25: pn(m.o25), u35: pn(m.o35), kg: pn(m.bt) }; });
+  const { list, idMap } = aiList(ranked);
   const H = state.home;
   const ask = kind === "ask" ? "Kullanıcı sorusu: " + String(question).slice(0, 300) : `Günün yorumunu hazırla. ${H.n} maçlık, "${STYLES[H.style].label}" tarzında bir kupon öner ve 3 ile 5 öneri yaz.`;
   const nowTxt = new Date().toLocaleString("tr-TR", { timeZone: TZ, day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
@@ -3949,7 +4030,7 @@ async function runAI(kind, question) {
       A.at = Date.now(); A.usedProv = AI_NAMES[res.prov] + " / " + res.model; A.sig = aiSig();
       const f = (res.fails || []).map(x => String(x).split(":")[0]);
       if (f.length) A.note = f.join(", ") + " yanıt vermedi, " + AI_NAMES[res.prov] + " kullanıldı.";
-      lsSet("banko2:ai", JSON.stringify({ day: dayKey(new Date()), result: A.result, at: A.at, used: A.usedProv, note: A.note, sig: A.sig, kind: A.kind, q: A.q, win: A.win }));
+      lsSet("banko2:aiask", JSON.stringify({ day: dayKey(new Date()), result: A.result, at: A.at, used: A.usedProv, note: A.note, sig: A.sig, kind: A.kind, q: A.q, win: A.win }));
     } else A.error = ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi.";
   } catch (e) { A.error = (e && e.message) || String(e); }
   A.status = "idle"; renderAI();
@@ -3974,15 +4055,43 @@ async function runWebAI(question) {
   try {
     const res = await gs("callAI", { order, models: A.models, system: AI_WEB, prompt: `Şu an: ${nowTxt} (Sofia saati, UTC+2).\nSoru: ${W.q}`, web: true });
     if (res && res.ok) {
-      const j = res.json || {}, str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
-      const sk = str(j.skor, 8).replace(/\s/g, "").replace(":", "-");
-      W.res = { cevap: str(j.cevap, 2000), skor: /^\d{1,2}-\d{1,2}$/.test(sk) ? sk : "", kupon: (Array.isArray(j.kupon) ? j.kupon : []).slice(0, 6).map(k => ({ mac: str(k && k.mac, 90), tarih: str(k && k.tarih, 40), secim: str(k && k.secim, 80), oran: str(k && String(k.oran || ""), 12), neden: str(k && k.neden, 220) })).filter(k => k.mac && k.secim) };
+      W.res = webNorm(res.json);
       W.src = (res.src || []).filter(x => x && /^https?:\/\//.test(x.u)).slice(0, 8);
       W.prov = AI_NAMES[res.prov] + " / " + res.model + " · web araması"; W.at = Date.now();
       lsSet("banko2:aiweb", JSON.stringify({ day: dayKey(new Date()), q: W.q, res: W.res, src: W.src, prov: W.prov, at: W.at }));
     } else W.err = ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi.";
   } catch (e) { W.err = (e && e.message) || String(e); }
   W.status = "idle"; renderAI();
+}
+function dailyCards(has) {
+  const A = state.ai, W = A.web, tm = t => new Date(t).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
+  const wait = t => `<div class="dk-wait"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>${t}</span></div>`;
+  state.aiDaily = null;
+  // Banko verisi
+  let a = "";
+  const R = A.daily ? resolveAI(A.daily.result) : null, old = A.daily && !A.daily.srv && !state.running && A.daily.sig && A.daily.sig !== aiSig();
+  if (A.dstatus === "loading") a = wait("Maç listesine bakıyor…");
+  else if (R && R.picks.length) {
+    state.aiDaily = { picks: R.picks, comb: R.comb };
+    a = `${R.r.ozet ? `<p class="dk-sum">${esc(R.r.ozet)}</p>` : ""}<ol class="picks">${R.picks.map(c => pickRow(c.m, c.pk, c.note)).join("")}</ol>${combHTML(R.picks, R.comb)}
+      <div class="cp-act"><button type="button" class="ghost" id="dkCopy">Kopyala</button><button type="button" class="ghost" id="dkSave">Takibe al</button><button type="button" class="ghost" id="dkToMy">Kuponuma ekle</button></div>
+      ${old ? `<p class="dk-note">Veriler değişti; yenilemek istersen Yenile'ye dokun.</p>` : ""}`;
+  } else if (A.derr) a = `<p class="ai-err">${esc(A.derr)}</p>`;
+  else a = `<p class="dk-empty">${has ? (A.auto ? "Hazırlanacak…" : "Hazırlamak için Yenile'ye dokun.") : "Yapay zeka anahtarı eklenince hazırlanır."}</p>`;
+  // İnternet
+  let b = "";
+  const D = W.daily;
+  if (W.dstatus === "loading") b = wait("İnternette haber ve oranlara bakıyor, 20-40 saniye sürebilir…");
+  else if (D && D.res && D.res.kupon.length) b = `${D.res.cevap ? `<p class="dk-sum">${esc(D.res.cevap)}</p>` : ""}<ol class="wk">${D.res.kupon.map(k => { const m = aiWebMatch(k.mac); return `<li><div><b>${esc(k.secim)}</b>${k.oran ? `<span class="wk-o">${esc(k.oran)}</span>` : ""}</div><span class="wk-m">${esc(k.mac)}${k.tarih ? " · " + esc(k.tarih) : ""}</span>${k.neden ? `<small>${esc(k.neden)}</small>` : ""}${m ? `<button type="button" class="lnk" data-open="${esc(m.id)}" data-tab="win">Banko'da aç</button>` : ""}</li>`; }).join("")}</ol>
+      ${(o => o > 1 ? `<p class="dk-odd">Toplam oran <b>${o.toFixed(2).replace(".", ",")}</b></p>` : "")(D.res.kupon.reduce((x, k) => { const v = parseFloat(String(k.oran).replace(",", ".")); return v > 1 && v < 50 ? x * v : x; }, 1))}
+      ${D.src.length ? `<div class="wsrc"><small>Kaynaklar</small>${D.src.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t || x.u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0])}</a>`).join("")}</div>` : ""}`;
+  else if (W.derr) b = `<p class="ai-err">${esc(W.derr)}</p>`;
+  else b = `<p class="dk-empty">${has ? (A.auto ? "Hazırlanacak…" : "Hazırlamak için Yenile'ye dokun.") : "Yapay zeka anahtarı eklenince hazırlanır."}</p>`;
+  const head = (t, sub, id, busy, at, prov) => `<div class="dk-h">${BOT("bot-sm")}<div><h3>${t}</h3><small>${sub}${at ? " · " + tm(at) : ""}</small></div><button type="button" class="ghost dk-r" id="${id}"${busy || !has ? " disabled" : ""}>${busy ? '<span class="spin"></span>' : "Yenile"}</button></div>`;
+  return `<h3 class="dk-t">Günün kuponları <span class="muted">yapay zekanın iki farklı yolla hazırladığı</span></h3><div class="dk-g">
+    <div class="dk-c">${head("Banko verisiyle", "model, piyasa ve gol olasılıkları", "dkRun", A.dstatus === "loading", A.daily && A.daily.at, A.daily && A.daily.used)}${a}${A.daily && A.daily.used ? `<span class="dk-meta">${esc(A.daily.used)}${A.daily.srv ? " · sabah hazırlandı" : ""}</span>` : ""}</div>
+    <div class="dk-c web">${head("İnternetten", "güncel haber, sakatlık ve oranlar", "dkWeb", W.dstatus === "loading", D && D.at)}${b}${D && D.prov ? `<span class="dk-meta">${esc(D.prov)} · Banko modelinden bağımsız</span>` : ""}</div>
+  </div><p class="sh-note">İki kupon farklı yollarla hazırlanır; aynı maçları seçmeleri gerekmez. Kombine kuponların tutma olasılığı düşüktür, bahis tavsiyesi değildir.</p>`;
 }
 function aiSend(q) {
   q = String(q || "").trim(); if (!q) return;
@@ -3991,8 +4100,8 @@ function aiSend(q) {
   setTimeout(() => { const l = $("aiChat"); if (l) l.scrollIntoView({ block: "nearest", behavior: "smooth" }); }, 50);
 }
 const AI_CHIPS = { data: ["Bugün 3 banko maç", "En gollü maç hangisi?", "Kaç kaç biter: bu akşamın en önemli maçı"], web: ["Bu akşamki maçlar için 3 maçlık kupon", "Sakatlık haberlerine göre en güvenli maç", "Şampiyonlar Ligi maçları kaç kaç biter?"] };
-function resolveAI() {
-  const r = state.ai.result; if (!r) return null;
+function resolveAI(r) {
+  if (r === undefined) r = state.ai.result; if (!r) return null;
   const all = new Map(flatten().map(m => [m.id, m]));
   const picks = [];
   for (const s of r.kupon.secimler) {
@@ -4030,10 +4139,8 @@ function renderAI() {
         <span class="bub-meta">${esc(W.prov)}${W.at ? " · " + tm(W.at) : ""} · kesinlik içermez, bahis tavsiyesi değildir</span>`);
     } else log += ai(has ? `<p>Merhaba! İnternet modundayım. Güncel haberlere, sakatlıklara ve oranlara bakıp maç yorumu, skor tahmini ya da kupon hazırlayabilirim. Ne sormak istersin?</p>` : `<p>Başlamak için aşağıdaki ayarlardan bir yapay zeka anahtarı ekle.</p>`);
   } else {
-    const stale = !!A.result && !A.srv && A.status !== "loading" && !state.running && Object.keys(state.data).length > 0 && A.sig !== aiSig();
-    const res = stale ? null : resolveAI();
+    const stale = false, res = A.kind === "ask" ? resolveAI() : null;
     if (A.kind === "ask" && A.q && (A.status === "loading" || res || A.error)) log += me(A.q);
-    else if (A.kind === "daily" && (A.status === "loading" || res)) log += me("Günün yorumunu hazırla");
     if (stale) log += ai(`<p>Önceki yorum eski verilerle hazırlanmıştı${A.at ? " (" + tm(A.at) + ")" : ""}, bu yüzden gizledim. Yenilemek için "Günün yorumunu hazırla"ya dokun.</p>`);
     if (A.status === "loading") log += typing;
     else if (A.error) log += ai(`<p class="ai-err" role="alert">${esc(A.error)}</p>`);
@@ -4045,14 +4152,17 @@ function renderAI() {
       ${picks.length ? `<div><h3>${esc(r.kupon.baslik || "Yapay zeka kuponu")}</h3><ol class="picks">${picks.map(c => pickRow(c.m, c.pk, c.note)).join("")}</ol>${combHTML(picks, comb)}<div class="cp-act"><button type="button" class="ghost" id="aiCopy">Kuponu kopyala</button><button type="button" class="ghost" id="aiSave">Takibe al</button></div></div>` : ""}
       ${oneriler.length ? `<div><h3>Öneriler</h3>${oneriler.map(o => `<div class="ai-s"><b>${esc(o.baslik)}</b><p>${esc(o.metin)}</p>${o.matches.length ? `<div class="chips">${o.matches.map(m => `<button type="button" data-open="${esc(m.id)}" data-tab="win">${esc(m.home)} - ${esc(m.away)}</button>`).join("")}</div>` : ""}</div>`).join("")}</div>` : ""}
     </div>`;
-    } else if (!stale) log += ai(has ? `<p>Merhaba, ben Banko AI. Uygulamadaki maç verilerine bakıp günün yorumunu, kupon önerisini ya da bir maçın skor tahminini çıkarabilirim. "Günün yorumunu hazırla"ya dokun ya da bir şey sor.</p>` : `<p>Başlamak için aşağıdaki ayarlardan bir yapay zeka anahtarı ekle.</p>`);
+    } else if (!stale) log += ai(has ? `<p>Merhaba, ben Banko AI. Uygulamadaki maç verilerine bakıp soruna göre kupon, öneri ya da bir maçın skor tahminini çıkarabilirim. Günün iki kuponu aşağıda. Ne sormak istersin?</p>` : `<p>Başlamak için aşağıdaki ayarlardan bir yapay zeka anahtarı ekle.</p>`);
     if (A.note && res) log += `<p class="bub-note">${esc(A.note)}</p>`;
   }
   $("aiBody").innerHTML = log;
   $("aiRes").innerHTML = out;
+  $("aiDaily").innerHTML = dailyCards(has);
+  if ($("aiAutoS")) $("aiAutoS").checked = A.auto;
+  ensureDailyAI();
   $("aiChips").innerHTML = AI_CHIPS[A.mode].map(c => `<button type="button" class="aic-chip" data-aiq="${esc(c)}"${busy ? " disabled" : ""}>${esc(c)}</button>`).join("");
   $("aiMeta").textContent = busy ? "düşünüyor…" : web ? "internet modu" : "Banko verisiyle";
-  $("aiRun").hidden = web;
+  $("aiRun").hidden = true;
   $("aiRun").disabled = $("aiAsk").disabled = busy;
   $("aiRun").innerHTML = A.status === "loading" ? '<span class="spin"></span>Hazırlanıyor…' : "Günün yorumunu hazırla";
   $("aiRun").setAttribute("aria-busy", String(A.status === "loading"));
@@ -4223,6 +4333,7 @@ $("shBody").addEventListener("change", e => {
   else if (id === "mktS") { state.mktOn = v; state.home.seed = 0; render(); toast(v ? "Kuponda piyasa onayı açık" : "Kuponda piyasa onayı kapalı"); }
   else if (id === "bpS") { state.bpOn = v; state.home.seed = 0; saveUI(); render(); toast(v ? "Kuponda ikinci model onayı açık" : "Kuponda ikinci model onayı kapalı"); }
   else if (id === "accS") { state.accOn = v; state.home.seed = 0; saveUI(); render(); toast(v ? "Zayıf ligler kupona alınmayacak" : "Bütün ligler kupona girebilir"); }
+  else if (id === "aiAutoS") { state.ai.auto = v; lsSet("banko2:aiauto", v ? "1" : "0"); toast(v ? "Günün kuponları Analiz açılınca hazırlanacak" : "Otomatik hazırlama kapatıldı"); renderAI(); }
   else if (id === "aiMornS") { state.aiMorning = v; saveUI(); toast(v ? "Sabah yorumu her gün hazırlanacak" : "Sabah yorumu kapatıldı"); }
   else if (id === "pushS") { pushToggle(v); }
   else if (e.target.dataset && e.target.dataset.pp) { pushPref(e.target.dataset.pp, v); }
@@ -4356,7 +4467,10 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) { se
   try { state.favT = new Set(JSON.parse(lsGet("banko2:favt") || "[]")); } catch (e) {}
   try { const my = JSON.parse(lsGet("banko2:my") || "[]"); if (Array.isArray(my)) state.my = my.filter(x => x && x.id && MK[x.mk]).slice(0, MY_MAX); } catch (e) {}
   try { const m = lsGet("banko2:aimode"); if (m === "web" || m === "data") state.ai.mode = m; const w = JSON.parse(lsGet("banko2:aiweb") || "null"); if (w && w.day === dayKey(new Date()) && w.res) Object.assign(state.ai.web, { q: w.q, res: w.res, src: w.src || [], prov: w.prov || "", at: w.at }); } catch (e) {}
-  try { const a = JSON.parse(lsGet("banko2:ai") || "null"); if (a && a.day === dayKey(new Date()) && a.result) { state.ai.result = a.result; state.ai.srv = !!a.srv; state.ai.at = a.at; state.ai.usedProv = a.used || ""; state.ai.note = a.note || ""; state.ai.sig = a.sig || ""; state.ai.kind = a.kind || ""; state.ai.q = a.q || ""; state.ai.win = a.win || ""; } } catch (e) {}
+  try { const a = JSON.parse(lsGet("banko2:ai") || "null"); if (a && a.day === dayKey(new Date()) && a.result && (a.kind === "daily" || a.srv)) state.ai.daily = { result: a.result, at: a.at, used: a.used || "", sig: a.sig || "", srv: !!a.srv }; } catch (e) {}
+  try { const w = JSON.parse(lsGet("banko2:aiwebday") || "null"); if (w && w.day === dayKey(new Date()) && w.res) state.ai.web.daily = { res: w.res, src: w.src || [], prov: w.prov || "", at: w.at }; } catch (e) {}
+  try { const v = lsGet("banko2:aiauto"); if (v === "0") state.ai.auto = false; } catch (e) {}
+  try { const a = JSON.parse(lsGet("banko2:aiask") || "null"); if (a && a.day === dayKey(new Date()) && a.result) { state.ai.result = a.result; state.ai.srv = !!a.srv; state.ai.at = a.at; state.ai.usedProv = a.used || ""; state.ai.note = a.note || ""; state.ai.sig = a.sig || ""; state.ai.kind = a.kind || ""; state.ai.q = a.q || ""; state.ai.win = a.win || ""; } } catch (e) {}
   if (boot.leagueError && !(boot.leagues || []).length) { $("errors").textContent = "Lig listesi alınamadı (" + boot.leagueError + ")."; return; }
   state.leagues = (boot.leagues || []).filter(l => !isExcluded(l));
   let saved = null; try { saved = JSON.parse(lsGet("banko2:sel") || "null"); } catch (e) {}
