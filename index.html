@@ -734,6 +734,26 @@
   .dt-teams { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:10px; align-items:start; margin:14px 0 4px; }
   .dt-team { display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; font-weight:600; font-size:16px; line-height:1.2; min-width:0; overflow-wrap:anywhere; }
   .dt-vs { color:var(--muted); font:600 18px var(--fc); padding-top:12px; }
+  /* stadyum başlığı: fotoğraf varsa karartılmış arka plan, yoksa gece sahası */
+  .dt-hero { position:relative; isolation:isolate; overflow:hidden; border-radius:18px; margin:12px 0 4px; padding:18px 10px 14px; color:#fff;
+    background:radial-gradient(120% 80% at 50% -10%, color-mix(in srgb, var(--top-ac) 26%, transparent), transparent 60%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.028) 0 44px, transparent 44px 88px), var(--top-bg); }
+  .dt-hero::before { content:""; position:absolute; inset:0; z-index:-2; background:var(--ph, none) center 40%/cover no-repeat; opacity:0; transform:scale(1.04); transition:opacity .5s ease, transform 1.2s ease; }
+  .dt-hero.ph::before { opacity:1; transform:none; }
+  .dt-hero::after { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+    background:linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.45) 45%, rgba(0,0,0,.78) 100%); }
+  .dt-hero:not(.ph)::after { background:radial-gradient(60% 46% at 50% 100%, transparent 59%, rgba(255,255,255,.06) 60%, transparent 61.5%), linear-gradient(180deg, transparent 60%, rgba(0,0,0,.25)); }
+  .dt-hero .dt-teams { margin:0; align-items:center; }
+  .dt-hero .dt-team { color:#fff; gap:8px; }
+  .dt-hero .dt-tn { font:700 clamp(17px, 4.6vw, 22px)/1.05 var(--fc); text-transform:uppercase; letter-spacing:.02em; text-shadow:0 2px 10px rgba(0,0,0,.55); }
+  .dt-hero .crest { --s:56px !important; border-radius:14px; background:rgba(255,255,255,.12); color:rgba(255,255,255,.8); box-shadow:0 6px 18px -6px rgba(0,0,0,.6); }
+  .dt-hero .crest.ok { background:rgba(255,255,255,.94); }
+  .dt-hero .crest img { padding:5px; }
+  .dt-hero .dt-vs { color:rgba(255,255,255,.82); font:800 26px var(--fc); padding:0; text-shadow:0 2px 10px rgba(0,0,0,.5); align-self:center; margin-top:-30px; }
+  .dt-hero .ft-star { color:rgba(255,255,255,.85); border-color:rgba(255,255,255,.28); background:rgba(0,0,0,.25); }
+  .dt-hero .ft-star[aria-pressed="true"] { color:#FFD166; border-color:rgba(255,209,102,.6); }
+  .dt-venue { display:flex; align-items:center; justify-content:center; gap:5px; margin:12px 0 0; font-size:13px; color:rgba(255,255,255,.82); text-shadow:0 1px 6px rgba(0,0,0,.6); }
+  @media (prefers-reduced-motion: reduce) { .dt-hero::before { transition:none; transform:none; } }
   .dt-flags { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
   .dt-sec { margin-top:18px; }
   .dt-sec h3 { margin:0 0 8px; font:600 19px var(--fc); display:flex; align-items:baseline; gap:8px; }
@@ -1193,7 +1213,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, stale: {}, fcUsed: null, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, mom: {}, past: null, pastInfo: {}, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, mom: {}, past: null, pastInfo: {}, venue: {}, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -1763,6 +1783,7 @@ function openDetail(id, tab) {
 }
 async function ensureDetail(id) {
   const m = findMatch(id); if (!m) return;
+  ensureVenue(m);
   const X = state.extra, jobs = [];
   if (!MR(id)) jobs.push(gs("getMarket", [{ id, lk: m.lk, h: m.hraw, a: m.araw, d: m.kick.toISOString() }]).then(r => { X.mkt[id] = (r && r.res && r.res[id]) || { miss: 1 }; }).catch(() => { X.mkt[id] = { miss: 1 }; }));
   if (!ER(id)) jobs.push(gs("getElo", [{ id, h: m.hraw, a: m.araw }]).then(r => { X.elo[id] = (r && r.res && r.res[id]) || { miss: 1 }; }).catch(() => { X.elo[id] = { miss: 1 }; }));
@@ -1905,6 +1926,19 @@ function aiBlock(m) {
   return `<div class="ai-m"><p>${esc(a.yorum)}</p>${pk ? `<p><b>Öne çıkan: ${esc(pickLabel(m, pk))}.</b> ${esc(a.neden)} <button type="button" class="lnk" data-pk="${pk.market}">Seç</button></p>` : ""}${a.dikkat.length ? `<ul>${a.dikkat.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}<span class="muted">${esc(a.prov)} · kesinlik içermez, bahis tavsiyesi değildir</span></div>
     <div class="sh-btns"><button type="button" class="ghost" data-act="ai">Yeniden yorumla</button></div>`;
 }
+// ---------- stadyum: ev sahibinin sahası. Sunucu adresi bir kez bulur, resim telefonda önbelleğe girer
+function venueKey(m) { return m.lk + "|" + m.hraw; }
+function venueImg(u) { const api = window.BANKO_CONFIG && window.BANKO_CONFIG.api; return api ? api.replace(/\/?$/, "/") + "img?u=" + encodeURIComponent(u) : u; }
+function ensureVenue(m) {
+  const k = venueKey(m), V = state.venue[k];
+  if (V) return;
+  let v = LOGOS[m.lk] && LOGOS[m.lk][m.hraw]; if (v === undefined && UEFA_K.has(m.lk)) v = crestAny(m.hraw);
+  state.venue[k] = { loading: 1 };
+  gs("getVenue", m.lk, m.hraw, typeof v === "number" ? v : null).then(r => {
+    const R = state.venue[k] = Object.assign({}, r || {}, { at: Date.now() });
+    if (R.u) { const im = new Image(); im.decoding = "async"; im.onload = () => { R.ok = 1; if (state.sheet === "match") syncSheet(); }; im.onerror = () => { R.u = null; if (state.sheet === "match") syncSheet(); }; im.src = venueImg(R.u); }
+  }).catch(() => { state.venue[k] = { none: 1 }; }).finally(() => { if (state.sheet === "match") syncSheet(); });
+}
 function favBtn(lk, raw) { const on = state.favT.has(lk + "|" + raw); return `<button type="button" class="ft-star" data-act="favt" data-team="${esc(raw)}" aria-pressed="${on}">${on ? "★ Favori" : "☆ Favorile"}</button>`; }
 function detailBody() {
   const m = findMatch(state.detId);
@@ -1934,7 +1968,10 @@ function detailBody() {
   const cor = c && typeof c.e === "number" ? `<p class="dt-line"><b>${dc(c.e)} korner</b> bekleniyor. 8,5 üst %${pn(c.p85)}, 9,5 üst %${pn(c.p95)}, 10,5 üst %${pn(c.p105)} (son ${c.n[0]} ev, ${c.n[1]} deplasman maçı).</p>`
     : `<p class="dt-line">${!CORNER_LEAGUES.has(m.lk) ? "Bu lig için korner verisi yok." : state.detLoading && !c ? "Korner geçmişi alınıyor…" : "Takımlar için yeterli korner verisi bulunamadı."}</p>`;
   return `<div class="dt-meta">${lgLogo(m.lk, m.country, 24)}${flagI(m.country)}${state.fav.has(m.lk) ? '<span class="fv">★</span>' : ""}<span>${esc(trc(m.country))} ${esc(m.league)}</span><span>·</span><span>${esc(di.tag || di.wd)} ${esc(di.num)} ${esc(di.month)}, ${esc(fmtTime(m.kick))}</span></div>
-    <div class="dt-teams"><div class="dt-team">${crest(m.lk, m.hraw, m.home, 44)}${esc(m.home)}${favBtn(m.lk, m.hraw)}</div><span class="dt-vs">-</span><div class="dt-team">${crest(m.lk, m.araw, m.away, 44)}${esc(m.away)}${favBtn(m.lk, m.araw)}</div></div>
+    ${(V => `<div class="dt-hero${V && V.ok ? " ph" : ""}"${V && V.ok ? ` style="--ph:url('${esc(venueImg(V.u))}')"` : ""}>
+      <div class="dt-teams"><div class="dt-team">${crest(m.lk, m.hraw, m.home, 56)}<span class="dt-tn">${esc(m.home)}</span>${favBtn(m.lk, m.hraw)}</div><span class="dt-vs">VS</span><div class="dt-team">${crest(m.lk, m.araw, m.away, 56)}<span class="dt-tn">${esc(m.away)}</span>${favBtn(m.lk, m.araw)}</div></div>
+      ${V && V.n ? `<p class="dt-venue"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>${esc(V.n)}${V.c ? ` · ${esc(V.c)}` : ""}</p>` : ""}
+    </div>`)(state.venue[venueKey(m)])}
     ${flags.length ? `<div class="dt-flags">${flags.join("")}</div>` : ""}
     ${state.detLoading ? '<p class="muted" style="margin:10px 0 0"><span class="spin"></span>Piyasa, Elo ve korner verisi alınıyor…</p>' : ""}
     ${(h => h ? `<div class="dt-sec"><h3>Öne çıkanlar</h3>${h}</div>` : "")(highlightsHTML(m))}
@@ -2047,7 +2084,7 @@ function syncSheet() {
     return;
   }
   if (k === "match") {
-    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.lu[state.detId] || null).length, (state.mom[detBi()] || {}).t || 0, JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
+    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.lu[state.detId] || null).length, (state.mom[detBi()] || {}).t || 0, (m0 => m0 ? JSON.stringify(state.venue[venueKey(m0)] || null) : "")(findMatch(state.detId)), JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
     if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y; }
     return;
   }
