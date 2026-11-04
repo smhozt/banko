@@ -777,6 +777,16 @@
   .dt-hero .dt-vs { color:rgba(255,255,255,.82); font:800 26px var(--fc); padding:0; text-shadow:0 2px 10px rgba(0,0,0,.5); align-self:center; margin-top:-30px; }
   .dt-hero .ft-star { color:rgba(255,255,255,.85); border-color:rgba(255,255,255,.28); background:rgba(0,0,0,.25); }
   .dt-hero .ft-star[aria-pressed="true"] { color:#FFD166; border-color:rgba(255,209,102,.6); }
+  .dt-kits { display:grid; grid-template-columns:1fr auto 1fr; align-items:end; gap:8px; margin:10px 0 2px; padding:12px 10px 10px; border-radius:16px;
+    background:radial-gradient(70% 90% at 25% 100%, color-mix(in srgb, var(--home) 12%, transparent), transparent 70%), radial-gradient(70% 90% at 75% 100%, color-mix(in srgb, var(--away) 12%, transparent), transparent 70%), var(--sunk); }
+  .dt-kits figure { margin:0; display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0; }
+  .dt-kits img { width:96px; height:96px; object-fit:contain; filter:drop-shadow(0 8px 12px rgba(0,0,0,.28)); animation:kitIn .45s cubic-bezier(.2,.8,.3,1) both; }
+  .dt-kits figure:last-child img { animation-delay:.08s; }
+  .dt-kits figcaption { font-size:12px; color:var(--muted); text-align:center; overflow-wrap:break-word; max-width:100%; }
+  .dt-kits .kit-x { width:96px; height:96px; display:grid; place-items:center; opacity:.6; }
+  .kit-t { align-self:center; font:600 12px var(--f); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  @keyframes kitIn { from { opacity:0; transform:translateY(8px) scale(.96); } to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce) { .dt-kits img { animation:none; } }
   .dt-venue { display:flex; align-items:center; justify-content:center; gap:5px; margin:12px 0 0; font-size:13px; color:rgba(255,255,255,.82); text-shadow:0 1px 6px rgba(0,0,0,.6); }
   @media (prefers-reduced-motion: reduce) { .dt-hero::before { transition:none; transform:none; } }
   .dt-flags { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
@@ -1810,7 +1820,7 @@ function openDetail(id, tab) {
 }
 async function ensureDetail(id) {
   const m = findMatch(id); if (!m) return;
-  ensureVenue(m);
+  ensureVenue(m); ensureVenue({ lk: m.lk, hraw: m.araw }, true);
   const X = state.extra, jobs = [];
   if (!MR(id)) jobs.push(gs("getMarket", [{ id, lk: m.lk, h: m.hraw, a: m.araw, d: m.kick.toISOString() }]).then(r => { X.mkt[id] = (r && r.res && r.res[id]) || { miss: 1 }; }).catch(() => { X.mkt[id] = { miss: 1 }; }));
   if (!ER(id)) jobs.push(gs("getElo", [{ id, h: m.hraw, a: m.araw }]).then(r => { X.elo[id] = (r && r.res && r.res[id]) || { miss: 1 }; }).catch(() => { X.elo[id] = { miss: 1 }; }));
@@ -1961,14 +1971,16 @@ function venueOf(lk, raw) { const V = state.venue[lk + "|" + raw]; return V && V
 function venueBg(V) { return V ? ` style="--ph:url('${esc(venueImg(V.u))}')"` : ""; }
 function venueDone() { if (state.sheet === "match" || state.sheet === "past") syncSheet(); if (state.view === "matches" || state.view === "live") scheduleRender(); }
 function venueImg(u) { const api = window.BANKO_CONFIG && window.BANKO_CONFIG.api; return api ? api.replace(/\/?$/, "/") + "img?u=" + encodeURIComponent(u) : u; }
-function ensureVenue(m) {
+function preVenue(R) { if (!R || !R.u || R.pre) return; R.pre = 1; const im = new Image(); im.decoding = "async"; im.onload = () => { R.ok = 1; venueDone(); }; im.onerror = () => { R.u = null; venueDone(); }; im.src = venueImg(R.u); }
+function preKit(R) { if (!R || !R.k || R.kp) return; R.kp = 1; const im = new Image(); im.decoding = "async"; im.onload = () => { R.kok = 1; venueDone(); }; im.onerror = () => { R.k = null; }; im.src = venueImg(R.k + "/small"); }
+function ensureVenue(m, noPhoto) {
   const k = venueKey(m), V = state.venue[k];
-  if (V) return;
+  if (V) { if (!noPhoto) preVenue(V); preKit(V); return; }
   let v = LOGOS[m.lk] && LOGOS[m.lk][m.hraw]; if (v === undefined && UEFA_K.has(m.lk)) v = crestAny(m.hraw);
   state.venue[k] = { loading: 1 };
   gs("getVenue", m.lk, m.hraw, typeof v === "number" ? v : null).then(r => {
     const R = state.venue[k] = Object.assign({}, r || {}, { at: Date.now() });
-    if (R.u) { const im = new Image(); im.decoding = "async"; im.onload = () => { R.ok = 1; venueDone(); }; im.onerror = () => { R.u = null; venueDone(); }; im.src = venueImg(R.u); }
+    if (!noPhoto) preVenue(R); preKit(R);
   }).catch(() => { state.venue[k] = { none: 1 }; }).finally(() => { if (state.sheet === "match" || state.sheet === "past") syncSheet(); });
 }
 function favBtn(lk, raw) { const on = state.favT.has(lk + "|" + raw); return `<button type="button" class="ft-star" data-act="favt" data-team="${esc(raw)}" aria-pressed="${on}">${on ? "★ Favori" : "☆ Favorile"}</button>`; }
@@ -2004,6 +2016,11 @@ function detailBody() {
       <div class="dt-teams"><div class="dt-team">${crest(m.lk, m.hraw, m.home, 56)}<span class="dt-tn" lang="${tnLang(m.lk, m.hraw)}">${esc(m.home)}</span>${favBtn(m.lk, m.hraw)}</div><span class="dt-vs">VS</span><div class="dt-team">${crest(m.lk, m.araw, m.away, 56)}<span class="dt-tn" lang="${tnLang(m.lk, m.araw)}">${esc(m.away)}</span>${favBtn(m.lk, m.araw)}</div></div>
       ${V && V.n ? `<p class="dt-venue"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>${esc(V.n)}${V.c ? ` · ${esc(V.c)}` : ""}</p>` : ""}
     </div>`)(state.venue[venueKey(m)])}
+    ${((KH, KA) => (KH && KH.kok) || (KA && KA.kok) ? `<div class="dt-kits" aria-label="Formalar">
+      <figure>${KH && KH.kok ? `<img src="${esc(venueImg(KH.k + "/small"))}" alt="${esc(m.home)} forması" width="100" height="100" decoding="async">` : `<span class="kit-x">${crest(m.lk, m.hraw, m.home, 40)}</span>`}<figcaption>${esc(m.home)}</figcaption></figure>
+      <span class="kit-t">Formalar</span>
+      <figure>${KA && KA.kok ? `<img src="${esc(venueImg(KA.k + "/small"))}" alt="${esc(m.away)} forması" width="100" height="100" decoding="async">` : `<span class="kit-x">${crest(m.lk, m.araw, m.away, 40)}</span>`}<figcaption>${esc(m.away)}</figcaption></figure>
+    </div>` : "")(state.venue[m.lk + "|" + m.hraw], state.venue[m.lk + "|" + m.araw])}
     ${flags.length ? `<div class="dt-flags">${flags.join("")}</div>` : ""}
     ${state.detLoading ? '<p class="muted" style="margin:10px 0 0"><span class="spin"></span>Piyasa, Elo ve korner verisi alınıyor…</p>' : ""}
     ${(h => h ? `<div class="dt-sec"><h3>Öne çıkanlar</h3>${h}</div>` : "")(highlightsHTML(m))}
@@ -2116,7 +2133,7 @@ function syncSheet() {
     return;
   }
   if (k === "match") {
-    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.lu[state.detId] || null).length, (state.mom[detBi()] || {}).t || 0, (m0 => m0 ? JSON.stringify(state.venue[venueKey(m0)] || null) : "")(findMatch(state.detId)), JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
+    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.lu[state.detId] || null).length, (state.mom[detBi()] || {}).t || 0, (m0 => m0 ? JSON.stringify(state.venue[venueKey(m0)] || null) + JSON.stringify(state.venue[m0.lk + "|" + m0.araw] || null) : "")(findMatch(state.detId)), JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
     if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y; }
     return;
   }
