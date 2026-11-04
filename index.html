@@ -90,6 +90,19 @@
   .intro .af { animation-delay:.12s; } .intro .df { animation-delay:.24s; }
   @keyframes fill { from { opacity:0; } }
   .hero-empty { padding:34px 0 18px; }
+  /* stadyum fotoğraflı büyük kart: renkler kartın içinde beyaza döner */
+  .hero.ph { position:relative; isolation:isolate; overflow:hidden; border-radius:26px; margin-top:18px; padding:34px 34px 30px; color:#fff;
+    --ink:#fff; --muted:rgba(255,255,255,.78); --line:rgba(255,255,255,.28); --sunk:rgba(255,255,255,.12); --surface:rgba(255,255,255,.08); }
+  .hero.ph::before { content:""; position:absolute; inset:0; z-index:-2; background:var(--ph) center 45%/cover no-repeat; animation:phIn .6s ease both; }
+  .hero.ph::after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg, rgba(0,0,0,.82) 0%, rgba(0,0,0,.62) 48%, rgba(0,0,0,.38) 100%), linear-gradient(0deg, rgba(0,0,0,.45), transparent 50%); }
+  .hero.ph .hero-num .n { color:#fff; text-shadow:0 4px 24px rgba(0,0,0,.45); }
+  .hero.ph .hero-pick { text-shadow:0 3px 18px rgba(0,0,0,.5); }
+  .hero.ph .ghost { color:#fff; border-color:rgba(255,255,255,.38); background:rgba(0,0,0,.28); }
+  .hero.ph .crest.ok { background:rgba(255,255,255,.94); }
+  .hero.ph .pitch-box { background:rgba(0,0,0,.32); border-radius:18px; padding:12px; backdrop-filter:blur(2px); }
+  @keyframes phIn { from { opacity:0; transform:scale(1.04); } to { opacity:1; transform:none; } }
+  @media (max-width:720px) { .hero.ph { padding:22px 18px 20px; border-radius:20px; margin-top:12px; } .hero.ph::after { background:linear-gradient(180deg, rgba(0,0,0,.5) 0%, rgba(0,0,0,.72) 55%, rgba(0,0,0,.84) 100%); } }
+  @media (prefers-reduced-motion: reduce) { .hero.ph::before { animation:none; } }
   .hero-empty h2 { font:700 clamp(34px,6vw,60px)/1 var(--fc); margin:0 0 8px; }
   .hero-empty p { color:var(--muted); margin:0 0 16px; max-width:52ch; }
   .hero-empty .ghost { height:44px; padding:0 20px; margin:0 8px 8px 0; }
@@ -298,6 +311,12 @@
   .lu-c { display:inline-block; margin-left:6px; font:600 12px/1 var(--f); padding:3px 8px; border-radius:999px; background:var(--card); box-shadow:inset 0 0 0 1px var(--line); vertical-align:1px; }
   .lu-c.p2, .lu-c.p1 { background:var(--warn-bg); color:var(--warn-fg); box-shadow:none; }
   .lu-c.n1, .lu-c.n2 { background:color-mix(in srgb, var(--t2) 20%, transparent); box-shadow:none; }
+  .lv-card { display:grid; gap:8px; }
+  .lv-hero { margin:0; padding:14px 8px 12px; }
+  .lv-hero .dt-tn { font-size:clamp(14px, 3.8vw, 18px); }
+  .lv-hero .crest { --s:40px !important; border-radius:11px; }
+  .lv-hero .pst-sc { margin-top:-18px; } .dt-hero.lv-hero .pst-sc .big { font-size:34px; }
+  .lv-hero .pst-sc small { display:inline-flex; align-items:center; gap:6px; color:#FFB4A8; font-weight:700; }
   .mom-w { background:var(--sunk); border-radius:12px; padding:10px 12px; }
   .mom { display:block; width:100%; height:auto; margin:6px 0 4px; }
   .mom-l { display:flex; justify-content:space-between; gap:10px; font-size:13px; font-weight:600; }
@@ -408,6 +427,12 @@
   .tk-mt { display:block; width:min(180px, 70%); height:4px; background:var(--line); border-radius:2px; margin-top:7px; overflow:hidden; }
   .tk-mt i { display:block; height:100%; background:var(--tier); border-radius:2px; }
   .tk-pk[data-past] { cursor:pointer; transition:background .15s; } .tk-pk[data-past]:hover { background:var(--sunk); } .tk-pk[data-past]:focus-visible { outline:2px solid var(--accent, var(--home)); outline-offset:-2px; }
+  .dt-hero .pst-sc .big { color:#fff; font:800 40px var(--fc); text-shadow:0 3px 14px rgba(0,0,0,.55); }
+  .dt-hero .pst-sc small { color:rgba(255,255,255,.8); }
+  .dt-hero .dt-team { overflow-wrap:break-word; }
+  .pst-hero .dt-tn { font-size:clamp(14px, 3.9vw, 20px); }
+  .pst-hero .pst-sc .big { font-size:clamp(30px, 8vw, 40px); }
+  .pst-hero .pst-sc { align-self:center; margin-top:-26px; }
   .pst-hd { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; text-align:center; padding:6px 0 4px; }
   .pst-tm { display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0; } .pst-tm b { font:600 15px var(--f); overflow-wrap:anywhere; }
   .pst-sc { display:flex; flex-direction:column; align-items:center; gap:2px; } .pst-sc .big { font:700 34px var(--fc); letter-spacing:.02em; } .pst-sc small { color:var(--muted); font-size:13px; }
@@ -1492,7 +1517,9 @@ function renderHero(top, tabDef, pinned) {
   const d = dayInfo(top.kick);
   const headline = t === "win" ? `${fav ? top.home : top.away} kazanır` : `${top.home} - ${top.away}`;
   const sub = t === "win" ? `<b>${esc(top.home)}</b> ile <b>${esc(top.away)}</b>` : `${esc(tabDef.label)} için en yüksek olasılık`;
-  el.innerHTML = `<div class="hero ${state.introDone ? "" : "intro"}">
+  ensureVenue(top);
+  const HV = venueOf(top.lk, top.hraw);
+  el.innerHTML = `<div class="hero ${state.introDone ? "" : "intro"}${HV ? " ph" : ""}"${venueBg(HV)}>
     <div>
       <p class="hero-when">${lgLogo(top.lk, top.country, 22)}<span>${esc(d.tag ? d.tag + ", " : "")}${esc(d.wd)} ${esc(fmtTime(top.kick))}, ${esc(trc(top.country))} ${esc(top.league)}</span></p>
       <h1 class="hero-pick">${esc(headline)}</h1>
@@ -1930,6 +1957,9 @@ function aiBlock(m) {
 // büyük harfe çevirirken Türk takımlarında Türkçe kural (İ/I), diğerlerinde İngilizce: "REAL MADRID", "BAŞAKŞEHİR"
 function tnLang(lk, raw) { return /^turkey/.test(lk) || (LOGOS.turkey1 && raw in LOGOS.turkey1) || (LOGOS.turkey2 && raw in LOGOS.turkey2) ? "tr" : "en"; }
 function venueKey(m) { return m.lk + "|" + m.hraw; }
+function venueOf(lk, raw) { const V = state.venue[lk + "|" + raw]; return V && V.ok && V.u ? V : null; }
+function venueBg(V) { return V ? ` style="--ph:url('${esc(venueImg(V.u))}')"` : ""; }
+function venueDone() { if (state.sheet === "match" || state.sheet === "past") syncSheet(); if (state.view === "matches" || state.view === "live") scheduleRender(); }
 function venueImg(u) { const api = window.BANKO_CONFIG && window.BANKO_CONFIG.api; return api ? api.replace(/\/?$/, "/") + "img?u=" + encodeURIComponent(u) : u; }
 function ensureVenue(m) {
   const k = venueKey(m), V = state.venue[k];
@@ -1938,8 +1968,8 @@ function ensureVenue(m) {
   state.venue[k] = { loading: 1 };
   gs("getVenue", m.lk, m.hraw, typeof v === "number" ? v : null).then(r => {
     const R = state.venue[k] = Object.assign({}, r || {}, { at: Date.now() });
-    if (R.u) { const im = new Image(); im.decoding = "async"; im.onload = () => { R.ok = 1; if (state.sheet === "match") syncSheet(); }; im.onerror = () => { R.u = null; if (state.sheet === "match") syncSheet(); }; im.src = venueImg(R.u); }
-  }).catch(() => { state.venue[k] = { none: 1 }; }).finally(() => { if (state.sheet === "match") syncSheet(); });
+    if (R.u) { const im = new Image(); im.decoding = "async"; im.onload = () => { R.ok = 1; venueDone(); }; im.onerror = () => { R.u = null; venueDone(); }; im.src = venueImg(R.u); }
+  }).catch(() => { state.venue[k] = { none: 1 }; }).finally(() => { if (state.sheet === "match" || state.sheet === "past") syncSheet(); });
 }
 function favBtn(lk, raw) { const on = state.favT.has(lk + "|" + raw); return `<button type="button" class="ft-star" data-act="favt" data-team="${esc(raw)}" aria-pressed="${on}">${on ? "★ Favori" : "☆ Favorile"}</button>`; }
 function detailBody() {
@@ -2081,7 +2111,7 @@ function syncSheet() {
   const k = state.sheet;
   if (!k || k === "info") return;
   if (k === "past") {
-    const p = state.past, I = p && state.pastInfo[liveKey(p)] || {}, sig = [p && liveKey(p), JSON.stringify(I).length, I.bi ? ((state.mom[I.bi] || {}).at || 0) : 0, p && JSON.stringify(state.live[liveKey(p)] || null)].join("|");
+    const p = state.past, I = p && state.pastInfo[liveKey(p)] || {}, sig = [p && liveKey(p), JSON.stringify(I).length, p ? JSON.stringify(state.venue[p.lk + "|" + p.h] || null) : "", I.bi ? ((state.mom[I.bi] || {}).at || 0) : 0, p && JSON.stringify(state.live[liveKey(p)] || null)].join("|");
     if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = pastBody(); $("shBody").scrollTop = y; }
     return;
   }
@@ -3141,7 +3171,8 @@ function drawShare() {
     const m = findMatch(spec.id);
     const go = im => { const cvm = drawMatch(spec, fmt, im); if (cvm) showCanvas(cvm); };
     if (!m) { go({}); return; }
-    Promise.all([crestUrl(m.lk, m.hraw), crestUrl(m.lk, m.araw), lgUrl(m.lk) || flagUrl(m.country)].map(loadImg)).then(([h, a, lg]) => go({ h, a, lg }));
+    const SV = venueOf(m.lk, m.hraw), canPh = SV && window.BANKO_CONFIG && window.BANKO_CONFIG.api;
+    Promise.all([crestUrl(m.lk, m.hraw), crestUrl(m.lk, m.araw), lgUrl(m.lk) || flagUrl(m.country), canPh ? venueImg(SV.u) : null].map(loadImg)).then(([h, a, lg, v]) => go({ h, a, lg, v }));
     return;
   }
   const rows = spec.rows, n = rows.length, R = spec.result;
@@ -3225,6 +3256,13 @@ function drawMatch(spec, fmt, im) {
   const rr = (x, y, w, h, r, fill) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); g.fillStyle = fill; g.fill(); };
   const wrap = (t, max, lh, x, y, lines) => { const w = String(t).split(" "); let line = "", n = 0; for (const word of w) { const tt = line ? line + " " + word : word; if (g.measureText(tt).width > max && line) { if (n === lines - 1) { g.fillText(fit(line + " " + word, max), x, y + n * lh); return n + 1; } g.fillText(line, x, y + n * lh); n++; line = word; } else line = tt; } if (line) { g.fillText(line, x, y + n * lh); n++; } return n; };
   shareBg(g, W, H);
+  if (im.v) {
+    // fotoğraf üst bölümü kaplar, aşağı doğru zemine karışır
+    const ph = story ? H * .62 : H * .7, iw = im.v.naturalWidth, ih = im.v.naturalHeight, k = Math.max(W / iw, ph / ih), dw = iw * k, dh = ih * k;
+    try { g.save(); g.globalAlpha = .9; g.drawImage(im.v, (W - dw) / 2, (ph - dh) * .4, dw, dh); g.restore(); } catch (e) {}
+    const sh = g.createLinearGradient(0, 0, 0, ph); sh.addColorStop(0, "rgba(0,0,0,.55)"); sh.addColorStop(.55, "rgba(0,0,0,.45)"); sh.addColorStop(1, SC.bg1); g.fillStyle = sh; g.fillRect(0, 0, W, ph + 2);
+    const tint = g.createLinearGradient(0, 0, 0, ph); tint.addColorStop(0, `rgba(${SC.rgb},.10)`); tint.addColorStop(1, `rgba(${SC.rgb},0)`); g.fillStyle = tint; g.fillRect(0, 0, W, ph);
+  }
   let y = story ? 120 : 64;
   g.strokeStyle = SC.ac; g.lineWidth = 5; g.strokeRect(64, y, 72, 52); g.beginPath(); g.moveTo(100, y); g.lineTo(100, y + 52); g.stroke(); g.beginPath(); g.arc(100, y + 26, 12, 0, 7); g.stroke();
   g.fillStyle = SC.ink; g.font = F(700, 60, true); g.fillText("Banko", 160, y + 46);
@@ -3505,6 +3543,7 @@ function openPast(key) {
   state.past = p; openSheet("past"); ensurePast(p);
 }
 function ensurePast(p) {
+  ensureVenue({ lk: p.lk, hraw: p.h });
   const k = liveKey(p), I = state.pastInfo[k], t = new Date(p.d).getTime(), done = Date.now() > t + 2.3 * 36e5;
   const mom = bi => { if (bi && t < Date.now()) ensureMom(bi, done).then(() => { if (state.sheet === "past") syncSheet(); }); };
   if (I && !I.err && (I.loading || done || Date.now() - (I.at || 0) < 6e4)) { mom(I.bi); return; }
@@ -3524,10 +3563,12 @@ function pastBody() {
   const bp = I.bp, H = tn(p.h), A = tn(p.a);
   const bpP = bp ? (p.mk === "win" ? (p.side === "away" ? bp.a : bp.h) : p.mk === "o15" ? bp.o15 : p.mk === "o25" ? bp.o25 : p.mk === "o35" ? bp.o35 : p.mk === "bt" ? bp.b : null) : null;
   const M = I.bi ? state.mom[I.bi] : null;
-  return `<div class="pst-hd">
-      <div class="pst-tm">${crest(p.lk, p.h, H, 40)}<b>${esc(H)}</b></div>
+  const PV = venueOf(p.lk, p.h), PR = state.venue[p.lk + "|" + p.h];
+  return `<div class="dt-hero pst-hero${PV ? " ph" : ""}"${venueBg(PV)}>
+      <div class="dt-teams"><div class="dt-team">${crest(p.lk, p.h, H, 56)}<span class="dt-tn" lang="${tnLang(p.lk, p.h)}">${esc(H)}</span></div>
       <div class="pst-sc"><span class="big">${g ? g[0] + " - " + g[1] : "–"}</span><small>${esc(st)}</small></div>
-      <div class="pst-tm">${crest(p.lk, p.a, A, 40)}<b>${esc(A)}</b></div>
+      <div class="dt-team">${crest(p.lk, p.a, A, 56)}<span class="dt-tn" lang="${tnLang(p.lk, p.a)}">${esc(A)}</span></div></div>
+      ${PR && PR.n ? `<p class="dt-venue">${esc(PR.n)}${PR.c ? ` · ${esc(PR.c)}` : ""}</p>` : ""}
     </div>
     <p class="pst-meta">${esc((p.c ? trc(p.c) + " " : "") + (p.lg || ""))}${p.lg ? " · " : ""}${di.num} ${di.month} ${di.wd}, ${fmtTime(kick)}</p>
     <div class="dt-sec"><h3>Seçim</h3>
@@ -3652,8 +3693,17 @@ function renderLive() {
   if (cps.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Kuponlarım şu an</h2></div><div class="lv-cps">${cps.join("")}</div></section>`;
   if (G.live.length) {
     const seen = new Set(), moms = [];
-    G.live.forEach(r => { const k = liveKey(r.p), L = state.live[k]; if (!L || !L.bi || seen.has(k)) return; seen.add(k); const M = state.mom[L.bi]; if (M && M.mo && M.mo.length) moms.push(`<div><h3><span>${esc(tn(r.p.h))} ${L.g ? L.g[0] + " - " + L.g[1] : ""} ${esc(tn(r.p.a))}</span><small>${typeof L.m === "number" ? L.m + "'" : L.st === "ht" ? "Devre arası" : ""}</small></h3>${momBlock(M, tn(r.p.h), tn(r.p.a), L.m)}</div>`); });
-    html += `<section class="card lv-grp"><div class="card-h"><h2><span class="lv-dot" aria-hidden="true"></span>Oynanıyor <span class="lv-n">${G.live.length}</span></h2></div>${li(G.live)}${moms.length ? `<h3 style="margin:16px 0 0;font:600 16px var(--fc)">Baskı grafiği</h3><div class="lv-mom">${moms.join("")}</div>` : ""}</section>`;
+    G.live.forEach(r => {
+      const k = liveKey(r.p), L = state.live[k]; if (!L || seen.has(k)) return; seen.add(k);
+      ensureVenue({ lk: r.p.lk, hraw: r.p.h });
+      const LV = venueOf(r.p.lk, r.p.h), M = L.bi ? state.mom[L.bi] : null, H = tn(r.p.h), A = tn(r.p.a);
+      moms.push(`<div class="lv-card"><div class="dt-hero lv-hero${LV ? " ph" : ""}"${venueBg(LV)}>
+        <div class="dt-teams"><div class="dt-team">${crest(r.p.lk, r.p.h, H, 40)}<span class="dt-tn" lang="${tnLang(r.p.lk, r.p.h)}">${esc(H)}</span></div>
+        <div class="pst-sc"><span class="big">${L.g ? L.g[0] + " - " + L.g[1] : "–"}</span><small><span class="lv-dot" aria-hidden="true"></span>${typeof L.m === "number" ? L.m + "'" : L.st === "ht" ? "Devre arası" : "Oynanıyor"}</small></div>
+        <div class="dt-team">${crest(r.p.lk, r.p.a, A, 40)}<span class="dt-tn" lang="${tnLang(r.p.lk, r.p.a)}">${esc(A)}</span></div></div></div>
+        ${M && M.mo && M.mo.length ? momBlock(M, H, A, L.m) : ""}</div>`);
+    });
+    html += `<section class="card lv-grp"><div class="card-h"><h2><span class="lv-dot" aria-hidden="true"></span>Oynanıyor <span class="lv-n">${G.live.length}</span></h2></div>${moms.length ? `<div class="lv-mom">${moms.join("")}</div><h3 style="margin:18px 0 0;font:600 16px var(--fc)">Seçimlerin</h3>` : ""}${li(G.live)}</section>`;
   }
   if (G.nodata.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Başladı <span class="lv-n">${G.nodata.length}</span></h2><span class="muted">canlı skor bu maçlar için gelmedi, bitince sonuçlanır</span></div>${li(G.nodata)}</section>`;
   if (G.next.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Sıradaki <span class="lv-n">${G.next.length}</span></h2><span class="muted">önümüzdeki 12 saat</span></div>${li(G.next)}</section>`;
