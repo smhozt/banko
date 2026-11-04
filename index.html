@@ -1927,6 +1927,8 @@ function aiBlock(m) {
     <div class="sh-btns"><button type="button" class="ghost" data-act="ai">Yeniden yorumla</button></div>`;
 }
 // ---------- stadyum: ev sahibinin sahası. Sunucu adresi bir kez bulur, resim telefonda önbelleğe girer
+// büyük harfe çevirirken Türk takımlarında Türkçe kural (İ/I), diğerlerinde İngilizce: "REAL MADRID", "BAŞAKŞEHİR"
+function tnLang(lk, raw) { return /^turkey/.test(lk) || (LOGOS.turkey1 && raw in LOGOS.turkey1) || (LOGOS.turkey2 && raw in LOGOS.turkey2) ? "tr" : "en"; }
 function venueKey(m) { return m.lk + "|" + m.hraw; }
 function venueImg(u) { const api = window.BANKO_CONFIG && window.BANKO_CONFIG.api; return api ? api.replace(/\/?$/, "/") + "img?u=" + encodeURIComponent(u) : u; }
 function ensureVenue(m) {
@@ -1969,7 +1971,7 @@ function detailBody() {
     : `<p class="dt-line">${!CORNER_LEAGUES.has(m.lk) ? "Bu lig için korner verisi yok." : state.detLoading && !c ? "Korner geçmişi alınıyor…" : "Takımlar için yeterli korner verisi bulunamadı."}</p>`;
   return `<div class="dt-meta">${lgLogo(m.lk, m.country, 24)}${flagI(m.country)}${state.fav.has(m.lk) ? '<span class="fv">★</span>' : ""}<span>${esc(trc(m.country))} ${esc(m.league)}</span><span>·</span><span>${esc(di.tag || di.wd)} ${esc(di.num)} ${esc(di.month)}, ${esc(fmtTime(m.kick))}</span></div>
     ${(V => `<div class="dt-hero${V && V.ok ? " ph" : ""}"${V && V.ok ? ` style="--ph:url('${esc(venueImg(V.u))}')"` : ""}>
-      <div class="dt-teams"><div class="dt-team">${crest(m.lk, m.hraw, m.home, 56)}<span class="dt-tn">${esc(m.home)}</span>${favBtn(m.lk, m.hraw)}</div><span class="dt-vs">VS</span><div class="dt-team">${crest(m.lk, m.araw, m.away, 56)}<span class="dt-tn">${esc(m.away)}</span>${favBtn(m.lk, m.araw)}</div></div>
+      <div class="dt-teams"><div class="dt-team">${crest(m.lk, m.hraw, m.home, 56)}<span class="dt-tn" lang="${tnLang(m.lk, m.hraw)}">${esc(m.home)}</span>${favBtn(m.lk, m.hraw)}</div><span class="dt-vs">VS</span><div class="dt-team">${crest(m.lk, m.araw, m.away, 56)}<span class="dt-tn" lang="${tnLang(m.lk, m.araw)}">${esc(m.away)}</span>${favBtn(m.lk, m.araw)}</div></div>
       ${V && V.n ? `<p class="dt-venue"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>${esc(V.n)}${V.c ? ` · ${esc(V.c)}` : ""}</p>` : ""}
     </div>`)(state.venue[venueKey(m)])}
     ${flags.length ? `<div class="dt-flags">${flags.join("")}</div>` : ""}
