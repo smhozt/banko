@@ -454,6 +454,60 @@
   .sg-c .sg-d { color:var(--muted); font-size:14px; }
   .ai { margin-top:20px; }
   .ai-sum { margin:14px 0 0; max-width:75ch; }
+  /* Banko AI sohbet paneli */
+  .aic { position:relative; overflow:hidden; border-radius:22px; padding:16px 16px 14px; color:var(--top-ink);
+    background:radial-gradient(90% 60% at 0% 0%, color-mix(in srgb, var(--top-ac) 18%, transparent), transparent 60%), radial-gradient(70% 50% at 100% 100%, color-mix(in srgb, var(--top-focus) 14%, transparent), transparent 60%), var(--top-bg);
+    --ink:var(--top-ink); --muted:var(--top-muted); --line:var(--top-line); --sunk:var(--top-sunk); --surface:var(--top-surface); --bg:var(--top-bg);
+    --bot-b:#F3F6F4; --bot-l:color-mix(in srgb, var(--top-ink) 55%, transparent); --bot-s:#0B1512; --bot-a:var(--top-ac); }
+  .aic-h { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .aic-t { flex:1; min-width:0; } .aic-t h2 { margin:0; font:700 26px/1 var(--fc); color:var(--top-ink); } .aic-t span { font-size:13px; color:var(--top-muted); }
+  .aic.busy .aic-t span { color:var(--top-ac); }
+  .aic-mode { background:rgba(255,255,255,.07); } .aic-mode button { height:34px; padding:0 14px; font-size:14px; color:var(--top-muted); }
+  .aic-mode button[aria-pressed="true"] { background:var(--top-ac); color:var(--top-bg); }
+  .aic-hint { margin:10px 0 0; font-size:13px; color:var(--top-muted); }
+  .aic-log { display:flex; flex-direction:column; gap:10px; margin:14px 0 12px; }
+  .bub { max-width:min(86%, 720px); padding:10px 14px; border-radius:18px; line-height:1.5; font-size:15px; }
+  .bub p { margin:0 0 6px; } .bub p:last-child { margin-bottom:0; }
+  .bub.me { align-self:flex-end; background:var(--top-ac); color:var(--top-bg); border-bottom-right-radius:6px; font-weight:500; animation:bubIn .25s ease both; }
+  .bub-row { display:flex; align-items:flex-end; gap:8px; animation:bubIn .3s ease both; }
+  .bub.ai { background:var(--top-surface); border:1px solid var(--top-line); border-bottom-left-radius:6px; display:flex; flex-direction:column; gap:6px; }
+  .bub.ai .ai-err { margin:0; }
+  .bub-meta { font-size:12px; color:var(--top-muted); }
+  .bub-tag { align-self:flex-start; font-size:12px; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,.08); color:var(--top-muted); }
+  .bub-more { color:var(--top-ac); font-weight:600; font-size:14px; }
+  .bub-note { margin:0 0 0 44px; font-size:12px; color:var(--top-muted); }
+  .bub.typing { flex-direction:row; align-items:center; gap:10px; } .bub.typing small { color:var(--top-muted); font-size:13px; }
+  .dots { display:inline-flex; gap:4px; } .dots i { width:7px; height:7px; border-radius:50%; background:var(--top-ac); animation:dot 1.2s infinite ease-in-out; } .dots i:nth-child(2) { animation-delay:.15s; } .dots i:nth-child(3) { animation-delay:.3s; }
+  @keyframes dot { 0%, 80%, 100% { opacity:.3; transform:translateY(0); } 40% { opacity:1; transform:translateY(-4px); } }
+  @keyframes bubIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  .aic .aq-sc b { color:var(--top-ac); }
+  .wk { list-style:none; margin:4px 0 0; padding:0; display:grid; gap:8px; }
+  .wk li { background:rgba(255,255,255,.05); border:1px solid var(--top-line); border-radius:12px; padding:9px 11px; display:grid; gap:3px; }
+  .wk li > div { display:flex; justify-content:space-between; gap:10px; align-items:baseline; } .wk b { font-weight:600; }
+  .wk-o { font:700 18px var(--fc); color:var(--top-ac); } .wk-m { font-size:13px; color:var(--top-muted); } .wk small { font-size:13px; color:var(--top-muted); }
+  .wk .lnk { justify-self:start; color:var(--top-ink); font-size:13px; }
+  .wsrc { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:4px; } .wsrc small { color:var(--top-muted); font-size:12px; margin-right:2px; }
+  .wsrc a { font-size:12px; color:var(--top-ink); text-decoration:none; padding:3px 9px; border-radius:999px; border:1px solid var(--top-line); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .wsrc a:hover { border-color:var(--top-ac); }
+  .aic-chips { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px; } #aiChips { display:contents; }
+  .aic-chip { border:1px solid var(--top-line); background:rgba(255,255,255,.05); color:var(--top-ink); border-radius:999px; padding:7px 12px; font:500 13px var(--f); cursor:pointer; }
+  .aic-chip:hover { border-color:var(--top-ac); } .aic-chip:disabled { opacity:.5; cursor:default; } .aic-chip.run { background:var(--top-ac); color:var(--top-bg); border-color:transparent; font-weight:600; }
+  .aic-in { display:flex; gap:8px; align-items:center; background:rgba(255,255,255,.06); border:1px solid var(--top-line); border-radius:999px; padding:5px 5px 5px 16px; scroll-margin-top:90px; }
+  .aic-in:focus-within { border-color:var(--top-ac); }
+  .aic-in input { flex:1; min-width:0; height:40px; border:0; background:transparent; color:var(--top-ink); font:15px var(--f); outline:none; } .aic-in input::placeholder { color:var(--top-muted); }
+  .aic-send { flex:none; width:42px; height:42px; border-radius:50%; border:0; background:var(--top-ac); color:var(--top-bg); display:grid; place-items:center; cursor:pointer; } .aic-send:disabled { opacity:.5; }
+  #aiRes { margin-top:6px; }
+  /* robot */
+  .bot { flex:none; overflow:visible; } .bot-lg { width:52px; height:52px; } .bot-sm { width:32px; height:32px; margin-bottom:2px; }
+  .bot-eyes { transform-box:fill-box; transform-origin:center; animation:blink 4.5s infinite; }
+  .bot-ant { animation:ant 2.4s ease-in-out infinite; }
+  .aic.busy .bot-lg .bot-eyes, .bub.typing ~ * .bot-eyes, .bub-row:has(.typing) .bot-eyes { animation:scan 1s ease-in-out infinite alternate; }
+  .aic.busy .bot-lg .bot-ant { animation-duration:.8s; }
+  @keyframes blink { 0%, 94%, 100% { transform:scaleY(1); } 97% { transform:scaleY(.1); } }
+  @keyframes scan { from { transform:translateX(-3px); } to { transform:translateX(3px); } }
+  @keyframes ant { 0%, 100% { opacity:1; } 50% { opacity:.45; } }
+  @media (prefers-reduced-motion: reduce) { .bot-eyes, .bot-ant, .dots i, .bub.me, .bub-row { animation:none !important; } }
+  @media (max-width:560px) { .aic { padding:14px 12px 12px; border-radius:18px; } .aic-mode { width:100%; } .aic-mode button { flex:1; } .bub { max-width:92%; font-size:14.5px; } }
   .ai-cols { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; margin-top:16px; align-items:start; }
   .ai h3 { margin:0 0 6px; font:600 20px var(--fc); }
   .ai-s { background:var(--sunk); border-radius:12px; padding:12px 14px; margin-bottom:10px; }
@@ -1225,6 +1279,9 @@ const pn = x => (typeof x === "number" ? Math.round(x * 100) : null);
 const pct = x => (typeof x === "number" ? Math.round(x * 100) + "%" : "-");
 
 // Boş durum çizimleri (tema renklerini kullanır)
+// Banko AI robotu: göz kırpar, düşünürken gözleri sağa sola gider
+const BOT = (cls = "") => `<svg class="bot ${cls}" viewBox="0 0 64 64" aria-hidden="true"><line x1="32" y1="5" x2="32" y2="14" stroke="var(--bot-l)" stroke-width="3" stroke-linecap="round"/><circle class="bot-ant" cx="32" cy="5" r="4.2" fill="var(--bot-a)"/><rect x="2.5" y="27" width="6" height="14" rx="3" fill="var(--bot-l)"/><rect x="55.5" y="27" width="6" height="14" rx="3" fill="var(--bot-l)"/><rect x="8" y="14" width="48" height="40" rx="15" fill="var(--bot-b)" stroke="var(--bot-l)" stroke-width="2"/><rect x="14.5" y="21" width="35" height="21" rx="10" fill="var(--bot-s)"/><g class="bot-eyes"><ellipse cx="25" cy="31.5" rx="4" ry="4.4" fill="var(--bot-a)"/><ellipse cx="39" cy="31.5" rx="4" ry="4.4" fill="var(--bot-a)"/></g><path d="M26.5 47.5q5.5 3.6 11 0" fill="none" stroke="var(--bot-a)" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+const SEND = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>`;
 const ILL = {
   goal: `<svg class="ill" viewBox="0 0 150 119" width="150" height="119" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round"><g stroke="var(--ill-l)" stroke-width="3"><path d="M10 104V24c0-4 3-7 7-7h96c4 0 7 3 7 7v80"/><path d="M10 24l22 16h72l16-16"/><path d="M32 40v64M104 40v64"/><path d="M21 32v72M43 40v64M57 40v64M71 40v64M85 40v64M95 40v64M112 28v76" opacity=".45"/><path d="M10 54h110M10 72h110M10 90h110" opacity=".45"/><path d="M4 106h142"/></g><g stroke="var(--ill-a)" stroke-width="3.4"><circle cx="104" cy="86" r="16" fill="var(--ill-f)"/><path d="M104 78l7 5-3 8h-8l-3-8z"/><path d="M104 70v8M111 83l8-3M108 91l5 8M100 91l-5 8M97 83l-8-3"/></g><path d="M64 88c8-6 16-8 24-6" stroke="var(--ill-a)" stroke-width="2.4" stroke-dasharray="2 6" opacity=".8"/></svg>`,
   ticket: `<svg class="ill" viewBox="0 0 150 119" width="150" height="119" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round"><g stroke="var(--ill-l)" stroke-width="3"><path d="M14 24h122c3 0 5 2 5 5v16a12 12 0 0 0 0 24v16c0 3-2 5-5 5H14c-3 0-5-2-5-5V69a12 12 0 0 0 0-24V29c0-3 2-5 5-5z"/><path d="M96 26v62" stroke-dasharray="5 6"/><circle cx="28" cy="42" r="4"/><circle cx="28" cy="58" r="4"/><circle cx="28" cy="74" r="4"/><path d="M40 42h40M40 58h34M40 74h40"/></g><g stroke="var(--ill-a)" stroke-width="3.4"><circle cx="118" cy="57" r="14" fill="var(--ill-f)"/><path d="M111 57l5 5 9-10"/></g><g stroke="var(--ill-l)" stroke-width="3" opacity=".5"><path d="M30 104h90"/><path d="M48 112h54"/></g></svg>`,
@@ -1255,7 +1312,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, stale: {}, fcUsed: null, pinned: null, backY: null, keys: {},
   elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {}, aq: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, aqDraft: "", mom: {}, past: null, pastInfo: {}, venue: {}, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
-  ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
+  ai: { mode: "data", web: { status: "idle", q: "", res: null, src: [], prov: "", at: 0, err: "" }, provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
 // ---------- sunucu bağlantısı ve tercihler (Apps Script)
@@ -2770,12 +2827,15 @@ function buildHome() {
   $("vAnaliz").innerHTML = `<div class="home">
     <div class="home-top"><h1>Analiz</h1><p id="anSub"></p></div>
     <section class="card ai" aria-labelledby="aiT" style="margin-top:6px">
-      <div class="card-h"><h2 id="aiT">Yapay zeka köşesi</h2><span class="muted" id="aiMeta"></span></div>
-      <div class="ai-actions" id="aiActs">
-        <button type="button" class="ghost solid" id="aiRun">Günün yorumunu hazırla</button>
-        <form class="ai-ask" id="aiForm"><label class="sr" for="aiQ">Yapay zekaya sor</label><input id="aiQ" type="text" maxlength="300" placeholder="Örnek: önümüzdeki 3 saat için 3 banko maç"><button class="ghost" id="aiAsk" type="submit">Sor</button></form>
+      <div class="aic" id="aiChat">
+        <div class="aic-h">${BOT("bot-lg")}<div class="aic-t"><h2 id="aiT">Banko AI</h2><span id="aiMeta"></span></div>
+          <div class="seg aic-mode" role="group" aria-label="Yapay zeka modu"><button type="button" data-aimode="data">Banko verisi</button><button type="button" data-aimode="web">İnternet</button></div></div>
+        <p class="aic-hint" id="aiHint"></p>
+        <div class="aic-log" id="aiBody" aria-live="polite"></div>
+        <div class="aic-chips"><button type="button" class="aic-chip run" id="aiRun">Günün yorumunu hazırla</button><span id="aiChips"></span></div>
+        <form class="aic-in" id="aiActs"><label class="sr" for="aiQ">Yapay zekaya sor</label><input id="aiQ" type="text" maxlength="300" autocomplete="off" enterkeyhint="send" placeholder="Bir şey sor…"><button class="aic-send" id="aiAsk" type="submit" aria-label="Gönder">${SEND}</button></form>
       </div>
-      <div id="aiBody" aria-live="polite"></div>
+      <div id="aiRes"></div>
       <details class="ai-set" id="aiSet"><summary>Yapay zeka ayarları</summary>
         <div class="row2"><label for="aiProv" class="muted">Sağlayıcı</label><select id="aiProv"><option value="gemini">Gemini</option><option value="groq">Groq</option><option value="claude">Claude</option></select>
           <label for="aiModel" class="muted">Model</label><input id="aiModel" type="text" autocomplete="off"></div>
@@ -2806,8 +2866,12 @@ function buildHome() {
   $("aiModel").value = state.ai.models[state.ai.provider];
   $("aiProv").addEventListener("change", e => { state.ai.provider = e.target.value; $("aiModel").value = state.ai.models[state.ai.provider]; saveUI(); renderAI(); });
   $("aiModel").addEventListener("change", e => { state.ai.models[state.ai.provider] = e.target.value.trim() || AI_DEFAULT_MODEL[state.ai.provider]; saveUI(); });
-  $("aiRun").addEventListener("click", () => { $("aiActs").scrollIntoView({ block: "start", behavior: "smooth" }); runAI("daily"); });
-  $("aiForm").addEventListener("submit", e => { e.preventDefault(); const q = $("aiQ").value.trim(); if (!q) return; $("aiQ").value = ""; $("aiQ").blur(); $("aiActs").scrollIntoView({ block: "start", behavior: "smooth" }); runAI("ask", q); });
+  $("aiChat").addEventListener("click", e => {
+    const md = e.target.closest("[data-aimode]"); if (md) { state.ai.mode = md.dataset.aimode; lsSet("banko2:aimode", state.ai.mode); buzz(); renderAI(); return; }
+    const ch = e.target.closest("[data-aiq]"); if (ch && !ch.disabled) { aiSend(ch.dataset.aiq); }
+  });
+  $("aiRun").addEventListener("click", () => { $("aiChat").scrollIntoView({ block: "nearest", behavior: "smooth" }); runAI("daily"); });
+  $("aiActs").addEventListener("submit", e => { e.preventDefault(); const q = $("aiQ").value.trim(); if (!q) return; $("aiQ").value = ""; aiSend(q); });
   $("vHome").addEventListener("click", homeClick);
   $("vAnaliz").addEventListener("click", homeClick);
   $("calibH").addEventListener("change", onCalib);
@@ -3796,8 +3860,9 @@ const AI_SYSTEM = [
   "3) Kesinlik veya garanti ifadesi kullanma. Kombine kupon olasılığının tek tek olasılıklardan çok daha düşük olduğunu hatırlat.",
   "4) Olasılıklar football-charts sicil tablosuna göre düzeltilmiştir. Türkçe, kısa ve sade yaz. Metinlerde id (m3 gibi) yazma, maç adını yaz. Bahis oranı verilmediği için 'oran' kelimesini kullanma, 'olasılık' de. Metinlerde yüzde ya da başka sayı yazma, sayıları sistem zaten gösteriyor.",
   "5) Yalnızca geçerli JSON döndür, başka metin ekleme. Şema:",
-  '{"ozet":"2-3 cümlelik genel bakış","kupon":{"baslik":"kısa başlık","secimler":[{"id":"m3","pazar":"win|o15|o25|o35|bt","taraf":"ev|dep (yalnızca pazar win ise)","gerekce":"tek cümle"}]},"oneriler":[{"baslik":"kısa başlık","metin":"1-2 cümle","idler":["m5"]}],"cevap":"kullanıcı soru sorduysa yanıtı, sormadıysa boş metin"}',
-  "Pazar kodları: win = maç sonucu, o15 = 1,5 üst, o25 = 2,5 üst, o35 = 3,5 üst, bt = karşılıklı gol var. Kupon istenmediyse secimler boş liste olabilir."
+  '{"ozet":"2-3 cümlelik genel bakış","kupon":{"baslik":"kısa başlık","secimler":[{"id":"m3","pazar":"win|o15|o25|o35|bt","taraf":"ev|dep (yalnızca pazar win ise)","gerekce":"tek cümle"}]},"oneriler":[{"baslik":"kısa başlık","metin":"1-2 cümle","idler":["m5"]}],"cevap":"kullanıcı soru sorduysa yanıtı, sormadıysa boş metin","skor":"yalnızca skor sorulduysa, örn 1-2"}',
+  "Pazar kodları: win = maç sonucu, o15 = 1,5 üst, o25 = 2,5 üst, o35 = 3,5 üst, bt = karşılıklı gol var. Kupon istenmediyse secimler boş liste olabilir.",
+  "6) Skor ya da 'kaç kaç biter' sorulursa listedeki 'skor' (gol modelinin en olası skoru) ve 'xg' (beklenen goller) alanlarına dayan: en olası skoru JSON'daki 'skor' alanına yaz (örn 1-2), cevapta bu skoru, bir alternatifini ve nedenini kısaca söyle. Bu durumda cevapta skor ve beklenen gol yazabilirsin; tam skorun tutma ihtimalinin düşük olduğunu tek cümleyle belirt. Skor sorulmadıysa 'skor' boş olsun."
 ].join("\n");
 
 function normalizeAI(j, idMap) {
@@ -3816,7 +3881,8 @@ function normalizeAI(j, idMap) {
     const b = str(o && o.baslik, 80), t = str(o && o.metin, 300);
     if (b || t) onr.push({ baslik: b, metin: t, mids });
   }
-  return { ozet: str(j && j.ozet, 700), cevap: str(j && j.cevap, 1200), kupon: { baslik: str(k && k.baslik, 80), secimler: sec }, oneriler: onr };
+  const sk = str(j && j.skor, 8).replace(/\s/g, "").replace(":", "-");
+  return { ozet: str(j && j.ozet, 700), cevap: str(j && j.cevap, 1200), skor: /^\d{1,2}-\d{1,2}$/.test(sk) ? sk : "", kupon: { baslik: str(k && k.baslik, 80), secimler: sec }, oneriler: onr };
 }
 // Yorum hangi veriyle hazırlandı: en yüksek olasılıklı maçlar değişirse (veri ya da model güncellenirse, düzeltme açılıp kapanırsa) eski yorum gizlenir.
 function aiSig() {
@@ -3841,6 +3907,16 @@ function aiLeagues(q) {
   R.forEach(([re, ks, l]) => { if (re.test(t)) { ks.forEach(k => keys.add(k)); lab.push(l); } });
   return keys.size ? { keys, label: lab.join(", ") + " maçları" } : null;
 }
+// soruda adı geçen takımların maçları (ör. "Fenerbahçe Liverpool kaç kaç biter")
+function aiNamed(q) {
+  const nz = x => String(x || "").toLocaleLowerCase("tr").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ı/g, "i").replace(/[^a-z0-9 ]+/g, " ");
+  const t = " " + nz(q).replace(/\s+/g, " ") + " ", now = Date.now();
+  const key = n => nz(n).replace(/\b(fc|cf|sc|afc|ac|fk|sk|cd|ud|club|de)\b/g, " ").replace(/\s+/g, " ").trim();
+  const hit = n => { const k = key(n); return k.length >= 3 && t.includes(" " + k + " "); };
+  const L = flatten().filter(m => m.kick.getTime() > now - 2 * 36e5 && m.kick.getTime() < now + 8 * 864e5 && (hit(m.home) || hit(m.hraw) || hit(m.away) || hit(m.araw)));
+  const both = L.filter(m => (hit(m.home) || hit(m.hraw)) && (hit(m.away) || hit(m.araw)));
+  return (both.length ? both : L).sort((a, b) => a.kick - b.kick).slice(0, 6);
+}
 async function runAI(kind, question) {
   const A = state.ai;
   const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
@@ -3850,7 +3926,9 @@ async function runAI(kind, question) {
   let base = W ? flatten().filter(m => m.trusted && m.kick.getTime() > now && W.ok(m.kick.getTime())) : homePool().base;
   const LQ = kind === "ask" ? aiLeagues(question) : null;
   if (W) A.win = W.label;
-  if (LQ) { const b2 = (W ? base : flatten().filter(m => m.trusted && m.kick.getTime() > now && m.kick.getTime() < now + 72 * 36e5)).filter(m => LQ.keys.has(m.lk)); if (b2.length) { base = b2; A.win = (A.win ? A.win + ", " : "") + LQ.label; } }
+  const NM = kind === "ask" ? aiNamed(question) : [];
+  if (NM.length) { base = NM; A.win = NM.length === 1 ? NM[0].home + " - " + NM[0].away : "sorudaki takımların maçları"; }
+  else if (LQ) { const b2 = (W ? base : flatten().filter(m => m.trusted && m.kick.getTime() > now && m.kick.getTime() < now + 72 * 36e5)).filter(m => LQ.keys.has(m.lk)); if (b2.length) { base = b2; A.win = (A.win ? A.win + ", " : "") + LQ.label; } }
   if (!base.length) {
     const nx = flatten().filter(m => m.trusted && m.kick.getTime() > now).sort((a, b) => a.kick - b.kick)[0];
     if (W) { A.result = { ozet: "", cevap: `${W.label[0].toLocaleUpperCase("tr-TR") + W.label.slice(1)} içinde güvenilir veriyle maç yok.${nx ? ` En yakın maç ${dayInfo(nx.kick).tag || dayInfo(nx.kick).num + " " + dayInfo(nx.kick).month} ${fmtTime(nx.kick)}: ${nx.home} - ${nx.away}.` : ""} Süreyi uzatıp tekrar sorabilirsin.`, kupon: { baslik: "", secimler: [] }, oneriler: [] }; A.at = Date.now(); A.usedProv = ""; A.sig = aiSig(); A.error = ""; renderAI(); return; }
@@ -3858,7 +3936,7 @@ async function runAI(kind, question) {
   }
   const ranked = base.slice().sort((a, b) => maxP(b) - maxP(a)).slice(0, 40);
   const idMap = {};
-  const list = ranked.map((m, i) => { const id = "m" + (i + 1); idMap[id] = m; return { id, lig: trc(m.country) + " " + m.league, mac: m.home + " - " + m.away, saat: dayInfo(m.kick).num + " " + dayInfo(m.kick).month + " " + fmtTime(m.kick), ev: pn(m.pH), ber: pn(m.pD), dep: pn(m.pA), u15: pn(m.o15), u25: pn(m.o25), u35: pn(m.o35), kg: pn(m.bt) }; });
+  const list = ranked.map((m, i) => { const id = "m" + (i + 1); idMap[id] = m; const sg = typeof m.eh === "number" ? scoreGrid(m.eh, m.ea) : null; return { id, xg: sg ? [Math.round(m.eh * 10) / 10, Math.round(m.ea * 10) / 10] : undefined, skor: sg ? sg[0].i + "-" + sg[0].j : undefined, lig: trc(m.country) + " " + m.league, mac: m.home + " - " + m.away, saat: dayInfo(m.kick).num + " " + dayInfo(m.kick).month + " " + fmtTime(m.kick), ev: pn(m.pH), ber: pn(m.pD), dep: pn(m.pA), u15: pn(m.o15), u25: pn(m.o25), u35: pn(m.o35), kg: pn(m.bt) }; });
   const H = state.home;
   const ask = kind === "ask" ? "Kullanıcı sorusu: " + String(question).slice(0, 300) : `Günün yorumunu hazırla. ${H.n} maçlık, "${STYLES[H.style].label}" tarzında bir kupon öner ve 3 ile 5 öneri yaz.`;
   const nowTxt = new Date().toLocaleString("tr-TR", { timeZone: TZ, day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
@@ -3876,6 +3954,43 @@ async function runAI(kind, question) {
   } catch (e) { A.error = (e && e.message) || String(e); }
   A.status = "idle"; renderAI();
 }
+const AI_WEB = [
+  "Sen deneyimli bir futbol analistisin. Kullanıcının sorusunu yanıtlamak için web araması yap: güncel sakatlık ve ceza listeleri, muhtemel kadrolar, son form, maç önü haberleri, bahis oranları ve uzman tahminleri.",
+  "Kurallar: 1) Bulduğun güncel bilgiye dayan; bulamadığın bilgiyi uydurma, emin değilsen söyle. 2) Kesinlik ya da garanti ifadesi kullanma; kombine kuponların tutma olasılığının düşük olduğunu hatırlat. 3) Kupon istenirse en fazla 6 seçim öner, her seçim için kısa gerekçe ve bulabildiysen güncel oran yaz. 4) Skor sorulursa en olası skoru ve bir alternatifini söyle. 5) Türkçe, samimi ve kısa yaz.",
+  'Yalnızca geçerli JSON döndür, başka metin yazma: {"cevap":"3-6 cümle","skor":"skor sorulduysa örn 1-2, değilse boş","kupon":[{"mac":"Ev - Deplasman","tarih":"örn 4 Kasım 22:00","secim":"örn Maç sonucu 2, 2,5 üst","oran":"örn 1,85 ya da boş","neden":"tek cümle"}]}'
+].join("\n");
+function aiWebMatch(t) {
+  const nz = x => String(x || "").toLocaleLowerCase("tr").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ı/g, "i").replace(/[^a-z0-9 ]+/g, " ").replace(/\b(fc|cf|sc|afc)\b/g, " ").replace(/\s+/g, " ").trim();
+  const T = " " + nz(t) + " ", hit = n => { const k = nz(n); return k.length >= 3 && T.includes(" " + k + " "); };
+  return flatten().find(m => (hit(m.home) || hit(m.hraw)) && (hit(m.away) || hit(m.araw))) || null;
+}
+async function runWebAI(question) {
+  const A = state.ai, W = A.web;
+  const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
+  if (!order.length) { W.err = "Hiçbir sağlayıcı için anahtar tanımlı değil."; renderAI(); return; }
+  if (W.status === "loading") return;
+  W.status = "loading"; W.q = String(question).slice(0, 300); W.err = ""; renderAI();
+  const nowTxt = new Date().toLocaleString("tr-TR", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  try {
+    const res = await gs("callAI", { order, models: A.models, system: AI_WEB, prompt: `Şu an: ${nowTxt} (Sofia saati, UTC+2).\nSoru: ${W.q}`, web: true });
+    if (res && res.ok) {
+      const j = res.json || {}, str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+      const sk = str(j.skor, 8).replace(/\s/g, "").replace(":", "-");
+      W.res = { cevap: str(j.cevap, 2000), skor: /^\d{1,2}-\d{1,2}$/.test(sk) ? sk : "", kupon: (Array.isArray(j.kupon) ? j.kupon : []).slice(0, 6).map(k => ({ mac: str(k && k.mac, 90), tarih: str(k && k.tarih, 40), secim: str(k && k.secim, 80), oran: str(k && String(k.oran || ""), 12), neden: str(k && k.neden, 220) })).filter(k => k.mac && k.secim) };
+      W.src = (res.src || []).filter(x => x && /^https?:\/\//.test(x.u)).slice(0, 8);
+      W.prov = AI_NAMES[res.prov] + " / " + res.model + " · web araması"; W.at = Date.now();
+      lsSet("banko2:aiweb", JSON.stringify({ day: dayKey(new Date()), q: W.q, res: W.res, src: W.src, prov: W.prov, at: W.at }));
+    } else W.err = ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi.";
+  } catch (e) { W.err = (e && e.message) || String(e); }
+  W.status = "idle"; renderAI();
+}
+function aiSend(q) {
+  q = String(q || "").trim(); if (!q) return;
+  $("aiQ").blur(); buzz();
+  if (state.ai.mode === "web") runWebAI(q); else runAI("ask", q);
+  setTimeout(() => { const l = $("aiChat"); if (l) l.scrollIntoView({ block: "nearest", behavior: "smooth" }); }, 50);
+}
+const AI_CHIPS = { data: ["Bugün 3 banko maç", "En gollü maç hangisi?", "Kaç kaç biter: bu akşamın en önemli maçı"], web: ["Bu akşamki maçlar için 3 maçlık kupon", "Sakatlık haberlerine göre en güvenli maç", "Şampiyonlar Ligi maçları kaç kaç biter?"] };
 function resolveAI() {
   const r = state.ai.result; if (!r) return null;
   const all = new Map(flatten().map(m => [m.id, m]));
@@ -3892,32 +4007,56 @@ function resolveAI() {
 }
 function renderAI() {
   if (!state.homeBuilt) return;
-  const A = state.ai, has = ["gemini", "groq", "claude"].some(p => aiKey(p));
-  const stale = !!A.result && !A.srv && A.status !== "loading" && !state.running && Object.keys(state.data).length > 0 && A.sig !== aiSig();
-  const res = stale ? null : resolveAI();
-  let html = "";
-  if (stale) html += `<p class="ai-empty">Önceki yorum eski verilerle hazırlanmıştı${A.at ? " (" + new Date(A.at).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }) + ")" : ""}, bu yüzden gizlendi. "Günün yorumunu hazırla" ile yenile.</p>`;
-  if (A.kind === "ask" && A.q && (A.status === "loading" || res || A.error)) html += `<div class="ai-q"><small>Sorun</small>${esc(A.q)}</div>${A.win ? `<p class="ai-win">Yalnızca ${esc(A.win)} içindeki maçlara bakıldı.</p>` : ""}`;
-  if (A.status === "loading") html += `<p class="ai-empty"><span class="spin"></span>${A.kind === "ask" ? "Yanıt hazırlanıyor…" : "Yapay zeka yorumu hazırlanıyor…"}</p>`;
-  if (A.error) html += `<p class="ai-err" role="alert">${esc(A.error)}</p>`;
+  const A = state.ai, W = A.web, web = A.mode === "web", has = ["gemini", "groq", "claude"].some(p => aiKey(p));
+  const busy = web ? W.status === "loading" : A.status === "loading";
+  const tm = t => new Date(t).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
+  const me = t => `<div class="bub me">${esc(t)}</div>`;
+  const ai = (inner, cls = "") => `<div class="bub-row">${BOT("bot-sm")}<div class="bub ai ${cls}">${inner}</div></div>`;
+  const typing = ai(`<span class="dots" aria-label="Yanıt hazırlanıyor"><i></i><i></i><i></i></span><small>${web ? "İnternette arıyor, 20-40 saniye sürebilir…" : "Maç listesini okuyor…"}</small>`, "typing");
+  const skor = v => v ? `<span class="aq-sc"><small>Skor tahmini</small><b>${esc(v)}</b></span>` : "";
+  let log = "", out = "";
+  $("aiChat").classList.toggle("busy", busy);
+  document.querySelectorAll("#aiChat [data-aimode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.aimode === A.mode)));
+  $("aiHint").textContent = web ? "İnternet modu: Banko'nun modelinden bağımsız. Yapay zeka güncel haber, sakatlık ve oranları arar; kaynakları altta gösterir." : "Banko verisi modu: yalnızca uygulamadaki model, piyasa ve gol olasılıklarına bakar, uydurmaz.";
   state.aiCoupon = null;
-  if (res) {
-    const { r, picks, comb, oneriler } = res;
-    if (picks.length) state.aiCoupon = { picks, comb };
-    html += `${r.ozet ? `<p class="ai-sum">${esc(r.ozet)}</p>` : ""}${r.cevap ? `<div class="ai-ans">${esc(r.cevap)}</div>` : ""}<div class="ai-cols">
-      ${picks.length ? `<div><h3>${esc(r.kupon.baslik || "Yapay zeka kuponu")}</h3><ol class="picks">${picks.map(c => pickRow(c.m, c.pk, c.note)).join("")}</ol>${combHTML(picks, comb)}<div class="cp-act"><button type="button" class="ghost" id="aiCopy">Kuponu kopyala</button><button type="button" class="ghost" id="aiSave">Takibe al</button><button type="button" class="ghost" id="aiToMy">Kuponuma aktar</button><button type="button" class="ghost" id="aiShare">Resim olarak paylaş</button></div></div>` : ""}
+  if (web) {
+    if (W.q) log += me(W.q);
+    if (W.status === "loading") log += typing;
+    else if (W.err) log += ai(`<p class="ai-err" role="alert">${esc(W.err)}</p>`);
+    else if (W.res) {
+      const R = W.res;
+      log += ai(`${skor(R.skor)}<p>${esc(R.cevap)}</p>${R.kupon.length ? `<ol class="wk">${R.kupon.map(k => { const m = aiWebMatch(k.mac); return `<li><div><b>${esc(k.secim)}</b>${k.oran ? `<span class="wk-o">${esc(k.oran)}</span>` : ""}</div><span class="wk-m">${esc(k.mac)}${k.tarih ? " · " + esc(k.tarih) : ""}</span>${k.neden ? `<small>${esc(k.neden)}</small>` : ""}${m ? `<button type="button" class="lnk" data-open="${esc(m.id)}" data-tab="win">Banko'da aç</button>` : ""}</li>`; }).join("")}</ol>` : ""}
+        ${W.src.length ? `<div class="wsrc"><small>Kaynaklar</small>${W.src.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t || (x.u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]))}</a>`).join("")}</div>` : ""}
+        <span class="bub-meta">${esc(W.prov)}${W.at ? " · " + tm(W.at) : ""} · kesinlik içermez, bahis tavsiyesi değildir</span>`);
+    } else log += ai(has ? `<p>Merhaba! İnternet modundayım. Güncel haberlere, sakatlıklara ve oranlara bakıp maç yorumu, skor tahmini ya da kupon hazırlayabilirim. Ne sormak istersin?</p>` : `<p>Başlamak için aşağıdaki ayarlardan bir yapay zeka anahtarı ekle.</p>`);
+  } else {
+    const stale = !!A.result && !A.srv && A.status !== "loading" && !state.running && Object.keys(state.data).length > 0 && A.sig !== aiSig();
+    const res = stale ? null : resolveAI();
+    if (A.kind === "ask" && A.q && (A.status === "loading" || res || A.error)) log += me(A.q);
+    else if (A.kind === "daily" && (A.status === "loading" || res)) log += me("Günün yorumunu hazırla");
+    if (stale) log += ai(`<p>Önceki yorum eski verilerle hazırlanmıştı${A.at ? " (" + tm(A.at) + ")" : ""}, bu yüzden gizledim. Yenilemek için "Günün yorumunu hazırla"ya dokun.</p>`);
+    if (A.status === "loading") log += typing;
+    else if (A.error) log += ai(`<p class="ai-err" role="alert">${esc(A.error)}</p>`);
+    else if (res) {
+      const { r, picks, comb, oneriler } = res;
+      if (picks.length) state.aiCoupon = { picks, comb };
+      log += ai(`${A.win && A.kind === "ask" ? `<span class="bub-tag">${esc(A.win)}</span>` : ""}${skor(r.skor)}${r.ozet ? `<p>${esc(r.ozet)}</p>` : ""}${r.cevap ? `<p>${esc(r.cevap)}</p>` : ""}${picks.length || oneriler.length ? `<p class="bub-more">${picks.length ? "Kuponu" : "Önerileri"} aşağıda hazırladım ↓</p>` : ""}<span class="bub-meta">${esc(A.usedProv || "")}${A.at ? " · " + tm(A.at) : ""}</span>`);
+      if (picks.length || oneriler.length) out = `<div class="ai-cols">
+      ${picks.length ? `<div><h3>${esc(r.kupon.baslik || "Yapay zeka kuponu")}</h3><ol class="picks">${picks.map(c => pickRow(c.m, c.pk, c.note)).join("")}</ol>${combHTML(picks, comb)}<div class="cp-act"><button type="button" class="ghost" id="aiCopy">Kuponu kopyala</button><button type="button" class="ghost" id="aiSave">Takibe al</button></div></div>` : ""}
       ${oneriler.length ? `<div><h3>Öneriler</h3>${oneriler.map(o => `<div class="ai-s"><b>${esc(o.baslik)}</b><p>${esc(o.metin)}</p>${o.matches.length ? `<div class="chips">${o.matches.map(m => `<button type="button" data-open="${esc(m.id)}" data-tab="win">${esc(m.home)} - ${esc(m.away)}</button>`).join("")}</div>` : ""}</div>`).join("")}</div>` : ""}
     </div>`;
-  } else if (A.status !== "loading" && !A.error) {
-    html += has ? `<div class="ai-empty">${ILL.goal}</div><p class="ai-empty">Henüz yorum yok. "Günün yorumunu hazırla" ile başlat ya da bir soru sor.</p>`
-      : `<p class="ai-empty">Yapay zeka, maç listesini okuyup kupon ve öneri hazırlar. Başlamak için aşağıdaki ayarlardan bir API anahtarı ekle.</p>`;
+    } else if (!stale) log += ai(has ? `<p>Merhaba, ben Banko AI. Uygulamadaki maç verilerine bakıp günün yorumunu, kupon önerisini ya da bir maçın skor tahminini çıkarabilirim. "Günün yorumunu hazırla"ya dokun ya da bir şey sor.</p>` : `<p>Başlamak için aşağıdaki ayarlardan bir yapay zeka anahtarı ekle.</p>`);
+    if (A.note && res) log += `<p class="bub-note">${esc(A.note)}</p>`;
   }
-  $("aiBody").innerHTML = html;
-  if (A.note && res) $("aiBody").insertAdjacentHTML("beforeend", `<p class="muted" style="margin-top:10px;font-size:13px">${esc(A.note)}</p>`);
-  $("aiMeta").textContent = res && A.at ? new Date(A.at).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }) + ", " + (A.usedProv || "") : "";
-  $("aiRun").disabled = $("aiAsk").disabled = A.status === "loading";
+  $("aiBody").innerHTML = log;
+  $("aiRes").innerHTML = out;
+  $("aiChips").innerHTML = AI_CHIPS[A.mode].map(c => `<button type="button" class="aic-chip" data-aiq="${esc(c)}"${busy ? " disabled" : ""}>${esc(c)}</button>`).join("");
+  $("aiMeta").textContent = busy ? "düşünüyor…" : web ? "internet modu" : "Banko verisiyle";
+  $("aiRun").hidden = web;
+  $("aiRun").disabled = $("aiAsk").disabled = busy;
   $("aiRun").innerHTML = A.status === "loading" ? '<span class="spin"></span>Hazırlanıyor…' : "Günün yorumunu hazırla";
   $("aiRun").setAttribute("aria-busy", String(A.status === "loading"));
+  $("aiQ").placeholder = web ? "Örnek: Fenerbahçe - Liverpool kaç kaç biter?" : "Örnek: önümüzdeki 3 saat için 3 banko maç";
   $("aiKeyState").textContent = ["gemini", "groq", "claude"].map(p => AI_NAMES[p] + ": " + (aiKey(p) ? "anahtar tanımlı" : "anahtar yok")).join(". ") + ".";
 }
 
@@ -4216,6 +4355,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) { se
   try { state.fav = new Set(JSON.parse(lsGet("banko2:fav") || "[]")); } catch (e) {}
   try { state.favT = new Set(JSON.parse(lsGet("banko2:favt") || "[]")); } catch (e) {}
   try { const my = JSON.parse(lsGet("banko2:my") || "[]"); if (Array.isArray(my)) state.my = my.filter(x => x && x.id && MK[x.mk]).slice(0, MY_MAX); } catch (e) {}
+  try { const m = lsGet("banko2:aimode"); if (m === "web" || m === "data") state.ai.mode = m; const w = JSON.parse(lsGet("banko2:aiweb") || "null"); if (w && w.day === dayKey(new Date()) && w.res) Object.assign(state.ai.web, { q: w.q, res: w.res, src: w.src || [], prov: w.prov || "", at: w.at }); } catch (e) {}
   try { const a = JSON.parse(lsGet("banko2:ai") || "null"); if (a && a.day === dayKey(new Date()) && a.result) { state.ai.result = a.result; state.ai.srv = !!a.srv; state.ai.at = a.at; state.ai.usedProv = a.used || ""; state.ai.note = a.note || ""; state.ai.sig = a.sig || ""; state.ai.kind = a.kind || ""; state.ai.q = a.q || ""; state.ai.win = a.win || ""; } } catch (e) {}
   if (boot.leagueError && !(boot.leagues || []).length) { $("errors").textContent = "Lig listesi alınamadı (" + boot.leagueError + ")."; return; }
   state.leagues = (boot.leagues || []).filter(l => !isExcluded(l));
