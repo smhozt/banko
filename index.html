@@ -939,6 +939,17 @@
   .mt tr.me td { background:color-mix(in srgb, var(--t2) 16%, transparent); font-weight:600; }
   /* ---------- yapay zeka maç yorumu ---------- */
   .ai-m { background:var(--sunk); border-radius:12px; padding:12px 14px; }
+  .aq { display:grid; gap:10px; }
+  .aq-i { display:grid; gap:6px; }
+  .aq-q { justify-self:end; max-width:85%; margin:0; padding:8px 12px; border-radius:14px 14px 4px 14px; background:var(--ink); color:var(--bg); font-size:14px; line-height:1.4; }
+  .aq-a { margin:0; max-width:92%; padding:10px 12px; border-radius:14px 14px 14px 4px; background:var(--sunk); line-height:1.5; font-size:14px; display:flex; flex-direction:column; gap:6px; }
+  .aq-a p { margin:0; } .aq-a .muted { font-size:12px; } p.aq-a { flex-direction:row; align-items:center; gap:8px; color:var(--muted); }
+  .aq-sc { display:inline-flex; align-items:baseline; gap:8px; } .aq-sc small { color:var(--muted); font-size:12px; } .aq-sc b { font:800 26px var(--fc); color:var(--home); letter-spacing:.02em; }
+  .aq-chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip-q { border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; padding:7px 12px; font:500 13px var(--f); cursor:pointer; }
+  .chip-q:hover { border-color:var(--ink); } .chip-q:disabled { opacity:.5; cursor:default; }
+  .aq-f { display:flex; gap:8px; } .aq-f input { flex:1; min-width:0; height:44px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); padding:0 12px; font:15px var(--f); }
+  .aq-f input:focus { outline:2px solid var(--focus); outline-offset:1px; } .aq-f .ghost { height:44px; padding:0 18px; }
   .ai-m p { margin:0 0 8px; line-height:1.55; }
   .ai-m ul { margin:6px 0 0; padding-left:18px; color:var(--muted); font-size:14px; }
   .ai-m .muted { display:block; margin-top:8px; }
@@ -1243,7 +1254,7 @@ const SORTS = [["prob","Olasılık"],["time","Saat"],["league","Lig"]];
 
 const state = { leagues: [], sel: new Set(), data: {}, errors: {}, tab: "win", range: "7", sort: "prob", trusted: true, calib: true, thr: {}, limit: 30,
   progress: { done: 0, total: 0 }, stop: false, running: false, search: "", introDone: false, limitHit: false, stale: {}, fcUsed: null, pinned: null, backY: null, keys: {},
-  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, mom: {}, past: null, pastInfo: {}, venue: {}, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
+  elo: { sig: "", status: "idle", res: {} }, mkt: { sig: "", status: "idle", res: {} }, mktOn: true, corners: { sig: "", status: "idle", res: {}, err: "" }, track: { status: "idle", data: null, error: "", armed: {} }, view: "home", collapsed: new Set(), fav: new Set(), extra: { mkt: {}, elo: {}, cr: {}, ti: {}, ai: {}, lu: {}, aq: {} }, detTable: false, detTblMode: "all", acc: null, accLoading: false, luck: null, luckLoading: false, bpOn: false, aqDraft: "", mom: {}, past: null, pastInfo: {}, venue: {}, accOn: true, accTab: "win", accAll: false, aiMorning: true, push: { sup: null, on: false, prefs: null, busy: false, ep: "", err: "" }, goalAt: {}, cuSig: "", cuT: 0, srTab: "run", detMore: false, scAll: false, detFlash: null, myPulse: 0, detId: null, detPick: null, my: [], slipTab: "auto", autoSave: true, days: { status: "idle", data: null, tab: "y", all: false, err: "" }, live: {}, liveAt: 0, liveDone: {}, trend: "", q: "", favT: new Set(), detLoading: false, badgeN: 0, cpVis: false, sheet: null, slipSig: "", home: { n: 4, style: "balanced", hours: 24, seed: 0 }, homeBuilt: false, lastCoupon: null, aiCoupon: null,
   ai: { provider: "gemini", models: { gemini: "gemini-3.5-flash", groq: "openai/gpt-oss-120b", claude: "claude-haiku-5-5" }, note: "", status: "idle", error: "", result: null, at: null, usedProv: "", sig: "" } };
 TABS.forEach(t => state.thr[t.id] = t.thr);
 
@@ -1809,6 +1820,7 @@ function detPicks(m) {
 }
 function openDetail(id, tab) {
   state.detTable = false; state.detTblMode = "all"; state.detMore = EXTRA_MK.includes(tab);
+  if (state.detId !== id) state.aqDraft = "";
   state.detId = id; state.detPick = MK[tab] ? tab : (MK[state.tab] ? state.tab : "win"); ensureAcc(); ensureLuck();
   openSheet("match");
   ensureDetail(id);
@@ -1905,6 +1917,63 @@ function teamBlock(m) {
     <p class="sh-note">Bu sezonun ${ti.played} maç sonucundan hesaplanır; puan silme gibi özel durumlar yüzünden resmi tablodan küçük farklar olabilir. Formda en yeni maç solda.</p>`;
 }
 // ---------- tek maç için yapay zeka yorumu
+function matchAIData(m, id) {
+  const X = state.extra;
+  const r = MR(id), ti = X.ti[id], side = m.pH >= m.pA ? "home" : "away", ei = eloInfo(m, { market: "win", side }), c = CR(id);
+  const num = v => (typeof v === "number" ? pn(v) : null);
+  const g = scoreGrid(m.eh, m.ea);
+  return { lig: trc(m.country) + " " + m.league, mac: m.home + " - " + m.away, saat: dayInfo(m.kick).num + " " + dayInfo(m.kick).month + " " + fmtTime(m.kick),
+    model: { ev: pn(m.pH), ber: pn(m.pD), dep: pn(m.pA), u15: pn(m.o15), u25: pn(m.o25), u35: pn(m.o35), kg: pn(m.bt) },
+    piyasa: r && typeof r.h === "number" ? { ev: num(r.h), ber: num(r.d), dep: num(r.a), u25: num(r.o), u15: num(r.p15), u35: num(r.p35), kg: num(r.pb) } : null,
+    oran: r ? { ev: r.bh || r.oh || null, dep: r.ba || r.oa || null, u25: r.bo || r.oo || null, u15: r.x15 || null, kg: r.xb || null } : null,
+    elo: ei ? ei.tag : null, korner: c && typeof c.e === "number" ? dc(c.e) + " bekleniyor" : null,
+    puan: ti && ti.ok ? { ev: ti.home && { sira: ti.home.pos, puan: ti.home.pts, mac: ti.home.p }, dep: ti.away && { sira: ti.away.pos, puan: ti.away.pts, mac: ti.away.p }, takim: ti.n } : null,
+    form: ti && ti.ok ? { ev: ti.formH.map(x => x.r).join(""), dep: ti.formA.map(x => x.r).join(""), not: "en yeni maç solda, G galibiyet B beraberlik M mağlubiyet" } : null,
+    aralarinda: ti && ti.ok ? ti.h2h.map(x => x.h + " " + x.s + " " + x.a) : [],
+    benzer_oran: (Q => Q.r || Q.g ? { mac: Q.r ? Q.r.n : Q.g.n, ev: Q.r ? pn(Q.r.h) : null, ber: Q.r ? pn(Q.r.d) : null, dep: Q.r ? pn(Q.r.a) : null, u25: Q.g ? pn(Q.g.o25) : Q.r ? pn(Q.r.o25) : null, kg: Q.g ? pn(Q.g.bt) : Q.r ? pn(Q.r.bt) : null, not: "bu oranlarla oynanmış geçmiş maçlarda gerçekleşen yüzde" } : null)(r ? simQuery(r.h, r.a, r.o) : {}),
+    seriler: highlights(m).map(x => x.t),
+    sans: (L => L.some(Boolean) ? L.map(x => x && { puan: x.pts, beklenen_puan: x.xp, durum: LUCK_TXT[x.c] || null, mac_basi_xg: x.xf, rakibe_xg: x.xa }) : null)([luckOf(m.lk, m.hraw), luckOf(m.lk, m.araw)]),
+    ikinci_model: (f => f ? { ev: pn(f.h), ber: pn(f.d), dep: pn(f.a), u25: typeof f.o25 === "number" ? pn(f.o25) : null, kg: typeof f.b === "number" ? pn(f.b) : null, skor: f.s || null, not: "Bzzoiro gol modeli, piyasa oranları da karışık" } : null)(BP(m.id)),
+    oyun: ti && ti.ok && (ti.stH || ti.stA) ? { ev: ti.stH, dep: ti.stA, not: "son maçların ortalaması: sf/sa atılan/yenen şut, of/oa isabetli şut, pos topa sahip olma %, cf korner, gf/ga gol" } : null, dusuk_guven: !m.trusted,
+    gol_modeli: g ? { beklenen_gol: [Math.round(m.eh * 10) / 10, Math.round(m.ea * 10) / 10], olasi_skorlar: g.slice(0, 5).map(x => x.i + "-" + x.j + " %" + pn(x.p)), ilk_yari_05_ust: typeof m.h05 === "number" ? pn(m.h05) : null, ilk_yari_15_ust: typeof m.h15 === "number" ? pn(m.h15) : null, not: "Poisson dağılımı; en olası skor bile genelde %10-15" } : null };
+}
+const AI_ASK = [
+  "Sen bir futbol istatistik asistanısın. Kullanıcı tek bir maç hakkında soru soruyor. Sana o maçın verileri verilir: modelin olasılıkları, piyasa olasılıkları ve oranları, gol modeli (beklenen gol, olası skorlar), form, puan durumu, aralarındaki maçlar, ikinci model.",
+  "Kurallar: 1) Yalnızca verilen veriyle cevap ver; sakatlık, kadro, haber uydurma. Verilerde olmayan bir şey sorulursa bunu söyle. 2) Skor sorulursa gol modelindeki en olası skoru ve bir-iki alternatifi söyle, neden o skor olduğunu beklenen gol ve piyasayla açıkla; tam skorun tutma ihtimalinin düşük olduğunu kısaca belirt. 3) Kesinlik ve garanti ifadesi kullanma. 4) Model ile piyasa ayrışıyorsa söyle; piyasa geçmişte daha isabetli çıktı. 5) Türkçe, samimi ama kısa: 2-4 cümle. Gerekirse yüzde yazabilirsin.",
+  'Yalnızca geçerli JSON döndür: {"cevap":"2-4 cümle","skor":"soru skorla ilgiliyse en olası skor, örn 1-2; değilse boş"}'
+].join("\n");
+const AQ_PRESET = ["Skor tahminin ne?", "İlk yarı nasıl biter?", "Kaç gol olur?", "Hangi seçim daha mantıklı?"];
+async function runMatchAsk(id, q) {
+  const A = state.ai, X = state.extra, m = findMatch(id);
+  q = String(q || "").trim().slice(0, 240);
+  if (!m || !q) return;
+  const order = [A.provider, ...["gemini", "groq", "claude"].filter(p => p !== A.provider)].filter(p => aiKey(p));
+  const L = X.aq[id] = X.aq[id] || [];
+  if (L.some(x => x.status === "loading")) return;
+  if (!order.length) { L.push({ q, status: "error", err: "Yapay zeka anahtarı tanımlı değil. Anasayfadaki yapay zeka köşesinden ayarla." }); syncSheet(); return; }
+  const it = { q, status: "loading" }; L.push(it); if (L.length > 5) L.shift();
+  state.aqDraft = ""; syncSheet(); buzz();
+  try { if (state.detJob) await state.detJob; } catch (e) {}
+  const prev = L.filter(x => x !== it && x.status === "done").slice(-2).map(x => ({ soru: x.q, cevap: x.cevap }));
+  try {
+    const res = await gs("callAI", { order, models: A.models, system: AI_ASK, prompt: "Soru: " + q + (prev.length ? "\nÖnceki sorular: " + JSON.stringify(prev) : "") + "\nMaç verileri (yüzde):\n" + JSON.stringify(matchAIData(m, id)) });
+    if (res && res.ok) {
+      const j = res.json || {}, str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+      Object.assign(it, { status: "done", cevap: str(j.cevap, 900) || "Yanıt boş geldi.", skor: /^\d{1,2}\s*[-:]\s*\d{1,2}$/.test(str(j.skor, 8)) ? str(j.skor, 8).replace(/\s/g, "").replace(":", "-") : "", prov: AI_NAMES[res.prov] + " / " + res.model });
+    } else Object.assign(it, { status: "error", err: ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi." });
+  } catch (e) { Object.assign(it, { status: "error", err: String(e.message || e) }); }
+  syncSheet();
+  if (!(state.sheet === "match" && state.detId === id)) toast(it.status === "done" ? `${m.home} - ${m.away}: yanıt hazır` : "Yanıt alınamadı");
+  buzz(it.status === "done" ? 15 : 30);
+}
+function askBlock(m) {
+  const L = state.extra.aq[m.id] || [], busy = L.some(x => x.status === "loading");
+  const qa = L.map(x => `<div class="aq-i"><p class="aq-q">${esc(x.q)}</p>${x.status === "loading" ? `<p class="aq-a"><span class="spin"></span>Yanıt hazırlanıyor…</p>` : x.status === "error" ? `<p class="aq-a ai-err">${esc(x.err)}</p>` : `<div class="aq-a">${x.skor ? `<span class="aq-sc"><small>Skor tahmini</small><b>${esc(x.skor)}</b></span>` : ""}<p>${esc(x.cevap)}</p><span class="muted">${esc(x.prov || "")}</span></div>`}</div>`).join("");
+  return `<div class="aq">${qa}
+    <div class="aq-chips">${AQ_PRESET.filter(p => !L.some(x => x.q === p)).map(p => `<button type="button" class="chip-q" data-act="aq" data-q="${esc(p)}"${busy ? " disabled" : ""}>${esc(p)}</button>`).join("")}</div>
+    <div class="aq-f"><input id="aqIn" type="text" maxlength="240" autocomplete="off" enterkeyhint="send" placeholder="Bu maçla ilgili sor: ör. ${esc(m.home)} gol atar mı?" value="${esc(state.aqDraft || "")}" aria-label="Bu maça soru sor"><button type="button" class="ghost solid" data-act="aqs"${busy ? " disabled" : ""}>Sor</button></div>
+    <p class="sh-note">Yanıt yalnızca bu ekrandaki verilere dayanır; kesinlik içermez, bahis tavsiyesi değildir.</p></div>`;
+}
 const AI_MATCH = [
   "Sen bir futbol istatistik asistanısın. Sana tek bir maçın verileri verilir: istatistik modelinin olasılıkları, varsa bahisçi piyasasının olasılıkları ve oranları, Elo görüşü, korner beklentisi, puan durumu, son 5 maç formu ve bu sezon aralarındaki maçlar.",
   "Kurallar: 1) Yalnızca verilen veriyi kullan. Sakatlık, kadro, haber, hava durumu uydurma. 2) Kesinlik ya da garanti ifadesi kullanma. 3) Model ile piyasa ayrışıyorsa bunu açıkça söyle; geçmiş testlerde piyasa modelden daha isabetli çıktı. 4) Türkçe, kısa ve sade yaz. Yüzde ya da olasılık sayısı yazma, ekranda zaten görünüyor; form ve sıralamadan söz edebilirsin.",
@@ -1919,21 +1988,7 @@ async function runMatchAI(id) {
   X.ai[id] = { status: "loading" }; syncSheet(); buzz();
   const sec = document.getElementById("aiSec"); if (sec) sec.scrollIntoView({ block: "nearest", behavior: "smooth" });
   try { if (state.detJob) await state.detJob; } catch (e) {}
-  const r = MR(id), ti = X.ti[id], side = m.pH >= m.pA ? "home" : "away", ei = eloInfo(m, { market: "win", side }), c = CR(id);
-  const num = v => (typeof v === "number" ? pn(v) : null);
-  const data = { lig: trc(m.country) + " " + m.league, mac: m.home + " - " + m.away, saat: dayInfo(m.kick).num + " " + dayInfo(m.kick).month + " " + fmtTime(m.kick),
-    model: { ev: pn(m.pH), ber: pn(m.pD), dep: pn(m.pA), u15: pn(m.o15), u25: pn(m.o25), u35: pn(m.o35), kg: pn(m.bt) },
-    piyasa: r && typeof r.h === "number" ? { ev: num(r.h), ber: num(r.d), dep: num(r.a), u25: num(r.o), u15: num(r.p15), u35: num(r.p35), kg: num(r.pb) } : null,
-    oran: r ? { ev: r.bh || r.oh || null, dep: r.ba || r.oa || null, u25: r.bo || r.oo || null, u15: r.x15 || null, kg: r.xb || null } : null,
-    elo: ei ? ei.tag : null, korner: c && typeof c.e === "number" ? dc(c.e) + " bekleniyor" : null,
-    puan: ti && ti.ok ? { ev: ti.home && { sira: ti.home.pos, puan: ti.home.pts, mac: ti.home.p }, dep: ti.away && { sira: ti.away.pos, puan: ti.away.pts, mac: ti.away.p }, takim: ti.n } : null,
-    form: ti && ti.ok ? { ev: ti.formH.map(x => x.r).join(""), dep: ti.formA.map(x => x.r).join(""), not: "en yeni maç solda, G galibiyet B beraberlik M mağlubiyet" } : null,
-    aralarinda: ti && ti.ok ? ti.h2h.map(x => x.h + " " + x.s + " " + x.a) : [],
-    benzer_oran: (Q => Q.r || Q.g ? { mac: Q.r ? Q.r.n : Q.g.n, ev: Q.r ? pn(Q.r.h) : null, ber: Q.r ? pn(Q.r.d) : null, dep: Q.r ? pn(Q.r.a) : null, u25: Q.g ? pn(Q.g.o25) : Q.r ? pn(Q.r.o25) : null, kg: Q.g ? pn(Q.g.bt) : Q.r ? pn(Q.r.bt) : null, not: "bu oranlarla oynanmış geçmiş maçlarda gerçekleşen yüzde" } : null)(r ? simQuery(r.h, r.a, r.o) : {}),
-    seriler: highlights(m).map(x => x.t),
-    sans: (L => L.some(Boolean) ? L.map(x => x && { puan: x.pts, beklenen_puan: x.xp, durum: LUCK_TXT[x.c] || null, mac_basi_xg: x.xf, rakibe_xg: x.xa }) : null)([luckOf(m.lk, m.hraw), luckOf(m.lk, m.araw)]),
-    ikinci_model: (f => f ? { ev: pn(f.h), ber: pn(f.d), dep: pn(f.a), u25: typeof f.o25 === "number" ? pn(f.o25) : null, kg: typeof f.b === "number" ? pn(f.b) : null, skor: f.s || null, not: "Bzzoiro gol modeli, piyasa oranları da karışık" } : null)(BP(m.id)),
-    oyun: ti && ti.ok && (ti.stH || ti.stA) ? { ev: ti.stH, dep: ti.stA, not: "son maçların ortalaması: sf/sa atılan/yenen şut, of/oa isabetli şut, pos topa sahip olma %, cf korner, gf/ga gol" } : null, dusuk_guven: !m.trusted };
+  const data = matchAIData(m, id);
   try {
     const res = await gs("callAI", { order, models: A.models, system: AI_MATCH, prompt: "Bu maçı yorumla. Veriler (yüzde):\n" + JSON.stringify(data) });
     if (res && res.ok) {
@@ -2033,6 +2088,7 @@ function detailBody() {
     <div class="dt-sec"><h3>Şans ve xG <span class="muted">hak edilen puan</span></h3>${luckBlock(m)}</div>
     <div class="dt-sec"><h3>Puan durumu ve form</h3>${teamBlock(m)}</div>
     <div class="dt-sec" id="aiSec"><h3>Yapay zeka yorumu</h3>${aiBlock(m)}</div>
+    <div class="dt-sec" id="aqSec"><h3>Yapay zekaya sor</h3>${askBlock(m)}</div>
     <div class="dt-sec"><h3>Benzer oranlı maçlar <span class="muted">geçmişte ne oldu</span></h3>${simBlock(m)}</div>
     <div class="dt-sec"><h3>Elo görüşü</h3>${elo}</div>
     <div class="dt-sec"><h3>Korner</h3>${c && typeof c.e === "number" ? cor + corM : corM || cor}</div>
@@ -2129,8 +2185,12 @@ function syncSheet() {
     return;
   }
   if (k === "match") {
-    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.lu[state.detId] || null).length, (state.mom[detBi()] || {}).t || 0, (m0 => m0 ? JSON.stringify(state.venue[venueKey(m0)] || null) + JSON.stringify(state.venue[m0.lk + "|" + m0.araw] || null) : "")(findMatch(state.detId)), JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
-    if (sig !== state.slipSig) { const y = $("shBody").scrollTop; state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y; }
+    const sig = [state.detId, state.detPick, state.detTable, state.detTblMode, state.detMore, state.detFlash ? state.detFlash.text : "", !!state.extra.ti[state.detId], JSON.stringify(state.extra.lu[state.detId] || null).length, (state.mom[detBi()] || {}).t || 0, JSON.stringify(state.extra.aq[state.detId] || null), (m0 => m0 ? JSON.stringify(state.venue[venueKey(m0)] || null) + JSON.stringify(state.venue[m0.lk + "|" + m0.araw] || null) : "")(findMatch(state.detId)), JSON.stringify(state.extra.ai[state.detId] || null), JSON.stringify(myOf(state.detId) || null), state.my.length, state.detLoading, !!state.acc, !!state.luck, state.calib, state.mktOn, state.mkt.status, state.elo.status, state.corners.status, state.fav.size, [...state.favT].join(",")].join("|");
+    if (sig !== state.slipSig) {
+      const y = $("shBody").scrollTop, ae = document.activeElement, keep = ae && ae.id === "aqIn" ? [ae.selectionStart, ae.selectionEnd] : null;
+      state.slipSig = sig; $("shBody").innerHTML = detailBody(); $("shBody").scrollTop = y;
+      if (keep) { const n = $("aqIn"); if (n) { n.focus({ preventScroll: true }); try { n.setSelectionRange(keep[0], keep[1]); } catch (e) {} } }
+    }
     return;
   }
   if (k === "slip") {
@@ -3934,6 +3994,8 @@ $("shClose").addEventListener("click", () => closeSheet());
 document.addEventListener("click", e => { const i = e.target.closest("[data-info]"); if (i) { openSheet("info", i.dataset.info); return; }
   const ps = e.target.closest("[data-past]"); if (ps && !e.target.closest("button, a")) { buzz(); openPast(ps.dataset.past); } });
 document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const ps = e.target.closest && e.target.closest("[data-past]"); if (ps && e.target === ps) { e.preventDefault(); openPast(ps.dataset.past); } });
+$("shBody").addEventListener("input", e => { if (e.target.id === "aqIn") state.aqDraft = e.target.value; });
+$("shBody").addEventListener("keydown", e => { if (e.target.id === "aqIn" && e.key === "Enter" && !e.isComposing) { e.preventDefault(); if (state.sheet === "match" && e.target.value.trim()) runMatchAsk(state.detId, e.target.value); } });
 $("shBody").addEventListener("click", e => {
   if (state.sheet === "match") {
     const r = e.target.closest("[data-pk]");
@@ -3957,6 +4019,8 @@ $("shBody").addEventListener("click", e => {
     if (a.dataset.act === "favt") { const k = m.lk + "|" + a.dataset.team, on = !state.favT.has(k); if (on) state.favT.add(k); else state.favT.delete(k); lsSet("banko2:favt", JSON.stringify([...state.favT].slice(0, 40))); buzz(); toast(on ? "Favori takımlara eklendi" : "Favorilerden çıkarıldı"); syncSheet(); render(); }
     if (a.dataset.act === "more") { state.detMore = !state.detMore; syncSheet(); }
     if (a.dataset.act === "ai") runMatchAI(m.id);
+    else if (a.dataset.act === "aq") { runMatchAsk(m.id, a.dataset.q); setTimeout(() => { const q = document.querySelector("#aqSec .aq-i:last-of-type"); if (q) q.scrollIntoView({ block: "nearest", behavior: "smooth" }); }, 60); }
+    else if (a.dataset.act === "aqs") { const v = ($("aqIn") || {}).value || ""; if (v.trim()) runMatchAsk(m.id, v); else { const n = $("aqIn"); if (n) n.focus(); } }
     return;
   }
   if (state.sheet === "slip") {
