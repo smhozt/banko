@@ -405,6 +405,9 @@
   .lv-src { display:block; margin-top:3px; font-size:12px; color:var(--muted); }
   .lv-grp { margin-top:20px; }
   .lv-grp > h2 { display:flex; align-items:center; gap:8px; }
+  .lv-h { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .lv-badge { display:inline-flex; align-items:center; gap:7px; padding:5px 11px 5px 9px; border-radius:999px; background:color-mix(in srgb, var(--err) 13%, transparent); color:var(--err); font:700 13px/1 var(--f); letter-spacing:.08em; }
+  .lv-badge .lv-dot { width:8px; height:8px; }
   .lv-grp > h2 .lv-n { font:600 14px/1 var(--f); color:var(--muted); }
   .lv-dot { width:9px; height:9px; border-radius:50%; background:var(--err); display:inline-block; animation:lvP 1.4s ease-in-out infinite; }
   .lv-cps { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
@@ -1814,7 +1817,7 @@ function updateSlip() {
   if (!show) return;
   const co = cp.picks.length ? combOdds(cp.picks) : null, H = state.home, n = mine ? state.my.length : cp.picks.length;
   const title = mine ? "Kuponum" : `Günün kuponu · ${esc(STYLES[H.style].label)}`;
-  const sub = mine ? (cp.picks.length ? `${cp.picks.length} seçim, birlikte %${pn(cp.comb)}` : "hesaplanacak seçim yok") : `${cp.picks.length} seçim, birlikte %${pn(cp.comb)}`;
+  const sub = mine ? (cp.picks.length ? `${cp.picks.length} seçim, birlikte %${pn(cp.comb)}` : state.my.length ? "maçlar başladı, Canlı'da takip et" : "henüz seçim yok") : `${cp.picks.length} seçim, birlikte %${pn(cp.comb)}`;
   const html = `<span class="slip-n">${n}</span><span class="slip-t"><b>${title}</b><small>${sub}</small></span>${co ? `<span class="slip-o"><b>${fo(co)}</b><small>oran</small></span>` : cp.picks.length ? `<span class="slip-o"><b>%${pn(cp.comb)}</b><small>olasılık</small></span>` : ""}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>`;
   if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }
   el.setAttribute("aria-label", `${mine ? "Kuponum" : "Günün kuponu"}, ${n} seçim. Ayrıntıyı aç`);
@@ -2171,9 +2174,9 @@ function detailBody() {
     <div class="sh-btns" style="margin-top:18px">${sel ? (() => { const ex = myOf(m.id), same = sameSel(ex, sel), full = !ex && state.my.length >= MY_MAX;
       const fl = state.detFlash && state.detFlash.until > Date.now() ? state.detFlash.text : "";
       const cls = fl ? "ghost solid done pop" : same ? "ghost in-my" : "ghost solid";
-      return `<button type="button" class="${cls}" data-act="my" ${full ? "disabled" : ""} aria-pressed="${same}">${fl ? "✓ " + esc(fl) : same ? `✓ Kuponda: ${esc(pickLabel(m, sel))} · <u>Çıkar</u>` : `${ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}`}</button><button type="button" class="ghost" data-act="trk">Tek seçim takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button><button type="button" class="ghost" data-act="mshr">Görsel olarak paylaş</button></div>
+      return `<button type="button" class="${cls}" data-act="my" ${full ? "disabled" : ""} aria-pressed="${same}">${fl ? "✓ " + esc(fl) : same ? `✓ Kuponda: ${esc(pickLabel(m, sel))} · <u>Çıkar</u>` : `${ex ? "Kupondaki seçimi değiştir" : full ? `Kupon dolu (${MY_MAX})` : "Kupona ekle"}: ${esc(pickLabel(m, sel))}`}</button><button type="button" class="ghost" data-act="trk">Tek seçimi takibe al</button>`; })() : ""}<button type="button" class="ghost" data-act="show">Maçlar'da göster</button><button type="button" class="ghost" data-act="mshr">Görsel olarak paylaş</button></div>
     ${state.my.length ? (() => { const R = resolveMy(), co = R.live.length ? combOdds(R.live.map(x => ({ m: x.m, pk: x.pk }))) : null;
-      return `<div class="dt-foot${state.myPulse && state.myPulse > Date.now() - 900 ? " pop" : ""}" role="status" aria-live="polite"><span class="slip-n">${state.my.length}</span><span class="ft"><b>Kuponum</b><small>${R.live.length ? `${R.live.length} seçim, birlikte %${pn(R.comb)}${co ? ` · oran ${fo(co)}` : ""}` : "hesaplanacak seçim yok"}</small></span><button type="button" class="ghost" data-act="openmy">Kuponu aç</button></div>`; })() : ""}
+      return `<div class="dt-foot${state.myPulse && state.myPulse > Date.now() - 900 ? " pop" : ""}" role="status" aria-live="polite"><span class="slip-n">${state.my.length}</span><span class="ft"><b>Kuponum</b><small>${R.live.length ? `${R.live.length} seçim, birlikte %${pn(R.comb)}${co ? ` · oran ${fo(co)}` : ""}` : state.my.length ? "seçimlerin maçı başladı, Canlı'da takip et" : "henüz seçim yok"}</small></span><button type="button" class="ghost" data-act="openmy">Kuponu aç</button></div>`; })() : ""}
     <p class="sh-note">Oran: Bet365, yoksa bahisçi ortalaması; 1,5 / 3,5 üst ve KG var için konsensüs.${(r => r && r.pin ? " Piyasa olasılığı Pinnacle'dan (en isabetli bahisçi)." : "")(MR(m.id))} <button type="button" class="lnk" data-info="odds">Ayrıntı</button></p>`;
 }
 // ---------- "Nasıl hesaplanıyor?"
@@ -2587,7 +2590,7 @@ function pushBoxHTML() {
   if (!P.sup) return `<p class="sh-note">Bu cihazda bildirim desteklenmiyor. Telefonda Banko'yu ana ekrana ekleyip oradan aç.</p>`;
   if (Notification.permission === "denied") return `<p class="sh-note">Bildirim izni kapatılmış. Tarayıcının site ayarlarından Banko için bildirimlere izin ver, sonra buraya dön.</p>`;
   return `<label class="opt"><span><b>Bildirimleri aç</b><small>Takip'teki kuponların golleri ve sonuçları, sabah da günün kuponu bu cihaza gelir. Uygulama kapalıyken de çalışır.</small></span><input type="checkbox" class="sw" id="pushS" ${P.on ? "checked" : ""} ${P.busy ? "disabled" : ""}></label>
-    ${P.on ? `<label class="opt sub"><span><b>Gol</b><small>Takipteki maçta gol olunca, seçimin şu an tutuyor mu</small></span><input type="checkbox" class="sw" data-pp="goal" ${pr.goal ? "checked" : ""}></label>
+    ${P.on ? `<label class="opt sub"><span><b>Gol</b><small>Takipteki maçta gol olunca, seçiminin şu an tutup tutmadığı</small></span><input type="checkbox" class="sw" data-pp="goal" ${pr.goal ? "checked" : ""}></label>
     <label class="opt sub"><span><b>Sonuç</b><small>Maç bitince seçimin sonucu, kupon bitince kuponun sonucu</small></span><input type="checkbox" class="sw" data-pp="result" ${pr.result ? "checked" : ""}></label>
     <label class="opt sub"><span><b>Sabah kuponu</b><small>Her sabah 08:30'da günün kuponu ve yorumu hazır olunca</small></span><input type="checkbox" class="sw" data-pp="morning" ${pr.morning ? "checked" : ""}></label>
     <label class="opt sub"><span><b>Oran düşüşü</b><small>Önümüzdeki 12 saatteki bir maçta oran ilk kayda göre %15 ve üstü düşünce (saatte bir bakılır)</small></span><input type="checkbox" class="sw" data-pp="drop" ${pr.drop ? "checked" : ""}></label>
@@ -2815,7 +2818,7 @@ function combHTML(picks, comb) {
   const co = combOdds(picks), est = co ? null : picks.reduce((a, c) => a * (estOdd(c.m, c.pk) || 1), 1);
   const once = comb > 0 ? Math.max(1, Math.round(1 / comb)) : 0;
   return `<div class="comb"><div class="comb-n">${pn(comb)}<small>%</small></div>
-    <p><b>${picks.length} seçimin hepsi birlikte tutarsa</b><br>Yaklaşık ${once} kuponda 1${co ? ` · kupon oranı yaklaşık <b>${fo(co)}</b>` : est > 1 ? ` · tahmini kupon oranı ~<b>${fo(est)}</b>` : ""}. <button type="button" class="lnk" data-info="comb">Nasıl hesaplanıyor?</button></p></div>`;
+    <p><b>${picks.length === 1 ? "Bu seçimin tutma olasılığı" : `${picks.length} seçimin hepsinin birlikte tutma olasılığı`}</b><br>${comb >= 0.5 ? (k => `Yaklaşık 10 kupondan ${k}${NSUF(k)} tutar`)(Math.min(10, Math.round(comb * 10))) : `Yaklaşık ${once} kuponda 1 tutar`}${co ? ` · kupon oranı yaklaşık <b>${fo(co)}</b>` : est > 1 ? ` · tahmini kupon oranı ~<b>${fo(est)}</b>` : ""}. <button type="button" class="lnk" data-info="comb">Nasıl hesaplanıyor?</button></p></div>`;
 }
 function suggestions(base, lowConf) {
   const out = [];
@@ -2915,7 +2918,7 @@ function renderToday() {
   const ln = liveCount();
   if (ln) out.push(`<button type="button" class="td-c td-live" data-go="live"><span class="lv-dot" aria-hidden="true"></span>${ln} maçın oynanıyor</button>`);
   const T = state.track.data;
-  if (state.badgeN) out.push(`<button type="button" class="td-c good" data-go="track">${state.badgeN} kupon sonuçlandı <small>bak</small></button>`);
+  if (state.badgeN) out.push(`<button type="button" class="td-c good" data-go="track">${state.badgeN} kupon sonuçlandı <small>gör</small></button>`);
   else if (T) { const p = T.coupons.filter(c => c.state === "pending").length; if (p) out.push(`<button type="button" class="td-c" data-go="track">${p} kupon bekliyor</button>`); }
   if (state.my.length) out.push(`<button type="button" class="td-c" data-slip="my">Kuponum <small>${state.my.length} seçim</small></button>`);
   const D = state.days.data, y = D && D.days[0] && D.days[0].snap;
@@ -3391,7 +3394,7 @@ function drawShare() {
     g.fillStyle = R.state === "won" ? SC.ac : SC.ink; g.font = F(700, 96, true); g.fillText(`${R.hit} / ${R.n} tuttu`, 64, fy + 120);
     g.textAlign = "right"; g.fillStyle = SC.mu; g.font = F(500, 30); g.fillText("tahmini birlikte", W - 64, fy + 20); g.fillStyle = SC.ink; g.font = F(700, 96, true); g.fillText("%" + pn(spec.comb), W - 64, fy + 120); g.textAlign = "left";
   } else {
-    g.fillStyle = SC.mu; g.font = F(500, 30); g.fillText(`${n} seçimin hepsi birlikte`, 64, fy + 20);
+    g.fillStyle = SC.mu; g.font = F(500, 30); g.fillText(n === 1 ? "Tutma olasılığı" : `${n} seçimin hepsi birlikte`, 64, fy + 20);
     g.fillStyle = SC.ink; g.font = F(700, 96, true); g.fillText("%" + pn(spec.comb), 64, fy + 120);
     if (spec.co) { g.textAlign = "right"; g.fillStyle = SC.mu; g.font = F(500, 30); g.fillText("kupon oranı", W - 64, fy + 20); g.fillStyle = SC.ac; g.font = F(700, 96, true); g.fillText(fo(spec.co), W - 64, fy + 120); g.textAlign = "left"; }
   }
@@ -3852,7 +3855,7 @@ function renderLive() {
   if (state.track.data) state.track.data.coupons.forEach(c => { if (c.state === "pending" && c.picks.some(p => new Date(p.d).getTime() <= now)) cps.push(cpSummary(c.title || "Kupon", c.picks)); });
   if (state.my.length && state.my.some(x => new Date(x.d).getTime() <= now)) cps.push(cpSummary("Kuponum", state.my.map(x => Object.assign({ ok: null }, x))));
   let html = "";
-  if (cps.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Kuponlarım şu an</h2></div><div class="lv-cps">${cps.join("")}</div></section>`;
+  if (cps.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Kuponlarımın durumu</h2></div><div class="lv-cps">${cps.join("")}</div></section>`;
   if (G.live.length) {
     const seen = new Set(), moms = [];
     G.live.forEach(r => {
@@ -3865,11 +3868,11 @@ function renderLive() {
         <div class="dt-team">${crest(r.p.lk, r.p.a, A, 40)}<span class="dt-tn" lang="${tnLang(r.p.lk, r.p.a)}">${esc(A)}</span></div></div></div>
         ${M && M.mo && M.mo.length ? momBlock(M, H, A, L.m) : ""}</div>`);
     });
-    html += `<section class="card lv-grp"><div class="card-h"><h2><span class="lv-dot" aria-hidden="true"></span>Oynanıyor <span class="lv-n">${G.live.length}</span></h2></div>${moms.length ? `<div class="lv-mom">${moms.join("")}</div><h3 style="margin:18px 0 0;font:600 16px var(--fc)">Seçimlerin</h3>` : ""}${li(G.live)}</section>`;
+    html += `<section class="card lv-grp"><div class="card-h"><h2 class="lv-h"><span class="lv-badge"><span class="lv-dot" aria-hidden="true"></span>CANLI</span>${G.live.length} maç oynanıyor</h2></div>${moms.length ? `<div class="lv-mom">${moms.join("")}</div><h3 style="margin:18px 0 0;font:600 16px var(--fc)">Bu maçlardaki seçimlerin</h3>` : ""}${li(G.live)}</section>`;
   }
-  if (G.nodata.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Başladı <span class="lv-n">${G.nodata.length}</span></h2><span class="muted">canlı skor bu maçlar için gelmedi, bitince sonuçlanır</span></div>${li(G.nodata)}</section>`;
-  if (G.next.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Sıradaki <span class="lv-n">${G.next.length}</span></h2><span class="muted">önümüzdeki 12 saat</span></div>${li(G.next)}</section>`;
-  if (G.done.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Biten <span class="lv-n">${G.done.length}</span></h2><span class="muted">son 10 saat</span></div>${li(G.done.slice().reverse())}</section>`;
+  if (G.nodata.length) html += `<section class="card lv-grp"><div class="card-h"><h2>${G.nodata.length} maç başladı</h2><span class="muted">canlı skoru gelmiyor, maç bitince sonuçlanır</span></div>${li(G.nodata)}</section>`;
+  if (G.next.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Sırada ${G.next.length} maç var</h2><span class="muted">önümüzdeki 12 saat</span></div>${li(G.next)}</section>`;
+  if (G.done.length) html += `<section class="card lv-grp"><div class="card-h"><h2>${G.done.length} maç bitti</h2><span class="muted">son 10 saat</span></div>${li(G.done.slice().reverse())}</section>`;
   if (!html) html = `<section class="card lv-grp"><div class="ai-empty">${ILL.live}<p>Şu an takip ettiğin maç yok. Takibe aldığın kuponlar, Kuponum'a eklediğin seçimler ve günün bankoları burada oynanırken görünür.</p></div></section>`;
   body.innerHTML = html;
   return G.live.length ? `${G.live.length} maç oynanıyor.` : "Şu an oynanan maç yok.";
