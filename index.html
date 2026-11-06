@@ -554,8 +554,9 @@
   .ai-set { margin-top:16px; border-top:1px solid var(--line); padding-top:12px; }
   .ai-set summary { cursor:pointer; font-weight:600; }
   .ai-set .row2 { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; align-items:center; }
-  .ai-set select, .ai-set input { height:40px; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; padding:0 12px; }
-  .ai-set input { flex:1 1 200px; min-width:0; }
+  .ai-set select, .ai-set input:not(.sw) { height:40px; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; padding:0 12px; }
+  .ai-set input:not(.sw) { flex:1 1 200px; min-width:0; }
+  .ai-set .opt { display:flex; align-items:center; justify-content:space-between; gap:14px; }
   .ai-set .hint { margin:10px 0 0; }
   .spin { display:inline-block; width:14px; height:14px; border:2px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:rot .8s linear infinite; vertical-align:-2px; margin-right:8px; }
   @keyframes rot { to { transform:rotate(360deg); } }
@@ -1267,7 +1268,7 @@
     <p class="hint" id="dataInfo">Maç verisi sunucuda saklanır ve her sabah kendiliğinden yenilenir. Zorla yenileme yalnızca 2 saatten eski ligleri çeker; kaynak veriyi zaten günde bir kez (sabah) günceller.</p>
     <button class="ghost" id="refresh">Zorla yenile</button>
     <button class="ghost" id="logout">Oturumu kapat</button>
-    <p class="hint" id="buildVer">Sürüm a740bd · 06.11.2026 15:38</p>
+    <p class="hint" id="buildVer">Sürüm dcdf83 · 06.11.2026 16:27</p>
   </div>
 </aside>
 
@@ -2871,7 +2872,7 @@ function buildHome() {
           <label for="aiModel" class="muted">Model</label><input id="aiModel" type="text" autocomplete="off"></div>
         <label class="opt" style="margin:8px 0"><span><b>Analiz açılınca günün kuponlarını hazırla</b><small>Banko verisiyle ve internetten iki kupon, günde bir kez.</small></span><input type="checkbox" class="sw" id="aiAutoS"></label>
         <p class="hint" id="aiKeyState"></p>
-        <p class="hint">Maç listesi (takımlar ve olasılıklar) seçtiğin sağlayıcıya gönderilir. Anahtarlar Script özelliklerinde saklanır (GEMINI_API_KEY, GROQ_API_KEY, ANTHROPIC_API_KEY), bu sayfada görünmez. Seçtiğin sağlayıcı hata verirse anahtarı tanımlı diğerlerine sırayla geçilir. Model adı sağlayıcıda değiştiyse buradan güncelle.</p>
+        <p class="hint">Maç listesi (takımlar ve olasılıklar) seçtiğin sağlayıcıya gönderilir. Anahtarlar Cloudflare'de gizli değişken olarak saklanır (GEMINI_API_KEY, GROQ_API_KEY, ANTHROPIC_API_KEY), bu sayfada görünmez. Seçtiğin sağlayıcı hata verirse anahtarı tanımlı diğerlerine sırayla geçilir. Model adı sağlayıcıda değiştiyse buradan güncelle.</p>
       </details>
     </section>
     <section class="card" style="margin-top:20px" aria-labelledby="srT">
