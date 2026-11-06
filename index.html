@@ -1263,7 +1263,7 @@
     <p class="hint" id="dataInfo">Maç verisi sunucuda saklanır ve her sabah kendiliğinden yenilenir. Zorla yenileme yalnızca 2 saatten eski ligleri çeker; kaynak veriyi zaten günde bir kez (sabah) günceller.</p>
     <button class="ghost" id="refresh">Zorla yenile</button>
     <button class="ghost" id="logout">Oturumu kapat</button>
-    <p class="hint" id="buildVer">Sürüm a2594d · 06.11.2026 15:26</p>
+    <p class="hint" id="buildVer">Sürüm 5e056a · 06.11.2026 15:31</p>
   </div>
 </aside>
 
@@ -4051,7 +4051,7 @@ async function runAI(kind, question) {
 }
 const AI_WEB = [
   "Sen deneyimli bir futbol analistisin. Kullanıcının sorusunu yanıtlamak için web araması yap: güncel sakatlık ve ceza listeleri, muhtemel kadrolar, son form, maç önü haberleri, bahis oranları ve uzman tahminleri.",
-  "Kurallar: 1) Bulduğun güncel bilgiye dayan; bulamadığın bilgiyi uydurma, emin değilsen söyle. 2) Kesinlik ya da garanti ifadesi kullanma; kombine kuponların tutma olasılığının düşük olduğunu hatırlat. 3) Kupon istenirse en fazla 6 seçim öner, her seçim için kısa gerekçe ve bulabildiysen güncel oran yaz. 4) Skor sorulursa en olası skoru ve bir alternatifini söyle. 5) Türkçe, samimi ve kısa yaz. 6) Bütün saatleri Sofia saatiyle (UTC+2) yaz, Türkiye saatini kullanma, saat dönüşümünü anlatma. 7) Oranları yalnızca ondalık biçimde yaz (örn 1,55); Amerikan oranı (-182 gibi) kullanma. 8) Kaynak olarak maç önü analizleri, takım haberleri ve bahis sitelerini tercih et; yalnızca 'bugün hangi maçlar var' listesi veren sayfalara dayanma.",
+  "Kurallar: 1) Bulduğun güncel bilgiye dayan; bulamadığın bilgiyi uydurma, emin değilsen söyle. 2) Kesinlik ya da garanti ifadesi kullanma; kombine kuponların tutma olasılığının düşük olduğunu hatırlat. 3) Kupon istenirse en fazla 6 seçim öner, her seçim için kısa gerekçe ve bulabildiysen güncel oran yaz. 4) Skor sorulursa en olası skoru ve bir alternatifini söyle. 5) Türkçe, samimi ve kısa yaz. 6) Bütün saatleri Sofia saatiyle (UTC+2) yaz, Türkiye saatini kullanma, saat dönüşümünü anlatma. 7) Oranları yalnızca ondalık biçimde yaz (örn 1,55); Amerikan oranı (-182 gibi) kullanma. 8) Kaynak olarak maç önü analizleri, takım haberleri ve bahis sitelerini tercih et; yalnızca 'bugün hangi maçlar var' listesi veren sayfalara dayanma. 9) Yanıtı kısa tut: cevap en fazla 5 cümle, her gerekçe en fazla 15 kelime; JSON'u mutlaka eksiksiz kapat.",
   'Yalnızca geçerli JSON döndür, başka metin yazma: {"cevap":"3-6 cümle","skor":"skor sorulduysa örn 1-2, değilse boş","kupon":[{"mac":"Ev - Deplasman","tarih":"örn 4 Kasım 22:00","secim":"örn Maç sonucu 2, 2,5 üst","oran":"örn 1,85 ya da boş","neden":"tek cümle"}]}'
 ].join("\n");
 function aiWebMatch(t) {
