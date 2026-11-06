@@ -510,6 +510,19 @@
   .wk-b { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:2px; }
   .wk-bp { font-size:12px; font-weight:600; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,.08); color:var(--top-muted); }
   .wk-bp.ok { background:color-mix(in srgb, var(--t2) 22%, transparent); color:var(--top-ink); } .wk-bp.no { background:color-mix(in srgb, var(--err) 18%, transparent); color:var(--top-ink); }
+  .wk-v { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--top-muted); }
+  .wk-vt { font-size:12px; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,.08); color:var(--top-ink); }
+  .wk-vt.val { background:color-mix(in srgb, #F2C25B 30%, transparent); } .wk-vt.mid { background:color-mix(in srgb, var(--t2) 22%, transparent); } .wk-vt.no { background:color-mix(in srgb, var(--err) 24%, transparent); }
+  .wk-pf { list-style:none; margin:4px 0 0; padding:0; display:grid; gap:3px; }
+  .wk-pf li { display:flex; justify-content:space-between; gap:10px; font-size:12px; color:var(--top-muted); padding:3px 0; border-top:1px dashed rgba(255,255,255,.10); }
+  .wk-pf li b { font-weight:600; text-align:right; } .wk-pf .pf-ok b { color:var(--t2); } .wk-pf .pf-bad b, .wk-pf .pf-nd b { color:var(--err); } .wk-pf .pf-nf b, .wk-pf .pf-wait b { color:var(--top-muted); font-weight:500; }
+  .wk-sum { margin:6px 0 0; font-size:13px; color:var(--top-muted); } .wk-sum b { color:var(--top-ink); } .wk-sum b.ok { color:var(--t2); } .wk-sum b.no { color:var(--err); }
+  .wk-pfh { margin:8px 0 0; font-size:12px; font-weight:600; color:var(--top-muted); }
+  .dk-c .wk-v, .dk-c .wk-pf li, .dk-c .wk-sum, .dk-c .wk-pfh { color:var(--muted); } .dk-c .wk-vt { background:var(--surface); color:var(--ink); }
+  .dk-c .wk-vt.val { background:color-mix(in srgb, #F2C25B 30%, transparent); } .dk-c .wk-vt.mid { background:color-mix(in srgb, var(--t2) 18%, transparent); } .dk-c .wk-vt.no { background:color-mix(in srgb, var(--err) 16%, transparent); }
+  .wk .wk-pf li, .dk-c .wk .wk-pf li { background:none; border:0; border-top:1px dashed rgba(255,255,255,.10); border-radius:0; padding:3px 0; display:flex; flex-wrap:wrap; }
+  .wk-pf li span { flex:1 1 170px; min-width:0; } .wk-pf li b { margin-left:auto; }
+  .dk-c .wk .wk-pf li, .dk-c .wk-pf li { border-top-color:var(--line); } .dk-c .wk-pf .pf-nf b, .dk-c .wk-pf .pf-wait b { color:var(--muted); } .dk-c .wk-sum b { color:var(--ink); }
   .dk-c .wk-bp { background:var(--surface); color:var(--muted); } .dk-c .wk-bp.ok { background:color-mix(in srgb, var(--t2) 18%, transparent); color:var(--ink); } .dk-c .wk-bp.no { background:color-mix(in srgb, var(--err) 14%, transparent); color:var(--ink); }
   .wsrc { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:4px; } .wsrc small { color:var(--top-muted); font-size:12px; margin-right:2px; }
   .wsrc a { font-size:12px; color:var(--top-ink); text-decoration:none; padding:3px 9px; border-radius:999px; border:1px solid var(--top-line); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -1268,7 +1281,7 @@
     <p class="hint" id="dataInfo">Maç verisi sunucuda saklanır ve her sabah kendiliğinden yenilenir. Zorla yenileme yalnızca 2 saatten eski ligleri çeker; kaynak veriyi zaten günde bir kez (sabah) günceller.</p>
     <button class="ghost" id="refresh">Zorla yenile</button>
     <button class="ghost" id="logout">Oturumu kapat</button>
-    <p class="hint" id="buildVer">Sürüm dcdf83 · 06.11.2026 16:27</p>
+    <p class="hint" id="buildVer">Sürüm 2cf1d5 · 06.11.2026 17:27</p>
   </div>
 </aside>
 
@@ -3998,7 +4011,7 @@ async function runWebDaily() {
     if (res && res.ok) {
       W.daily = { res: webNorm(res.json), src: (res.src || []).filter(x => x && /^https?:\/\//.test(x.u)).slice(0, 8), prov: AI_NAMES[res.prov] + " / " + res.model + " · web araması", at: Date.now() };
       if (!W.daily.res.kupon.length) W.derr = "Yapay zeka kupon çıkaramadı, Yenile ile tekrar dene.";
-      const cmp = { day: dayKey(new Date()), at: W.daily.at, prov: W.daily.prov, src: W.daily.src.slice(0, 4).map(x => ({ u: x.u.slice(0, 160), t: x.t.slice(0, 60) })), res: { cevap: W.daily.res.cevap.slice(0, 500), skor: W.daily.res.skor, kupon: W.daily.res.kupon.slice(0, 6).map(k => ({ mac: k.mac, tarih: k.tarih, secim: k.secim, oran: k.oran, neden: k.neden.slice(0, 140) })) } };
+      const cmp = { day: dayKey(new Date()), at: W.daily.at, prov: W.daily.prov, src: W.daily.src.slice(0, 4).map(x => ({ u: x.u.slice(0, 160), t: x.t.slice(0, 60) })), res: { cevap: W.daily.res.cevap.slice(0, 500), skor: W.daily.res.skor, kanit: (W.daily.res.kanit || []).slice(0, 3), kupon: W.daily.res.kupon.slice(0, 6).map(k => ({ mac: k.mac, tarih: k.tarih, secim: k.secim, oran: k.oran, neden: k.neden.slice(0, 140), kanit: (k.kanit || []).slice(0, 2) })) } };
       lsSet("banko2:aiwebday", JSON.stringify(cmp));
     } else W.derr = ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi.";
   } catch (e) { W.derr = (e && e.message) || String(e); }
@@ -4007,7 +4020,8 @@ async function runWebDaily() {
 function webNorm(j) {
   j = j || {}; const str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
   const sk = str(j.skor, 8).replace(/\s/g, "").replace(":", "-");
-  return { cevap: str(j.cevap, 2000), skor: /^\d{1,2}-\d{1,2}$/.test(sk) ? sk : "", kupon: (Array.isArray(j.kupon) ? j.kupon : []).slice(0, 8).map(k => ({ mac: str(k && k.mac, 90), tarih: str(k && k.tarih, 40), secim: str(k && k.secim, 80), oran: str(k && String(k.oran || ""), 12), neden: str(k && k.neden, 220) })).filter(k => k.mac && k.secim) };
+  const kan = (a, n) => (Array.isArray(a) ? a : []).slice(0, n).map(x => { const s = String((x && x.skor) || "").replace(/\s/g, "").replace(/[:–—]/g, "-"); return { ev: str(x && x.ev, 50), dep: str(x && x.dep, 50), skor: /^\d{1,2}-\d{1,2}$/.test(s) ? s : "", tarih: str(x && String(x.tarih || ""), 30) }; }).filter(x => x.ev && x.dep && x.skor);
+  return { cevap: str(j.cevap, 2000), skor: /^\d{1,2}-\d{1,2}$/.test(sk) ? sk : "", kanit: kan(j.kanit, 4), kupon: (Array.isArray(j.kupon) ? j.kupon : []).slice(0, 8).map(k => ({ mac: str(k && k.mac, 90), tarih: str(k && k.tarih, 40), secim: str(k && k.secim, 80), oran: str(k && String(k.oran || ""), 12), neden: str(k && k.neden, 220), kanit: kan(k && k.kanit, 3) })).filter(k => k.mac && k.secim) };
 }
 // Analiz açıldığında, anahtar varsa ve bugün için hazır değilse iki kuponu da kendiliğinden hazırla (oturumda bir kez dener)
 function ensureDailyAI() {
@@ -4056,37 +4070,120 @@ async function runAI(kind, question) {
 }
 const AI_WEB = [
   "Sen deneyimli bir futbol analistisin. Kullanıcının sorusunu yanıtlamak için web araması yap: güncel sakatlık ve ceza listeleri, muhtemel kadrolar, son form, maç önü haberleri, bahis oranları ve uzman tahminleri.",
-  "Kurallar: 1) Bulduğun güncel bilgiye dayan; bulamadığın bilgiyi uydurma, emin değilsen söyle. 2) Kesinlik ya da garanti ifadesi kullanma; kombine kuponların tutma olasılığının düşük olduğunu hatırlat. 3) Kupon istenirse en fazla 6 seçim öner, her seçim için kısa gerekçe ve bulabildiysen güncel oran yaz. 4) Skor sorulursa en olası skoru ve bir alternatifini söyle. 5) Türkçe, samimi ve kısa yaz. 6) Bütün saatleri Sofia saatiyle (UTC+2) yaz, Türkiye saatini kullanma, saat dönüşümünü anlatma. 7) Oranları yalnızca ondalık biçimde yaz (örn 1,55); Amerikan oranı (-182 gibi) kullanma. 8) Kaynak olarak maç önü analizleri, takım haberleri ve bahis sitelerini tercih et; yalnızca 'bugün hangi maçlar var' listesi veren sayfalara dayanma. 9) Yanıtı kısa tut: cevap en fazla 5 cümle, her gerekçe en fazla 15 kelime; JSON'u mutlaka eksiksiz kapat.",
-  'Yalnızca geçerli JSON döndür, başka metin yazma: {"cevap":"3-6 cümle","skor":"skor sorulduysa örn 1-2, değilse boş","kupon":[{"mac":"Ev - Deplasman","tarih":"örn 4 Kasım 22:00","secim":"örn Maç sonucu 2, 2,5 üst","oran":"örn 1,85 ya da boş","neden":"tek cümle"}]}'
+  "Kurallar: 1) Bulduğun güncel bilgiye dayan; bulamadığın bilgiyi uydurma, emin değilsen söyle. 2) Kesinlik ya da garanti ifadesi kullanma; kombine kuponların tutma olasılığının düşük olduğunu hatırlat. 3) Kupon istenirse en fazla 6 seçim öner, her seçim için kısa gerekçe ve bulabildiysen güncel oran yaz. 4) Skor sorulursa en olası skoru ve bir alternatifini söyle. 5) Türkçe, samimi ve kısa yaz. 6) Bütün saatleri Sofia saatiyle (UTC+2) yaz, Türkiye saatini kullanma, saat dönüşümünü anlatma. 7) Oranları yalnızca ondalık biçimde yaz (örn 1,55); Amerikan oranı (-182 gibi) kullanma. 8) Kaynak olarak maç önü analizleri, takım haberleri ve bahis sitelerini tercih et; yalnızca 'bugün hangi maçlar var' listesi veren sayfalara dayanma. 9) Yanıtı kısa tut: cevap en fazla 5 cümle, her gerekçe en fazla 15 kelime; JSON'u mutlaka eksiksiz kapat. 10) Gerekçede ya da cevapta geçmiş bir maç skoruna (aralarındaki maçlar ya da takımın son maçları) dayanıyorsan o maçları 'kanit' listesine yaz: ev sahibi, deplasman, skor (ev-deplasman sırasıyla) ve tarih (örn 6 Mart 2026). Banko bu skorları kendi arşiviyle karşılaştırıp yanlışları işaretler; emin olmadığın skoru yazma. Seçim başına en fazla 3, cevap için en fazla 4 kanıt.",
+  'Yalnızca geçerli JSON döndür, başka metin yazma: {"cevap":"3-6 cümle","skor":"skor sorulduysa örn 1-2, değilse boş","kanit":[{"ev":"Takım","dep":"Takım","skor":"2-1","tarih":"6 Mart 2026"}],"kupon":[{"mac":"Ev - Deplasman","tarih":"örn 4 Kasım 22:00","secim":"örn Maç sonucu 2, 2,5 üst","oran":"örn 1,85 ya da boş","neden":"tek cümle","kanit":[{"ev":"Takım","dep":"Takım","skor":"2-1","tarih":"6 Mart 2026"}]}]}'
 ].join("\n");
 // internet kuponu satırı: maç Banko'da varsa saati Banko'dan, aynı pazar için Banko modelinin olasılığını yanına yaz
 function webMk(sec) {
-  const t = String(sec || "").toLocaleLowerCase("tr").replace(/\./g, ",");
-  if (/3,5\s*(gol\s*)?üst/.test(t)) return { mk: "o35" }; if (/2,5\s*(gol\s*)?üst/.test(t)) return { mk: "o25" }; if (/1,5\s*(gol\s*)?üst/.test(t)) return { mk: "o15" };
-  if (/kg\s*var|karşılıklı\s*gol\s*var|iki\s*takım\s*da\s*gol/.test(t)) return { mk: "bt" };
+  const t = String(sec || "").toLocaleLowerCase("tr").replace(/\./g, ",").replace(/over/g, "üst").replace(/under/g, "alt");
+  if ((/\+|&|\bve\b/.test(t)) && /üst|alt/.test(t) && /kg|karşılıklı/.test(t)) return null;   // birleşik seçim (2,5 üst + KG var): tek pazar gibi değerlendirilmez
+  const ln = (l, w) => new RegExp(`${l}\\s*(gol\\s*)?${w}|${w}\\s*${l}`).test(t);
+  if (ln("3,5", "üst")) return { mk: "o35" }; if (ln("2,5", "üst")) return { mk: "o25" }; if (ln("1,5", "üst")) return { mk: "o15" };
+  if (ln("3,5", "alt")) return { mk: "u35" }; if (ln("2,5", "alt")) return { mk: "u25" }; if (ln("1,5", "alt")) return { mk: "u15" };
+  if (/kg\s*yok|karşılıklı\s*gol\s*yok/.test(t)) return { mk: "nb" };
+  if (/kg\s*var|karşılıklı\s*gol\s*var|iki\s*takım\s*da\s*gol|btts/.test(t)) return { mk: "bt" };
+  if (/çifte\s*şans\s*1\s*-?\s*x|\b1x\b/.test(t)) return { mk: "1x" }; if (/çifte\s*şans\s*x\s*-?\s*2|\bx2\b/.test(t)) return { mk: "x2" }; if (/çifte\s*şans\s*1\s*-?\s*2|\b12\b/.test(t)) return { mk: "12" };
   if (/(maç\s*sonucu|ms)\s*1\b|ev sahibi kazanır/.test(t)) return { mk: "win", side: "home" };
   if (/(maç\s*sonucu|ms)\s*2\b|deplasman kazanır/.test(t)) return { mk: "win", side: "away" };
+  if (/(maç\s*sonucu|ms)\s*(x|0)\b|beraberlik/.test(t)) return { mk: "x" };
   return null;
 }
-function webLi(k) {
+// Değer: Banko modelinin olasılığı × oran. Oran yapay zekanın yazdığı, yoksa Banko'daki piyasa oranı.
+function webVal(m, w, p, oranTxt) {
+  const ai = parseFloat(String(oranTxt || "").replace(",", ".")), bo = pickOdds(m, { market: w.mk, side: w.side || null }), mp = mktProb(m, w.mk, w.side);
+  const od = ai > 1 && ai < 50 ? ai : bo && bo.src !== "≈" && bo.v > 1 ? bo.v : null;
+  if (!od) return { mp, od: null };
+  const ev = p * od - 1, far = mp !== null && p - mp > 0.10;
+  const [tag, cls] = ev >= 0.05 && !far ? ["Değerli", "val"] : ev <= -0.08 ? ["Oran düşük", "no"] : ["Oran adil", "mid"];
+  return { mp, od, imp: 1 / od, ev, tag, cls, bo: ai > 1 && bo && bo.v > 1 && Math.abs(bo.v - ai) >= 0.08 ? bo : null, far };
+}
+function webLi(k, i, R) {
   const m = aiWebMatch(k.mac), w = m ? webMk(k.secim) : null, p = w ? pickP(m, w.mk, w.side) : null;
   const when = m ? (di => `${di.tag || di.num + " " + di.month} ${fmtTime(m.kick)}`)(dayInfo(m.kick)) : k.tarih;
-  return `<li><div><b>${esc(k.secim)}</b>${k.oran ? `<span class="wk-o">${esc(k.oran)}</span>` : ""}</div><span class="wk-m">${esc(m ? m.home + " - " + m.away : k.mac)}${when ? " · " + esc(when) : ""}</span>${k.neden ? `<small>${esc(k.neden)}</small>` : ""}${m ? `<div class="wk-b">${typeof p === "number" ? `<span class="wk-bp${p >= 0.6 ? " ok" : p < 0.45 ? " no" : ""}">Banko modeli %${pn(p)}</span>` : ""}<button type="button" class="lnk" data-open="${esc(m.id)}" data-tab="${w ? w.mk : "win"}">Banko'da aç</button></div>` : ""}</li>`;
+  const v = m && w && typeof p === "number" ? webVal(m, w, p, k.oran) : null;
+  const val = v && v.od ? `<div class="wk-v"><span class="wk-vt ${v.cls}" title="Banko modeli × oran: beklenen getiri %${Math.round(v.ev * 100)}">${v.tag}</span><small>model %${pn(p)}${v.mp !== null ? ` · piyasa %${pn(v.mp)}` : ""} · oran ${fo(v.od)} → %${pn(v.imp)}${v.bo ? ` · ${v.bo.src === "Bet365" ? "Bet365" : "Banko"} ${fo(v.bo.v)}` : ""}${v.far ? " · model piyasadan çok iyimser" : ""}</small></div>` : "";
+  return `<li><div><b>${esc(k.secim)}</b>${k.oran ? `<span class="wk-o">${esc(k.oran)}</span>` : ""}</div><span class="wk-m">${esc(m ? m.home + " - " + m.away : k.mac)}${when ? " · " + esc(when) : ""}</span>${k.neden ? `<small>${esc(k.neden)}</small>` : ""}${val}${webProof(k.kanit, "k" + i + "_", R)}${m ? `<div class="wk-b">${typeof p === "number" && !val ? `<span class="wk-bp${p >= 0.6 ? " ok" : p < 0.45 ? " no" : ""}">Banko modeli %${pn(p)}</span>` : ""}<button type="button" class="lnk" data-open="${esc(m.id)}" data-tab="${w ? w.mk : "win"}">Banko'da aç</button></div>` : ""}</li>`;
 }
-function aiWebMatch(t) {
-  const nz = x => String(x || "").toLocaleLowerCase("tr").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ı/g, "i").replace(/ß/g, "ss").replace(/[^a-z0-9 ]+/g, " ").replace(/\b(fc|cf|sc|afc|ac|fk|sk|sv|cd|ud|club|de|the|borussia|vfl|vfb|tsg|1)\b/g, " ").replace(/\s+/g, " ").trim();
-  const parts = String(t || "").split(/\s+(?:-|–|vs\.?|v)\s+/i); if (parts.length < 2) return null;
-  const GEN = new Set(["city", "united", "utd", "town", "real", "sporting", "athletic", "atletico", "county", "rovers", "wanderers", "olympique", "inter", "calcio", "hotspur", "albion", "athletico", "dinamo", "dynamo"]);
-  const tok = x => nz(x).split(" ").filter(w => w.length >= 3);
+// Kupon özeti: toplam oran ve Banko modeline göre tutma olasılığı (her seçim farklı maçtan ve Banko'da varsa)
+function webSum(kupon) {
+  const rows = kupon.map(k => { const m = aiWebMatch(k.mac), w = m ? webMk(k.secim) : null, p = w ? pickP(m, w.mk, w.side) : null, v = parseFloat(String(k.oran).replace(",", ".")); return { id: m ? m.id : null, p: typeof p === "number" ? p : null, od: v > 1 && v < 50 ? v : null }; });
+  const tot = rows.reduce((x, r) => (r.od ? x * r.od : x), 1), allOd = rows.every(r => r.od);
+  let h = tot > 1 ? `<p class="dk-odd">Toplam oran <b>${fo(tot)}</b>${allOd ? "" : " (oranı yazılanlar)"}</p>` : "";
+  if (rows.length < 2) return h;
+  const dup = new Set(rows.map(r => r.id)).size < rows.length;
+  if (rows.every(r => r.p !== null) && !dup) {
+    const pc = rows.reduce((x, r) => x * r.p, 1), ev = allOd ? pc * tot - 1 : null;
+    h += `<p class="wk-sum">Banko modeline göre tutma olasılığı <b>%${pn(pc) || "<1"}</b>${ev !== null ? ` · oranın ima ettiği %${pn(1 / tot) || "<1"} · ${ev >= 0.05 ? `<b class="ok">oran modele göre yüksek</b>` : ev <= -0.08 ? `<b class="no">oran modele göre düşük</b>` : "oran adil"}` : ""}</p>`;
+  } else if (rows.some(r => r.p === null)) h += `<p class="wk-sum">Bazı seçimler Banko'da yok, tutma olasılığı hesaplanamadı.</p>`;
+  return h;
+}
+// ---------- yapay zekanın yazdığı geçmiş skorlar: sunucu football-charts arşiviyle (bu sezon + 3 sezon) karşılaştırır
+const MON3 = ["oca", "şub", "mar", "nis", "may", "haz", "tem", "ağu", "eyl", "eki", "kas", "ara"], MON3E = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+function parseDay(txt) {
+  const t = String(txt || "").toLocaleLowerCase("tr").trim(); if (!t) return null;
+  let m = t.match(/(\d{4})-(\d{1,2})-(\d{1,2})/); if (m) return { t: Date.UTC(+m[1], +m[2] - 1, +m[3]), tol: 3 };
+  m = t.match(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/); if (m) { let y = +m[3]; if (y < 100) y += 2000; return { t: Date.UTC(y, +m[2] - 1, +m[1]), tol: 3 }; }
+  const words = t.match(/[a-zçğıöşü]+/g) || [], mi = words.map(w => w.slice(0, 3)).map(w => MON3.indexOf(w) >= 0 ? MON3.indexOf(w) : MON3E.indexOf(w)).find(i => i >= 0);
+  const y = (t.match(/\b(20\d{2})\b/) || [])[1], d = (t.match(/\b(\d{1,2})\s*[a-zçğıöşü]/) || [])[1];
+  if (mi !== undefined) {
+    let yy = y ? +y : new Date().getUTCFullYear();
+    if (!y && Date.UTC(yy, mi, d ? +d : 15) > Date.now()) yy--;
+    return d ? { t: Date.UTC(yy, mi, +d), tol: 3 } : { t: Date.UTC(yy, mi, 15), tol: 20 };
+  }
+  return y ? { t: Date.UTC(+y, 6, 1), tol: 200 } : null;
+}
+// takımın Banko'daki ligi: önce lig maçı (Avrupa kupası değil), yoksa herhangi biri
+function aiTeamLk(name) {
+  const now = Date.now(), L = flatten().filter(m => m.kick.getTime() > now - 7 * 864e5);
+  const f = x => L.find(m => !!x === !!m.mk && (aiSame(name, [m.home, m.hraw]) || aiSame(name, [m.away, m.araw])));
+  const m = f(false) || f(true); return m && !m.mk ? m.lk : null;
+}
+function ensureChk(R) {
+  if (!R || R.chk || R.chkBusy || !flatten().length) return;
+  const items = [], add = (key, c, lk0) => { const lk = aiTeamLk(c.ev) || aiTeamLk(c.dep) || lk0; if (!lk) return; const d = parseDay(c.tarih); items.push({ k: key, lk, h: c.ev, a: c.dep, s: c.skor, t: d ? d.t : 0, tol: d ? d.tol : 4 }); };
+  (R.kupon || []).forEach((k, i) => { const m = (k.kanit || []).length ? aiWebMatch(k.mac) : null; (k.kanit || []).forEach((c, j) => add("k" + i + "_" + j, c, m && !m.mk ? m.lk : null)); });
+  (R.kanit || []).forEach((c, j) => add("t" + j, c, null));
+  if (!items.length) { R.chk = {}; return; }
+  R.chkBusy = true;
+  gs("checkScores", items.slice(0, 40)).then(r => { R.chk = r || {}; }).catch(() => { R.chk = {}; }).finally(() => { R.chkBusy = false; renderAI(); });
+}
+function webProof(list, pre, R) {
+  if (!list || !list.length) return "";
+  const C = R && R.chk, f = t => new Date(t).toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const al = r => (r.alt && r.alt.length ? ` · son maçları: ${r.alt.map(x => x.s + " (" + f(x.t) + ")").join(", ")}` : "");
+  return `<ul class="wk-pf">${list.map((c, j) => {
+    const r = C ? C[pre + j] || { v: "nf" } : null, st = r ? r.v : "wait";
+    const lab = st === "ok" ? (r.dt ? `✓ skor doğru, tarih ${f(r.t)}` : `✓ doğru${r.t && !parseDay(c.tarih) ? " · " + f(r.t) : ""}`) : st === "bad" ? (r.s ? `✗ gerçekte ${r.s} (${f(r.t)})` : `✗ böyle bir maç yok${al(r)}`) : st === "nd" ? `✗ o tarihte maçları yok${al(r)}` : st === "nf" ? "? doğrulanamadı" : "kontrol ediliyor…";
+    return `<li class="pf-${st}"><span>${esc(c.ev)} ${esc(c.skor)} ${esc(c.dep)}${c.tarih ? ` · ${esc(c.tarih)}` : ""}</span><b>${esc(lab)}</b></li>`;
+  }).join("")}</ul>`;
+}
+function proofSum(R) {
+  if (!R || !R.chk) return "";
+  const keys = [...(R.kupon || []).flatMap((k, i) => (k.kanit || []).map((_, j) => "k" + i + "_" + j)), ...(R.kanit || []).map((_, j) => "t" + j)];
+  if (!keys.length) return "";
+  const c = { ok: 0, bad: 0, nf: 0 }; keys.forEach(k => { const v = (R.chk[k] || { v: "nf" }).v; c[v === "nd" ? "bad" : v] = (c[v === "nd" ? "bad" : v] || 0) + 1; });
+  const part = [c.ok ? `${c.ok}${NSUF(c.ok)} doğru` : "", c.bad ? `<b class="no">${c.bad}${NSUF(c.bad)} yanlış</b>` : "", c.nf ? `${c.nf}${NSUF(c.nf)} doğrulanamadı` : ""].filter(Boolean);
+  return `<p class="wk-sum">Yapay zekanın yazdığı ${keys.length} geçmiş skordan ${part.join(", ")}.${c.nf ? " Kupa maçları ve Banko'nun arşivinde olmayan ligler doğrulanamaz." : ""}</p>`;
+}
+// Takım adı eşleştirme: her ayırt edici kelime eşleşmeli; "City" / "United" gibi ekler ikisinde de varsa aynı olmalı (Man City ≠ Man United, Real Madrid ≠ Real Sociedad); Jong / II gibi yedek takım işaretleri aynı olmalı
+const AI_GEN = new Set(["city", "united", "utd", "town", "real", "sporting", "athletic", "atletico", "county", "rovers", "wanderers", "olympique", "inter", "calcio", "hotspur", "albion", "athletico", "dinamo", "dynamo"]);
+const AI_RES = new Set(["jong", "ii", "b", "u21", "u23", "u19", "res", "reserves", "women", "w"]);
+const aiNz = x => String(x || "").toLocaleLowerCase("tr").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ı/g, "i").replace(/ß/g, "ss").replace(/[^a-z0-9 ]+/g, " ").replace(/\b(fc|cf|sc|afc|ac|fk|sk|sv|cd|ud|club|de|the|borussia|vfl|vfb|tsg|1)\b/g, " ").replace(/\s+/g, " ").trim();
+function aiSame(a, names) {
+  const tok = x => aiNz(x).split(" ").filter(w => w.length >= 3 || AI_RES.has(w));
   const hit = (w, B) => B.some(v => v === w || (w.length >= 4 && v.length >= 4 && (v.includes(w) || w.includes(v))));
-  // her ayırt edici kelime eşleşmeli; "City" / "United" gibi ekler ikisinde de varsa aynı olmalı (Man City ≠ Man United, Real Madrid ≠ Real Sociedad)
-  const same = (a, names) => { const A = tok(a); return names.some(n => { const B = tok(n); if (!A.length || !B.length) return false; if (A.join(" ") === B.join(" ")) return true;
-    const Ak = A.filter(w => !GEN.has(w)), Bk = B.filter(w => !GEN.has(w)), Ag = A.filter(w => GEN.has(w)), Bg = B.filter(w => GEN.has(w));
+  const A = tok(a);
+  return names.some(n => { const B = tok(n); if (!A.length || !B.length) return false; if (A.join(" ") === B.join(" ")) return true;
+    const ra = A.filter(w => AI_RES.has(w)).sort().join(), rb = B.filter(w => AI_RES.has(w)).sort().join(); if (ra !== rb) return false;
+    const Ak = A.filter(w => !AI_GEN.has(w) && !AI_RES.has(w)), Bk = B.filter(w => !AI_GEN.has(w) && !AI_RES.has(w)), Ag = A.filter(w => AI_GEN.has(w)), Bg = B.filter(w => AI_GEN.has(w));
     if (!Ak.length || !Bk.length) return false;
     if (Ag.length && Bg.length && !Ag.some(w => Bg.includes(w))) return false;
-    return Ak.every(w => hit(w, Bk)) || Bk.every(v => hit(v, Ak)); }); };
+    return Ak.every(w => hit(w, Bk)) || Bk.every(v => hit(v, Ak)); });
+}
+function aiWebMatch(t) {
+  const parts = String(t || "").split(/\s+(?:-|–|vs\.?|v)\s+/i); if (parts.length < 2) return null;
   const now = Date.now();
-  return flatten().filter(m => m.kick.getTime() > now - 3 * 36e5 && m.kick.getTime() < now + 3 * 864e5).find(m => same(parts[0], [m.home, m.hraw]) && same(parts[1], [m.away, m.araw])) || null;
+  return flatten().filter(m => m.kick.getTime() > now - 3 * 36e5 && m.kick.getTime() < now + 3 * 864e5).find(m => aiSame(parts[0], [m.home, m.hraw]) && aiSame(parts[1], [m.away, m.araw])) || null;
 }
 async function runWebAI(question) {
   const A = state.ai, W = A.web;
@@ -4125,9 +4222,9 @@ function dailyCards(has) {
   let b = "";
   const D = W.daily;
   if (W.dstatus === "loading") b = wait("İnternette haber ve oranlara bakıyor, 20-40 saniye sürebilir…");
-  else if (D && D.res && D.res.kupon.length) b = `${D.res.cevap ? `<p class="dk-sum">${esc(D.res.cevap)}</p>` : ""}<ol class="wk">${D.res.kupon.map(webLi).join("")}</ol>
-      ${(o => o > 1 ? `<p class="dk-odd">Toplam oran <b>${o.toFixed(2).replace(".", ",")}</b></p>` : "")(D.res.kupon.reduce((x, k) => { const v = parseFloat(String(k.oran).replace(",", ".")); return v > 1 && v < 50 ? x * v : x; }, 1))}
-      ${D.src.length ? `<div class="wsrc"><small>Kaynaklar</small>${D.src.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t || x.u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0])}</a>`).join("")}</div>` : ""}`;
+  else if (D && D.res && D.res.kupon.length) b = (ensureChk(D.res), `${D.res.cevap ? `<p class="dk-sum">${esc(D.res.cevap)}</p>` : ""}<ol class="wk">${D.res.kupon.map((k, i) => webLi(k, i, D.res)).join("")}</ol>
+      ${webSum(D.res.kupon)}${proofSum(D.res)}
+      ${D.src.length ? `<div class="wsrc"><small>Kaynaklar</small>${D.src.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t || x.u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0])}</a>`).join("")}</div>` : ""}`);
   else if (W.derr) b = `<p class="ai-err">${esc(W.derr)}</p>`;
   else b = `<p class="dk-empty">${has ? (A.auto ? "Hazırlanacak…" : "Hazırlamak için Yenile'ye dokun.") : "Yapay zeka anahtarı eklenince hazırlanır."}</p>`;
   const head = (t, sub, id, busy, at, prov) => `<div class="dk-h">${BOT("bot-sm")}<div><h3>${t}</h3><small>${sub}${at ? " · " + tm(at) : ""}</small></div><button type="button" class="ghost dk-r" id="${id}"${busy || !has ? " disabled" : ""}>${busy ? '<span class="spin"></span>' : "Yenile"}</button></div>`;
@@ -4182,8 +4279,8 @@ function renderAI() {
     if (W.status === "loading") log += typing;
     else if (W.err) log += ai(`<p class="ai-err" role="alert">${esc(W.err)}</p>`);
     else if (W.res) {
-      const R = W.res;
-      log += ai(`${skor(R.skor)}<p>${esc(R.cevap)}</p>${R.kupon.length ? `<ol class="wk">${R.kupon.map(webLi).join("")}</ol>` : ""}
+      const R = W.res; ensureChk(R);
+      log += ai(`${skor(R.skor)}<p>${esc(R.cevap)}</p>${R.kanit && R.kanit.length ? `<p class="wk-pfh">Yazdığı skorlar</p>${webProof(R.kanit, "t", R)}` : ""}${R.kupon.length ? `<ol class="wk">${R.kupon.map((k, i) => webLi(k, i, R)).join("")}</ol>${webSum(R.kupon)}` : ""}${proofSum(R)}
         ${W.src.length ? `<div class="wsrc"><small>Kaynaklar</small>${W.src.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t || (x.u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]))}</a>`).join("")}</div>` : ""}
         <span class="bub-meta">${esc(W.prov)}${W.at ? " · " + tm(W.at) : ""} · kesinlik içermez, bahis tavsiyesi değildir</span>`);
     } else log += ai(has ? `<p>Merhaba! İnternet modundayım. Güncel haberlere, sakatlıklara ve oranlara bakıp maç yorumu, skor tahmini ya da kupon hazırlayabilirim. Ne sormak istersin?</p>` : `<p>Başlamak için aşağıdaki ayarlardan bir yapay zeka anahtarı ekle.</p>`);
