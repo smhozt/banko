@@ -512,7 +512,7 @@
   .wsrc a:hover { border-color:var(--top-ac); }
   .aic-chips { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px; } #aiChips { display:contents; }
   .aic-chip { border:1px solid var(--top-line); background:rgba(255,255,255,.05); color:var(--top-ink); border-radius:999px; padding:7px 12px; font:500 13px var(--f); cursor:pointer; }
-  .aic-chip:hover { border-color:var(--top-ac); } .aic-chip:disabled { opacity:.5; cursor:default; } .aic-chip.run { background:var(--top-ac); color:var(--top-bg); border-color:transparent; font-weight:600; }
+  .aic-chip:hover { border-color:var(--top-ac); } .aic-chip.clr { margin-left:auto; background:transparent; color:var(--top-muted); } .aic-chip:disabled { opacity:.5; cursor:default; } .aic-chip.run { background:var(--top-ac); color:var(--top-bg); border-color:transparent; font-weight:600; }
   .aic-in { display:flex; gap:8px; align-items:center; background:rgba(255,255,255,.06); border:1px solid var(--top-line); border-radius:999px; padding:5px 5px 5px 16px; scroll-margin-top:90px; }
   .aic-in:focus-within { border-color:var(--top-ac); }
   .aic-in input { flex:1; min-width:0; height:40px; border:0; background:transparent; color:var(--top-ink); font:15px var(--f); outline:none; } .aic-in input::placeholder { color:var(--top-muted); }
@@ -1263,6 +1263,7 @@
     <p class="hint" id="dataInfo">Maç verisi sunucuda saklanır ve her sabah kendiliğinden yenilenir. Zorla yenileme yalnızca 2 saatten eski ligleri çeker; kaynak veriyi zaten günde bir kez (sabah) günceller.</p>
     <button class="ghost" id="refresh">Zorla yenile</button>
     <button class="ghost" id="logout">Oturumu kapat</button>
+    <p class="hint" id="buildVer">Sürüm db57bc · 06.11.2026 08:29</p>
   </div>
 </aside>
 
@@ -1380,20 +1381,23 @@ async function gs(fn, ...args) {
   throw new Error("Giriş yapılamadı.");
 }
 const MEM = {};
-const PERSIST = ["banko2:ui", "banko2:sel", "banko2:uefa", "banko2:theme", "banko2:accent", "banko2:ai", "banko2:fav", "banko2:seen", "banko2:my", "banko2:favt", "banko2:intro", "banko2:cel", "banko2:shrfmt"];
+const PERSIST = ["banko2:ui", "banko2:sel", "banko2:uefa", "banko2:theme", "banko2:accent", "banko2:ai", "banko2:aiwebday", "banko2:aiauto", "banko2:fav", "banko2:seen", "banko2:my", "banko2:favt", "banko2:intro", "banko2:cel", "banko2:shrfmt"];
+// yalnızca bu cihazda kalanlar: yapay zeka sohbeti ve seçili mod (sunucuya gitmez, başka cihazda görünmez)
+const LOCAL = ["banko2:aiask", "banko2:aiweb", "banko2:aimode"];
 let prefTimer = null;
 function schedulePrefs() {
   clearTimeout(prefTimer);
   prefTimer = setTimeout(() => {
     const o = {}; PERSIST.forEach(k => { if (k in MEM) o[k] = MEM[k]; });
     let t = JSON.stringify(o);
+    if (t.length > 8400) { delete o["banko2:aiwebday"]; t = JSON.stringify(o); }
     if (t.length > 8400) { delete o["banko2:ai"]; t = JSON.stringify(o); }
     gs("savePrefs", t).catch(() => {});
   }, 900);
 }
-function lsGet(k) { return k in MEM ? MEM[k] : null; }
-function lsSet(k, v) { MEM[k] = String(v); if (PERSIST.includes(k)) schedulePrefs(); }
-function lsDel(k) { delete MEM[k]; if (PERSIST.includes(k)) schedulePrefs(); }
+function lsGet(k) { if (LOCAL.includes(k)) { try { const v = localStorage.getItem(k); if (v !== null) return v; } catch (e) {} } return k in MEM ? MEM[k] : null; }
+function lsSet(k, v) { MEM[k] = String(v); if (LOCAL.includes(k)) { try { localStorage.setItem(k, String(v)); } catch (e) {} } if (PERSIST.includes(k)) schedulePrefs(); }
+function lsDel(k) { delete MEM[k]; if (LOCAL.includes(k)) { try { localStorage.removeItem(k); } catch (e) {} } if (PERSIST.includes(k)) schedulePrefs(); }
 function saveUI() { lsSet("banko2:ui", JSON.stringify({ tab: state.tab, range: state.range, sort: state.sort, trusted: state.trusted, calib: state.calib, mktOn: state.mktOn, autoSave: state.autoSave, thr: state.thr, view: state.view, home: { n: state.home.n, style: state.home.style, hours: state.home.hours, odd: state.home.odd || "" }, trend: state.trend, accOn: state.accOn, bpOn: state.bpOn, aiMorning: state.aiMorning, ai: { provider: state.ai.provider, models: state.ai.models } })); }
 function loadUI() {
   try {
@@ -2034,7 +2038,7 @@ async function runMatchAsk(id, q) {
   try { if (state.detJob) await state.detJob; } catch (e) {}
   const prev = L.filter(x => x !== it && x.status === "done").slice(-2).map(x => ({ soru: x.q, cevap: x.cevap }));
   try {
-    const res = await gs("callAI", { order, models: A.models, system: AI_ASK, prompt: "Soru: " + q + (prev.length ? "\nÖnceki sorular: " + JSON.stringify(prev) : "") + "\nMaç verileri (yüzde):\n" + JSON.stringify(matchAIData(m, id)) });
+    const res = await aiCall({ order, models: A.models, system: AI_ASK, prompt: "Soru: " + q + (prev.length ? "\nÖnceki sorular: " + JSON.stringify(prev) : "") + "\nMaç verileri (yüzde):\n" + JSON.stringify(matchAIData(m, id)) });
     if (res && res.ok) {
       const j = res.json || {}, str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
       Object.assign(it, { status: "done", cevap: str(j.cevap, 900) || "Yanıt boş geldi.", skor: /^\d{1,2}\s*[-:]\s*\d{1,2}$/.test(str(j.skor, 8)) ? str(j.skor, 8).replace(/\s/g, "").replace(":", "-") : "", prov: AI_NAMES[res.prov] + " / " + res.model });
@@ -2068,7 +2072,7 @@ async function runMatchAI(id) {
   try { if (state.detJob) await state.detJob; } catch (e) {}
   const data = matchAIData(m, id);
   try {
-    const res = await gs("callAI", { order, models: A.models, system: AI_MATCH, prompt: "Bu maçı yorumla. Veriler (yüzde):\n" + JSON.stringify(data) });
+    const res = await aiCall({ order, models: A.models, system: AI_MATCH, prompt: "Bu maçı yorumla. Veriler (yüzde):\n" + JSON.stringify(data) });
     if (res && res.ok) {
       const j = res.json || {}, str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
       X.ai[id] = { status: "done", yorum: str(j.yorum, 900), one: MK[j.one_cikan] ? j.one_cikan : "", neden: str(j.neden, 240), dikkat: (Array.isArray(j.dikkat) ? j.dikkat : []).map(x => str(x, 160)).filter(Boolean).slice(0, 3), prov: AI_NAMES[res.prov] + " / " + res.model };
@@ -2853,7 +2857,7 @@ function buildHome() {
           <div class="seg aic-mode" role="group" aria-label="Yapay zeka modu"><button type="button" data-aimode="data">Banko verisi</button><button type="button" data-aimode="web">İnternet</button></div></div>
         <p class="aic-hint" id="aiHint"></p>
         <div class="aic-log" id="aiBody" aria-live="polite"></div>
-        <div class="aic-chips"><button type="button" class="aic-chip run" id="aiRun" hidden>Günün yorumunu hazırla</button><span id="aiChips"></span></div>
+        <div class="aic-chips"><button type="button" class="aic-chip run" id="aiRun" hidden>Günün yorumunu hazırla</button><span id="aiChips"></span><button type="button" class="aic-chip clr" id="aiClr" hidden>Sohbeti temizle</button></div>
         <form class="aic-in" id="aiActs"><label class="sr" for="aiQ">Yapay zekaya sor</label><input id="aiQ" type="text" maxlength="300" autocomplete="off" enterkeyhint="send" placeholder="Bir şey sor…"><button class="aic-send" id="aiAsk" type="submit" aria-label="Gönder">${SEND}</button></form>
       </div>
       <div id="aiRes"></div>
@@ -2891,7 +2895,13 @@ function buildHome() {
   $("aiModel").addEventListener("change", e => { state.ai.models[state.ai.provider] = e.target.value.trim() || AI_DEFAULT_MODEL[state.ai.provider]; saveUI(); });
   $("aiChat").addEventListener("click", e => {
     const md = e.target.closest("[data-aimode]"); if (md) { state.ai.mode = md.dataset.aimode; lsSet("banko2:aimode", state.ai.mode); buzz(); renderAI(); return; }
-    const ch = e.target.closest("[data-aiq]"); if (ch && !ch.disabled) { aiSend(ch.dataset.aiq); }
+    const ch = e.target.closest("[data-aiq]"); if (ch && !ch.disabled) { aiSend(ch.dataset.aiq); return; }
+    if (e.target.closest("#aiClr")) {
+      const A = state.ai, W = A.web;
+      if (A.mode === "web") { if (W.status === "loading") return; Object.assign(W, { q: "", res: null, src: [], prov: "", at: 0, err: "" }); lsDel("banko2:aiweb"); }
+      else { if (A.status === "loading") return; Object.assign(A, { result: null, kind: "", q: "", win: "", error: "", note: "", at: null }); lsDel("banko2:aiask"); }
+      buzz(); toast("Sohbet temizlendi"); renderAI();
+    }
   });
   $("aiRun").addEventListener("click", () => { $("aiChat").scrollIntoView({ block: "nearest", behavior: "smooth" }); runAI("daily"); });
   $("aiActs").addEventListener("submit", e => { e.preventDefault(); const q = $("aiQ").value.trim(); if (!q) return; $("aiQ").value = ""; aiSend(q); });
@@ -3962,7 +3972,7 @@ async function runDailyAI() {
   const prompt = `Günün yorumunu hazırla. ${H.n} maçlık, "${STYLES[H.style].label}" tarzında bir kupon öner ve 3 ile 5 öneri yaz.\nŞu an: ${nowTxt} (Sofia saati). Maç listesi (yüzde olarak, saat Sofia):\n${JSON.stringify(list)}`;
   A.dstatus = "loading"; A.derr = ""; renderAI();
   try {
-    const res = await gs("callAI", { order, models: A.models, system: AI_SYSTEM, prompt });
+    const res = await aiCall({ order, models: A.models, system: AI_SYSTEM, prompt });
     if (res && res.ok) {
       A.daily = { result: normalizeAI(res.json, idMap), at: Date.now(), used: AI_NAMES[res.prov] + " / " + res.model, sig: aiSig(), srv: false };
       lsSet("banko2:ai", JSON.stringify({ day: dayKey(new Date()), result: A.daily.result, at: A.daily.at, used: A.daily.used, note: "", sig: A.daily.sig, kind: "daily", q: "", win: "" }));
@@ -3979,11 +3989,12 @@ async function runWebDaily() {
   const q = `Şu andan itibaren ${H.hours} saat içinde başlayacak futbol maçları için güncel bilgilere (sakatlık, ceza, muhtemel kadro, form, oranlar) dayanarak ${H.n} maçlık, "${STYLES[H.style].label}" tarzında "Günün kuponu" hazırla. Bilinen liglerden ve kupalardan seç, her seçim için güncel oranı ve kısa gerekçesini yaz. Cevapta kuponun genel mantığını 2-3 cümleyle anlat.`;
   W.dstatus = "loading"; W.derr = ""; renderAI();
   try {
-    const res = await gs("callAI", { order, models: A.models, system: AI_WEB, prompt: `Şu an: ${nowTxt} (Sofia saati, UTC+2).\nİstek: ${q}`, web: true });
+    const res = await aiCall({ order, models: A.models, system: AI_WEB, prompt: `Şu an: ${nowTxt} (Sofia saati, UTC+2).\nİstek: ${q}`, web: true });
     if (res && res.ok) {
       W.daily = { res: webNorm(res.json), src: (res.src || []).filter(x => x && /^https?:\/\//.test(x.u)).slice(0, 8), prov: AI_NAMES[res.prov] + " / " + res.model + " · web araması", at: Date.now() };
       if (!W.daily.res.kupon.length) W.derr = "Yapay zeka kupon çıkaramadı, Yenile ile tekrar dene.";
-      lsSet("banko2:aiwebday", JSON.stringify(Object.assign({ day: dayKey(new Date()) }, W.daily)));
+      const cmp = { day: dayKey(new Date()), at: W.daily.at, prov: W.daily.prov, src: W.daily.src.slice(0, 4).map(x => ({ u: x.u.slice(0, 160), t: x.t.slice(0, 60) })), res: { cevap: W.daily.res.cevap.slice(0, 500), skor: W.daily.res.skor, kupon: W.daily.res.kupon.slice(0, 6).map(k => ({ mac: k.mac, tarih: k.tarih, secim: k.secim, oran: k.oran, neden: k.neden.slice(0, 140) })) } };
+      lsSet("banko2:aiwebday", JSON.stringify(cmp));
     } else W.derr = ((res && res.fails) || []).join(" | ") || "Yapay zeka yanıt vermedi.";
   } catch (e) { W.derr = (e && e.message) || String(e); }
   W.dstatus = "idle"; renderAI();
@@ -4027,7 +4038,7 @@ async function runAI(kind, question) {
   const prompt = `${ask}\nŞu an: ${nowTxt} (Sofia saati).${W ? ` Kullanıcı ${W.label} içindeki maçları istedi; listede yalnızca bu aralıktaki ${list.length} maç var. Başka maç önerme; istenen sayıda uygun maç yoksa bunu açıkça söyle.` : ""}${LQ && base.some(m => LQ.keys.has(m.lk)) ? ` Kullanıcı ${LQ.label} istedi; listedeki maçlar yalnızca bunlar.` : ""} Maç listesi (yüzde olarak, saat Sofia):\n${JSON.stringify(list)}`;
   A.status = "loading"; A.error = ""; A.note = ""; A.srv = false; renderAI();
   try {
-    const res = await gs("callAI", { order, models: A.models, system: AI_SYSTEM, prompt });
+    const res = await aiCall({ order, models: A.models, system: AI_SYSTEM, prompt });
     if (res && res.ok) {
       A.result = normalizeAI(res.json, idMap);
       A.at = Date.now(); A.usedProv = AI_NAMES[res.prov] + " / " + res.model; A.sig = aiSig();
@@ -4056,7 +4067,7 @@ async function runWebAI(question) {
   W.status = "loading"; W.q = String(question).slice(0, 300); W.err = ""; renderAI();
   const nowTxt = new Date().toLocaleString("tr-TR", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
   try {
-    const res = await gs("callAI", { order, models: A.models, system: AI_WEB, prompt: `Şu an: ${nowTxt} (Sofia saati, UTC+2).\nSoru: ${W.q}`, web: true });
+    const res = await aiCall({ order, models: A.models, system: AI_WEB, prompt: `Şu an: ${nowTxt} (Sofia saati, UTC+2).\nSoru: ${W.q}`, web: true });
     if (res && res.ok) {
       W.res = webNorm(res.json);
       W.src = (res.src || []).filter(x => x && /^https?:\/\//.test(x.u)).slice(0, 8);
@@ -4095,6 +4106,12 @@ function dailyCards(has) {
     <div class="dk-c">${head("Banko verisiyle", "model, piyasa ve gol olasılıkları", "dkRun", A.dstatus === "loading", A.daily && A.daily.at, A.daily && A.daily.used)}${a}${A.daily && A.daily.used ? `<span class="dk-meta">${esc(A.daily.used)}${A.daily.srv ? " · sabah hazırlandı" : ""}</span>` : ""}</div>
     <div class="dk-c web">${head("İnternetten", "güncel haber, sakatlık ve oranlar", "dkWeb", W.dstatus === "loading", D && D.at)}${b}${D && D.prov ? `<span class="dk-meta">${esc(D.prov)} · Banko modelinden bağımsız</span>` : ""}</div>
   </div><p class="sh-note">İki kupon farklı yollarla hazırlanır; aynı maçları seçmeleri gerekmez. Kombine kuponların tutma olasılığı düşüktür, bahis tavsiyesi değildir.</p>`;
+}
+async function aiCall(payload) {
+  const r = await gs("callAI", payload);
+  state.ai.lastFail = r && r.fails && r.fails.length ? r.fails.join(" | ") : r && !r.ok ? "yanıt yok" : "";
+  state.ai.lastFailAt = state.ai.lastFail ? Date.now() : 0;
+  return r;
 }
 function aiSend(q) {
   q = String(q || "").trim(); if (!q) return;
@@ -4166,11 +4183,12 @@ function renderAI() {
   $("aiChips").innerHTML = AI_CHIPS[A.mode].map(c => `<button type="button" class="aic-chip" data-aiq="${esc(c)}"${busy ? " disabled" : ""}>${esc(c)}</button>`).join("");
   $("aiMeta").textContent = busy ? "düşünüyor…" : web ? "internet modu" : "Banko verisiyle";
   $("aiRun").hidden = true;
+  $("aiClr").hidden = busy || !(web ? (W.q || W.res || W.err) : (A.kind === "ask" && (A.q || A.result || A.error)));
   $("aiRun").disabled = $("aiAsk").disabled = busy;
   $("aiRun").innerHTML = A.status === "loading" ? '<span class="spin"></span>Hazırlanıyor…' : "Günün yorumunu hazırla";
   $("aiRun").setAttribute("aria-busy", String(A.status === "loading"));
   $("aiQ").placeholder = web ? "Örnek: Fenerbahçe - Liverpool kaç kaç biter?" : "Örnek: önümüzdeki 3 saat için 3 banko maç";
-  $("aiKeyState").textContent = ["gemini", "groq", "claude"].map(p => AI_NAMES[p] + ": " + (aiKey(p) ? "anahtar tanımlı" : "anahtar yok")).join(". ") + ".";
+  $("aiKeyState").textContent = ["gemini", "groq", "claude"].map(p => AI_NAMES[p] + ": " + (aiKey(p) ? "anahtar tanımlı" : "anahtar yok")).join(". ") + "." + (A.lastFail ? ` Son hata (${new Date(A.lastFailAt).toLocaleTimeString("tr-TR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" })}): ${A.lastFail}` : "");
 }
 
 // ---------- lig seçici
