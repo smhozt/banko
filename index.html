@@ -507,6 +507,10 @@
   .wk li > div { display:flex; justify-content:space-between; gap:10px; align-items:baseline; } .wk b { font-weight:600; }
   .wk-o { font:700 18px var(--fc); color:var(--top-ac); } .wk-m { font-size:13px; color:var(--top-muted); } .wk small { font-size:13px; color:var(--top-muted); }
   .wk .lnk { justify-self:start; color:var(--top-ink); font-size:13px; }
+  .wk-b { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:2px; }
+  .wk-bp { font-size:12px; font-weight:600; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,.08); color:var(--top-muted); }
+  .wk-bp.ok { background:color-mix(in srgb, var(--t2) 22%, transparent); color:var(--top-ink); } .wk-bp.no { background:color-mix(in srgb, var(--err) 18%, transparent); color:var(--top-ink); }
+  .dk-c .wk-bp { background:var(--surface); color:var(--muted); } .dk-c .wk-bp.ok { background:color-mix(in srgb, var(--t2) 18%, transparent); color:var(--ink); } .dk-c .wk-bp.no { background:color-mix(in srgb, var(--err) 14%, transparent); color:var(--ink); }
   .wsrc { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:4px; } .wsrc small { color:var(--top-muted); font-size:12px; margin-right:2px; }
   .wsrc a { font-size:12px; color:var(--top-ink); text-decoration:none; padding:3px 9px; border-radius:999px; border:1px solid var(--top-line); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .wsrc a:hover { border-color:var(--top-ac); }
@@ -1263,7 +1267,7 @@
     <p class="hint" id="dataInfo">Maç verisi sunucuda saklanır ve her sabah kendiliğinden yenilenir. Zorla yenileme yalnızca 2 saatten eski ligleri çeker; kaynak veriyi zaten günde bir kez (sabah) günceller.</p>
     <button class="ghost" id="refresh">Zorla yenile</button>
     <button class="ghost" id="logout">Oturumu kapat</button>
-    <p class="hint" id="buildVer">Sürüm 5e056a · 06.11.2026 15:31</p>
+    <p class="hint" id="buildVer">Sürüm a740bd · 06.11.2026 15:38</p>
   </div>
 </aside>
 
@@ -4054,6 +4058,20 @@ const AI_WEB = [
   "Kurallar: 1) Bulduğun güncel bilgiye dayan; bulamadığın bilgiyi uydurma, emin değilsen söyle. 2) Kesinlik ya da garanti ifadesi kullanma; kombine kuponların tutma olasılığının düşük olduğunu hatırlat. 3) Kupon istenirse en fazla 6 seçim öner, her seçim için kısa gerekçe ve bulabildiysen güncel oran yaz. 4) Skor sorulursa en olası skoru ve bir alternatifini söyle. 5) Türkçe, samimi ve kısa yaz. 6) Bütün saatleri Sofia saatiyle (UTC+2) yaz, Türkiye saatini kullanma, saat dönüşümünü anlatma. 7) Oranları yalnızca ondalık biçimde yaz (örn 1,55); Amerikan oranı (-182 gibi) kullanma. 8) Kaynak olarak maç önü analizleri, takım haberleri ve bahis sitelerini tercih et; yalnızca 'bugün hangi maçlar var' listesi veren sayfalara dayanma. 9) Yanıtı kısa tut: cevap en fazla 5 cümle, her gerekçe en fazla 15 kelime; JSON'u mutlaka eksiksiz kapat.",
   'Yalnızca geçerli JSON döndür, başka metin yazma: {"cevap":"3-6 cümle","skor":"skor sorulduysa örn 1-2, değilse boş","kupon":[{"mac":"Ev - Deplasman","tarih":"örn 4 Kasım 22:00","secim":"örn Maç sonucu 2, 2,5 üst","oran":"örn 1,85 ya da boş","neden":"tek cümle"}]}'
 ].join("\n");
+// internet kuponu satırı: maç Banko'da varsa saati Banko'dan, aynı pazar için Banko modelinin olasılığını yanına yaz
+function webMk(sec) {
+  const t = String(sec || "").toLocaleLowerCase("tr").replace(/\./g, ",");
+  if (/3,5\s*(gol\s*)?üst/.test(t)) return { mk: "o35" }; if (/2,5\s*(gol\s*)?üst/.test(t)) return { mk: "o25" }; if (/1,5\s*(gol\s*)?üst/.test(t)) return { mk: "o15" };
+  if (/kg\s*var|karşılıklı\s*gol\s*var|iki\s*takım\s*da\s*gol/.test(t)) return { mk: "bt" };
+  if (/(maç\s*sonucu|ms)\s*1\b|ev sahibi kazanır/.test(t)) return { mk: "win", side: "home" };
+  if (/(maç\s*sonucu|ms)\s*2\b|deplasman kazanır/.test(t)) return { mk: "win", side: "away" };
+  return null;
+}
+function webLi(k) {
+  const m = aiWebMatch(k.mac), w = m ? webMk(k.secim) : null, p = w ? pickP(m, w.mk, w.side) : null;
+  const when = m ? (di => `${di.tag || di.num + " " + di.month} ${fmtTime(m.kick)}`)(dayInfo(m.kick)) : k.tarih;
+  return `<li><div><b>${esc(k.secim)}</b>${k.oran ? `<span class="wk-o">${esc(k.oran)}</span>` : ""}</div><span class="wk-m">${esc(m ? m.home + " - " + m.away : k.mac)}${when ? " · " + esc(when) : ""}</span>${k.neden ? `<small>${esc(k.neden)}</small>` : ""}${m ? `<div class="wk-b">${typeof p === "number" ? `<span class="wk-bp${p >= 0.6 ? " ok" : p < 0.45 ? " no" : ""}">Banko modeli %${pn(p)}</span>` : ""}<button type="button" class="lnk" data-open="${esc(m.id)}" data-tab="${w ? w.mk : "win"}">Banko'da aç</button></div>` : ""}</li>`;
+}
 function aiWebMatch(t) {
   const nz = x => String(x || "").toLocaleLowerCase("tr").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ı/g, "i").replace(/ß/g, "ss").replace(/[^a-z0-9 ]+/g, " ").replace(/\b(fc|cf|sc|afc|ac|fk|sk|sv|cd|ud|club|de|the|borussia|vfl|vfb|tsg|1)\b/g, " ").replace(/\s+/g, " ").trim();
   const parts = String(t || "").split(/\s+(?:-|–|vs\.?|v)\s+/i); if (parts.length < 2) return null;
@@ -4106,7 +4124,7 @@ function dailyCards(has) {
   let b = "";
   const D = W.daily;
   if (W.dstatus === "loading") b = wait("İnternette haber ve oranlara bakıyor, 20-40 saniye sürebilir…");
-  else if (D && D.res && D.res.kupon.length) b = `${D.res.cevap ? `<p class="dk-sum">${esc(D.res.cevap)}</p>` : ""}<ol class="wk">${D.res.kupon.map(k => { const m = aiWebMatch(k.mac); return `<li><div><b>${esc(k.secim)}</b>${k.oran ? `<span class="wk-o">${esc(k.oran)}</span>` : ""}</div><span class="wk-m">${esc(k.mac)}${k.tarih ? " · " + esc(k.tarih) : ""}</span>${k.neden ? `<small>${esc(k.neden)}</small>` : ""}${m ? `<button type="button" class="lnk" data-open="${esc(m.id)}" data-tab="win">Banko'da aç</button>` : ""}</li>`; }).join("")}</ol>
+  else if (D && D.res && D.res.kupon.length) b = `${D.res.cevap ? `<p class="dk-sum">${esc(D.res.cevap)}</p>` : ""}<ol class="wk">${D.res.kupon.map(webLi).join("")}</ol>
       ${(o => o > 1 ? `<p class="dk-odd">Toplam oran <b>${o.toFixed(2).replace(".", ",")}</b></p>` : "")(D.res.kupon.reduce((x, k) => { const v = parseFloat(String(k.oran).replace(",", ".")); return v > 1 && v < 50 ? x * v : x; }, 1))}
       ${D.src.length ? `<div class="wsrc"><small>Kaynaklar</small>${D.src.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t || x.u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0])}</a>`).join("")}</div>` : ""}`;
   else if (W.derr) b = `<p class="ai-err">${esc(W.derr)}</p>`;
@@ -4164,7 +4182,7 @@ function renderAI() {
     else if (W.err) log += ai(`<p class="ai-err" role="alert">${esc(W.err)}</p>`);
     else if (W.res) {
       const R = W.res;
-      log += ai(`${skor(R.skor)}<p>${esc(R.cevap)}</p>${R.kupon.length ? `<ol class="wk">${R.kupon.map(k => { const m = aiWebMatch(k.mac); return `<li><div><b>${esc(k.secim)}</b>${k.oran ? `<span class="wk-o">${esc(k.oran)}</span>` : ""}</div><span class="wk-m">${esc(k.mac)}${k.tarih ? " · " + esc(k.tarih) : ""}</span>${k.neden ? `<small>${esc(k.neden)}</small>` : ""}${m ? `<button type="button" class="lnk" data-open="${esc(m.id)}" data-tab="win">Banko'da aç</button>` : ""}</li>`; }).join("")}</ol>` : ""}
+      log += ai(`${skor(R.skor)}<p>${esc(R.cevap)}</p>${R.kupon.length ? `<ol class="wk">${R.kupon.map(webLi).join("")}</ol>` : ""}
         ${W.src.length ? `<div class="wsrc"><small>Kaynaklar</small>${W.src.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer">${esc(x.t || (x.u.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]))}</a>`).join("")}</div>` : ""}
         <span class="bub-meta">${esc(W.prov)}${W.at ? " · " + tm(W.at) : ""} · kesinlik içermez, bahis tavsiyesi değildir</span>`);
     } else log += ai(has ? `<p>Merhaba! İnternet modundayım. Güncel haberlere, sakatlıklara ve oranlara bakıp maç yorumu, skor tahmini ya da kupon hazırlayabilirim. Ne sormak istersin?</p>` : `<p>Başlamak için aşağıdaki ayarlardan bir yapay zeka anahtarı ekle.</p>`);
