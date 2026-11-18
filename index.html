@@ -1201,6 +1201,11 @@
   .dk-wait { flex-wrap:wrap; }
   .dk-wait::after { content:""; flex:0 0 100%; height:88px; margin-top:8px; border-radius:12px; background:linear-gradient(90deg, var(--sunk) 25%, color-mix(in srgb, var(--sunk) 55%, var(--bg)) 50%, var(--sunk) 75%); background-size:200% 100%; animation:bk-shim 1.4s linear infinite; }
   @keyframes bk-shim { to { background-position:-200% 0; } }
+  /* Analiz, günün kuponları: koyu sohbet paneli için yazılmış gri tonlar açık kartta silik kalıyordu */
+  .dk-c .wk-m, .dk-c .wk small { color:var(--muted); font-size:14px; }
+  .dk-c .wk-bp { background:var(--surface); color:var(--muted); }
+  .dk-c .wk-bp.ok { background:color-mix(in srgb, var(--t2) 22%, transparent); color:var(--ink); }
+  .dk-c .wk-bp.no { background:color-mix(in srgb, var(--err) 18%, transparent); color:var(--ink); }
   @media (prefers-reduced-motion: reduce) { .dk-wait::after { animation:none; } .check input, .check input::after { transition:none; } }
 </style>
 </head>
