@@ -1163,6 +1163,25 @@
   .ghost.in-my u { text-underline-offset:3px; color:var(--err); text-decoration-color:var(--err); }
   @keyframes pop { 0% { transform:scale(1); } 40% { transform:scale(1.04); } 100% { transform:scale(1); } }
   .pop { animation:pop .35s ease; }
+  /* ux46: hareket kuralları */
+  .fly-chip { position:fixed; z-index:120; left:0; top:0; pointer-events:none; padding:7px 13px; border-radius:999px; background:var(--away); color:#fff; font-size:13px; font-weight:700; line-height:1.2; white-space:nowrap; box-shadow:0 10px 26px -8px rgba(0,0,0,.55); will-change:transform, opacity; }
+  @keyframes bump { 0% { transform:scale(1); } 30% { transform:scale(1.34); } 55% { transform:scale(.9); } 78% { transform:scale(1.06); } 100% { transform:scale(1); } }
+  .slip-n.bump { animation:bump .5s cubic-bezier(.3,.7,.3,1); }
+  @keyframes sq { 0% { transform:scale(1); } 28% { transform:scale(.95,.9); } 62% { transform:scale(1.03,1.05); } 100% { transform:scale(1); } }
+  .sq { animation:sq .34s cubic-bezier(.3,.7,.3,1); }
+  .ft-star.sq { animation-duration:.42s; }
+  .cel-host { position:relative; }
+  .card > .cel-st { top:54px; right:18px; }
+  .cel-st { position:absolute; right:12px; top:10px; z-index:4; padding:5px 12px 4px; border:3px solid var(--t2); border-radius:10px; color:var(--t2); background:color-mix(in srgb, var(--surface) 80%, transparent); font:800 22px/1 var(--fc); letter-spacing:.08em; pointer-events:none; transform:rotate(-9deg); animation:stampIn .55s cubic-bezier(.2,.9,.3,1.25) both, stampOut .45s 3s ease forwards; }
+  @keyframes stampIn { 0% { opacity:0; transform:rotate(-9deg) scale(2.3); } 55% { opacity:1; transform:rotate(-9deg) scale(.9); } 100% { opacity:1; transform:rotate(-9deg) scale(1); } }
+  @keyframes stampOut { to { opacity:0; transform:rotate(-9deg) scale(.96); } }
+  /* detay paneli açılırken hafifçe yaylanarak yerine oturur; altına taşma boşluk göstermesin diye panelin rengi aşağı uzar */
+  @media (max-width:720px) {
+    .bsheet::after { content:""; position:absolute; left:-1px; right:-1px; top:100%; height:48px; background:inherit; }
+  }
+  @media (max-width:720px) and (prefers-reduced-motion: no-preference) { body.sopen .bsheet:not(.dragging) { transition:transform .46s cubic-bezier(.22,1.16,.36,1); } }
+  @media (min-width:721px) and (prefers-reduced-motion: no-preference) { body.sopen .bsheet:not(.dragging) { transition:transform .34s cubic-bezier(.22,1.22,.36,1), opacity .18s; } }
+  @media (prefers-reduced-motion: reduce) { .fly-chip { display:none; } .slip-n.bump, .sq, .cel-st { animation:none; } }
   @keyframes freshIn { from { opacity:.25; transform:translateY(6px); } }
   .fresh .pk, .fresh .tk-pk { animation:freshIn .3s ease both; }
   .fresh .pk:nth-child(2) { animation-delay:.04s; } .fresh .pk:nth-child(3) { animation-delay:.08s; } .fresh .pk:nth-child(4) { animation-delay:.12s; } .fresh .pk:nth-child(5) { animation-delay:.16s; } .fresh .pk:nth-child(6) { animation-delay:.2s; }
@@ -1176,37 +1195,6 @@
   .ai-wait { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--sunk); border-radius:12px; }
   .ai-wait small { display:block; color:var(--muted); font-size:12.5px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
-
-  /* ---------- görsel cila ---------- */
-  /* Maçlar (masaüstü): eşik, sıralama ve onay kutuları telefondaki gibi filtre panelinde; listeyi yukarı çeker */
-  @media (min-width:721px) {
-    .cmd-more { display:none !important; }
-    .fbtn { display:inline-flex; height:40px; padding:0 14px; border-radius:12px; }
-  }
-  /* onay kutuları: ayar panelindeki gibi açma-kapama düğmesi */
-  .check { font-size:15px; }
-  .check input { -webkit-appearance:none; appearance:none; flex:none; width:36px; height:22px; margin:0; border-radius:11px; background:var(--line); position:relative; cursor:pointer; transition:background .2s; }
-  .check input::after { content:""; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.35); transition:transform .2s; }
-  .check input:checked { background:var(--t2); }
-  .check input:checked::after { transform:translateX(14px); }
-  .check input:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
-  /* kupon kontrolleri tek şerit; seçimler öne çıkar */
-  .cp-ctl { background:var(--sunk); border-radius:14px; padding:8px 10px; margin:14px 0 10px; }
-  .cp-ctl .step, .cp-ctl .seg { background:var(--surface); }
-  /* küçük yazılar bir kademe büyük */
-  .muted, .pk-n, .opt small { font-size:14px; }
-  .pk-t small, .fbx small, .ai-wait small { font-size:13px; }
-  footer { font-size:14px; }
-  /* yüklenirken boş kalan kutular için iskelet */
-  .dk-wait { flex-wrap:wrap; }
-  .dk-wait::after { content:""; flex:0 0 100%; height:88px; margin-top:8px; border-radius:12px; background:linear-gradient(90deg, var(--sunk) 25%, color-mix(in srgb, var(--sunk) 55%, var(--bg)) 50%, var(--sunk) 75%); background-size:200% 100%; animation:bk-shim 1.4s linear infinite; }
-  @keyframes bk-shim { to { background-position:-200% 0; } }
-  /* Analiz, günün kuponları: koyu sohbet paneli için yazılmış gri tonlar açık kartta silik kalıyordu */
-  .dk-c .wk-m, .dk-c .wk small { color:var(--muted); font-size:14px; }
-  .dk-c .wk-bp { background:var(--surface); color:var(--muted); }
-  .dk-c .wk-bp.ok { background:color-mix(in srgb, var(--t2) 22%, transparent); color:var(--ink); }
-  .dk-c .wk-bp.no { background:color-mix(in srgb, var(--err) 18%, transparent); color:var(--ink); }
-  @media (prefers-reduced-motion: reduce) { .dk-wait::after { animation:none; } .check input, .check input::after { transition:none; } }
 </style>
 </head>
 <body>
@@ -1312,7 +1300,7 @@
     <p class="hint" id="dataInfo">Maç verisi sunucuda saklanır ve her sabah kendiliğinden yenilenir. Zorla yenileme yalnızca 2 saatten eski ligleri çeker; kaynak veriyi zaten günde bir kez (sabah) günceller.</p>
     <button class="ghost" id="refresh">Zorla yenile</button>
     <button class="ghost" id="logout">Oturumu kapat</button>
-    <p class="hint" id="buildVer">Sürüm b0b408 · 10.11.2026 19:53</p>
+    <p class="hint" id="buildVer">Sürüm 41d26b · 27.11.2026 09:11</p>
   </div>
 </aside>
 
@@ -1916,11 +1904,13 @@ function addMy(m, pk, quiet) {
   return ex ? "changed" : "added";
 }
 function removeMy(id) { state.my = state.my.filter(x => x.id !== id); saveMy(); buzz(); }
-function importToMy(picks) {
+function importToMy(picks, from) {
   let n = 0, full = false;
   for (const c of picks) { const r = addMy(c.m, c.pk, true); if (r === "added" || r === "changed") n++; if (r === "full") full = true; }
   toast(n ? `${n} seçim kuponuna aktarıldı${full ? `, kupon doldu (en fazla ${MY_MAX})` : ""}` : full ? `Kupon dolu (en fazla ${MY_MAX})` : "Bu seçimler zaten kuponunda");
+  const r0 = from && from.getBoundingClientRect ? from.getBoundingClientRect() : null;
   render();
+  if (n) flyToSlip(r0, `+${n} seçim`);
 }
 function myRow(x) {
   const s = x.s, kick = new Date(s.d), di = dayInfo(kick), home = tn(s.h), away = tn(s.a);
@@ -3259,12 +3249,12 @@ function homeClick(e) {
   if (e.target.closest("#dkRun")) { runDailyAI(); return; }
   if (e.target.closest("#dkWeb")) { runWebDaily(); return; }
   const dc_ = e.target.closest("#dkCopy"); if (dc_ && state.aiDaily) { copyText(couponText(state.aiDaily.picks, state.aiDaily.comb, "Yapay zeka günün kuponu"), dc_, "Kopyala"); return; }
-  if (e.target.closest("#dkToMy") && state.aiDaily && state.aiDaily.picks.length) { importToMy(state.aiDaily.picks.map(c => ({ m: c.m, pk: { ...c.pk, p: pickP(c.m, c.pk.market, c.pk.side) } }))); return; }
+  if (e.target.closest("#dkToMy") && state.aiDaily && state.aiDaily.picks.length) { importToMy(state.aiDaily.picks.map(c => ({ m: c.m, pk: { ...c.pk, p: pickP(c.m, c.pk.market, c.pk.side) } })), e.target.closest("#dkToMy")); return; }
   const ds_ = e.target.closest("#dkSave"); if (ds_ && state.aiDaily && state.aiDaily.picks.length) { trackSave(ds_, "ai", "Yapay zeka günün kuponu", state.aiDaily); return; }
   const ac = e.target.closest("#aiCopy");
   if (ac && state.aiCoupon) { copyText(couponText(state.aiCoupon.picks, state.aiCoupon.comb, "Yapay zeka kuponu"), ac, "Kuponu kopyala"); return; }
-  if (e.target.closest("#cpToMy") && state.lastCoupon && state.lastCoupon.picks.length) { importToMy(state.lastCoupon.picks); return; }
-  if (e.target.closest("#aiToMy") && state.aiCoupon && state.aiCoupon.picks.length) { importToMy(state.aiCoupon.picks.map(c => ({ m: c.m, pk: { ...c.pk, p: pickP(c.m, c.pk.market, c.pk.side) } }))); return; }
+  if (e.target.closest("#cpToMy") && state.lastCoupon && state.lastCoupon.picks.length) { importToMy(state.lastCoupon.picks, e.target.closest("#cpToMy")); return; }
+  if (e.target.closest("#aiToMy") && state.aiCoupon && state.aiCoupon.picks.length) { importToMy(state.aiCoupon.picks.map(c => ({ m: c.m, pk: { ...c.pk, p: pickP(c.m, c.pk.market, c.pk.side) } })), e.target.closest("#aiToMy")); return; }
   if (e.target.closest("#cpShare") && state.lastCoupon) { shareCoupon("Günün kuponu", state.lastCoupon.picks, state.lastCoupon.comb); return; }
   if (e.target.closest("#aiShare") && state.aiCoupon) { shareCoupon("Yapay zeka kuponu", state.aiCoupon.picks, state.aiCoupon.comb); return; }
   const cs = e.target.closest("#cpSave");
@@ -3590,6 +3580,47 @@ function countUp(el, to, ms = 800) {
   const t0 = performance.now(), step = t => { const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3); tn_.nodeValue = String(Math.round(to * e)); if (k < 1 && el.isConnected) requestAnimationFrame(step); };
   tn_.nodeValue = "0"; requestAnimationFrame(step);
 }
+// ---------- hareket: ezilip gerilme, kupon sayısının zıplaması, kupona yay çizerek uçan etiket, TUTTU damgası
+function squish(sel) {
+  requestAnimationFrame(() => document.querySelectorAll(sel).forEach(el => { el.classList.remove("sq"); void el.offsetWidth; el.classList.add("sq"); setTimeout(() => el.classList.remove("sq"), 480); }));
+}
+function slipTargets() {
+  return [...document.querySelectorAll(".dt-foot .slip-n, #slip:not([hidden]) .slip-n")].filter(e => { const b = e.getBoundingClientRect(); return b.width > 0 && b.bottom > 0 && b.top < innerHeight; });
+}
+function bumpSlip() { slipTargets().forEach(el => { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); setTimeout(() => el.classList.remove("bump"), 600); }); }
+// r0: basılan düğmenin konumu (sayfa yeniden çizilmeden önce alınır). Hedef: açık paneldeki ya da alttaki "Kuponum" sayısı.
+function flyToSlip(r0, label) {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const tg = slipTargets()[0];
+    if (!r0 || !tg || REDUCED() || !document.body.animate) { bumpSlip(); return; }
+    const r1 = tg.getBoundingClientRect(), c = document.createElement("div");
+    const ts = getComputedStyle(tg); c.className = "fly-chip"; c.textContent = label; c.style.background = ts.backgroundColor; c.style.color = ts.color; document.body.appendChild(c);
+    const w = c.offsetWidth, h = c.offsetHeight;
+    const x0 = r0.left + r0.width / 2 - w / 2, y0 = r0.top + r0.height / 2 - h / 2, x1 = r1.left + r1.width / 2 - w / 2, y1 = r1.top + r1.height / 2 - h / 2;
+    const cx = (x0 + x1) / 2, cy = Math.min(y0, y1) - Math.max(70, Math.abs(x1 - x0) * 0.35 + Math.abs(y1 - y0) * 0.15);
+    const fr = [];
+    for (let i = 0; i <= 14; i++) {
+      const t = i / 14, u = 1 - t, x = u * u * x0 + 2 * u * t * cx + t * t * x1, y = u * u * y0 + 2 * u * t * cy + t * t * y1;
+      fr.push({ transform: `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${(1 - 0.6 * t).toFixed(3)})`, opacity: t > 0.86 ? +((1 - t) / 0.14).toFixed(2) : 1, offset: t });
+    }
+    const an = c.animate(fr, { duration: 640, easing: "cubic-bezier(.45,0,.25,1)" });
+    const end = () => { c.remove(); bumpSlip(); }; an.onfinish = end; an.oncancel = end;
+  }));
+}
+function stampCel(el) {
+  if (!el || el.querySelector(".cel-st")) return;
+  el.classList.add("cel-host"); el.insertAdjacentHTML("beforeend", '<span class="cel-st" aria-hidden="true">TUTTU</span>');
+  setTimeout(() => { const st = el.querySelector(".cel-st"); if (st) st.remove(); }, 3600);
+}
+// Kuponum'un bütün seçimleri tuttuğunda bir kez kutla (Canlı sayfasında)
+function celebrateMy(P) {
+  const key = P.map(p => liveKey(p) + "|" + p.mk + "|" + (p.side || "")).join("~");
+  let L = []; try { L = JSON.parse(lsGet("banko2:celmy") || "[]") || []; } catch (e) {}
+  if (L.includes(key)) return;
+  lsSet("banko2:celmy", JSON.stringify(L.concat([key]).slice(-10)));
+  confetti(); buzz([40, 60, 40, 60, 120]); toast("Kuponun tuttu!");
+  setTimeout(() => stampCel([...document.querySelectorAll("#lvBody .lv-cp")].find(e => { const b = e.querySelector("b"); return b && b.textContent === "Kuponum"; })), 80);
+}
 // konfeti: kupon tuttuğunda
 function confetti() {
   if (REDUCED()) return;
@@ -3609,14 +3640,15 @@ function confetti() {
 function celebrate(coupons) {
   const won = coupons.filter(c => c.state === "won").map(c => c.id);
   const raw = lsGet("banko2:cel");
-  if (raw === null) { lsSet("banko2:cel", JSON.stringify(won.slice(-30))); return; }
+  if (raw === null) { lsSet("banko2:cel", JSON.stringify(won.slice(-30))); return []; }
   let seen = []; try { seen = JSON.parse(raw) || []; } catch (e) {}
   const fresh = won.filter(id => !seen.includes(id));
-  if (!fresh.length) return;
+  if (!fresh.length) return [];
   lsSet("banko2:cel", JSON.stringify(seen.concat(fresh).slice(-30)));
   const c = coupons.find(x => x.id === fresh[0]);
   confetti(); buzz([40, 60, 40, 60, 120]);
   toast(fresh.length > 1 ? `${fresh.length} kupon tuttu!` : `Kupon tuttu: ${c.title}`);
+  return fresh;
 }
 
 // ---------- kupon takibi
@@ -3852,15 +3884,16 @@ function renderTrack() {
       const up = mv.filter(p => p.mv[1] > p.mv[0] + 0.005).length;
       return `<p class="tk-note"><b>Kapanış oranı:</b> sonuçlanan ${mv.length} seçimin ${up}${NLOC(up)} piyasa maça kadar senin yönüne kaydı (%${Math.round(up / mv.length * 100)}). Bu oranın %50'nin üstünde kalması, seçimlerinin piyasadan önce doğru tarafı bulduğu anlamına gelir.</p>`; })()}
     <p class="tk-note">${st.n < 30 ? `Şimdilik ${st.n} seçim sonuçlandı. Bu sayı çok az, tek başına bir şey kanıtlamaz. En az 30 seçim biriktir.` : "Tutan oranı modelin ortalama tahminine yakınsa model tutarlı demektir."} Tek tek seçimler tutsa bile kombine kupon çok daha zor tutar.${D.rate ? " Sonuç kaynağı istek limitine takıldı, bazı maçlar sonra güncellenir." : ""}</p>`;
-  celebrate(D.coupons);
+  const celF = celebrate(D.coupons) || [];
   ensureAcc(); $("tkAcc").innerHTML = accCard();
   const cal = calibHTML(D.coupons);
   $("tkCalC").hidden = !cal; $("tkCal").innerHTML = cal;
   markSeen(); updateBadge();
   list.innerHTML = D.coupons.map(r => {
     const ts = new Date(r.created), di = dayInfo(ts);
-    return `<section class="card"><div class="tk-h"><h3>${esc(r.title)}</h3><span class="st ${r.state}">${stLabel[r.state]}</span><span class="muted">${di.num} ${di.month}, tahmini birlikte tutma %${pn(r.comb)}</span><button type="button" class="ghost tk-shr" data-shr="${esc(r.id)}">${r.state === "won" || r.state === "lost" ? "Sonuç görseli" : "Görsel"}</button><button type="button" class="ghost tk-del" data-del="${esc(r.id)}">Sil</button></div><ol class="picks" style="margin-top:12px">${r.picks.map(trackPick).join("")}</ol></section>`;
+    return `<section class="card" data-cid="${esc(r.id)}"><div class="tk-h"><h3>${esc(r.title)}</h3><span class="st ${r.state}">${stLabel[r.state]}</span><span class="muted">${di.num} ${di.month}, tahmini birlikte tutma %${pn(r.comb)}</span><button type="button" class="ghost tk-shr" data-shr="${esc(r.id)}">${r.state === "won" || r.state === "lost" ? "Sonuç görseli" : "Görsel"}</button><button type="button" class="ghost tk-del" data-del="${esc(r.id)}">Sil</button></div><ol class="picks" style="margin-top:12px">${r.picks.map(trackPick).join("")}</ol></section>`;
   }).join("");
+  celF.forEach(id => stampCel(list.querySelector('[data-cid="' + CSS.escape(id) + '"]')));
   return `${D.coupons.length} kupon takipte.`;
 }
 
@@ -3916,6 +3949,7 @@ function renderLive() {
   const cps = [];
   if (state.track.data) state.track.data.coupons.forEach(c => { if (c.state === "pending" && c.picks.some(p => new Date(p.d).getTime() <= now)) cps.push(cpSummary(c.title || "Kupon", c.picks)); });
   if (state.my.length && state.my.some(x => new Date(x.d).getTime() <= now)) cps.push(cpSummary("Kuponum", state.my.map(x => Object.assign({ ok: null }, x))));
+  if (state.my.length) { const P = state.my.map(x => Object.assign({ ok: null }, x)); if (P.every(p => pickNow(p) === "won")) setTimeout(() => celebrateMy(P), 0); }
   let html = "";
   if (cps.length) html += `<section class="card lv-grp"><div class="card-h"><h2>Kuponlarımın durumu</h2></div><div class="lv-cps">${cps.join("")}</div></section>`;
   if (G.live.length) {
@@ -4431,24 +4465,24 @@ $("shBody").addEventListener("keydown", e => { if (e.target.id === "aqIn" && e.k
 $("shBody").addEventListener("click", e => {
   if (state.sheet === "match") {
     const r = e.target.closest("[data-pk]");
-    if (r) { state.detPick = r.dataset.pk; buzz(); syncSheet(); return; }
+    if (r) { state.detPick = r.dataset.pk; buzz(); syncSheet(); squish(`#shBody .mk-row[data-pk="${r.dataset.pk}"], #shBody .lv[data-pk="${r.dataset.pk}"]`); return; }
     const a = e.target.closest("[data-act]"), m = a && findMatch(state.detId);
     if (!m) return;
     if (a.dataset.act === "show") { const id = m.id, tab = state.detPick; closeSheet(true); openMatch(id, tab); return; }
     if (a.dataset.act === "trk") { const pk = detPicks(m).find(x => x.market === state.detPick); if (pk) trackSave(a, "main", "Tek seçim: " + pickLabel(m, pk), { picks: [{ m, pk }], comb: pk.p }); }
     if (a.dataset.act === "my") {
       const pk = detPicks(m).find(x => x.market === state.detPick); if (!pk) return;
-      let txt;
+      let txt, fly = null;
       if (sameSel(myOf(m.id), pk)) { removeMy(m.id); toast("Kupondan çıkarıldı"); txt = "Kupondan çıkarıldı"; }
-      else { const r = addMy(m, pk); txt = r === "added" ? "Kupona eklendi" : r === "changed" ? "Kupondaki seçim değişti" : ""; }
+      else { const r = addMy(m, pk); txt = r === "added" ? "Kupona eklendi" : r === "changed" ? "Kupondaki seçim değişti" : ""; if (txt) fly = a.getBoundingClientRect(); }
       if (txt) { state.detFlash = { text: txt, until: Date.now() + 1400 }; state.myPulse = Date.now(); setTimeout(() => { state.detFlash = null; syncSheet(); }, 1450); }
-      render();
+      render(); squish('#shBody [data-act="my"]'); if (fly) flyToSlip(fly, pickLabel(m, pk));
     }
     if (a.dataset.act === "openmy") openSheet("slip", "my");
     if (a.dataset.act === "mshr") { const di = dayInfo(m.kick); openShare({ kind: "match", id: m.id, title: `${trc(m.country)} ${m.league}`, sub: `${di.tag || di.wd} ${di.num} ${di.month}, ${fmtTime(m.kick)}` }); return; }
     if (a.dataset.act === "tbl") { state.detTable = !state.detTable; syncSheet(); }
     if (a.dataset.act === "tblm") { state.detTblMode = a.dataset.m; syncSheet(); }
-    if (a.dataset.act === "favt") { const k = m.lk + "|" + a.dataset.team, on = !state.favT.has(k); if (on) state.favT.add(k); else state.favT.delete(k); lsSet("banko2:favt", JSON.stringify([...state.favT].slice(0, 40))); buzz(); toast(on ? "Favori takımlara eklendi" : "Favorilerden çıkarıldı"); syncSheet(); render(); }
+    if (a.dataset.act === "favt") { const k = m.lk + "|" + a.dataset.team, on = !state.favT.has(k); if (on) state.favT.add(k); else state.favT.delete(k); lsSet("banko2:favt", JSON.stringify([...state.favT].slice(0, 40))); buzz(); toast(on ? "Favori takımlara eklendi" : "Favorilerden çıkarıldı"); syncSheet(); render(); squish(`#shBody .ft-star[data-team="${CSS.escape(a.dataset.team)}"]`); }
     if (a.dataset.act === "more") { state.detMore = !state.detMore; syncSheet(); }
     if (a.dataset.act === "ai") runMatchAI(m.id);
     else if (a.dataset.act === "aq") { runMatchAsk(m.id, a.dataset.q); setTimeout(() => { const q = document.querySelector("#aqSec .aq-i:last-of-type"); if (q) q.scrollIntoView({ block: "nearest", behavior: "smooth" }); }, 60); }
